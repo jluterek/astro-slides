@@ -1,0 +1,37 @@
+{
+  "name": "astro-slides-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A web-native presentation framework built on Astro, TypeScript, and MDX, with a first-class MCP server.",
+  "license": "MIT",
+  "author": "James Luterek",
+  "packageManager": "pnpm@10.27.0",
+  "engines": {
+    "node": ">=24",
+    "pnpm": ">=10"
+  },
+  "scripts": {
+    "typecheck": "tsc -b --noEmit",
+    "lint": "biome lint",
+    "lint:fix": "biome lint --write",
+    "format": "biome format --write",
+    "format:check": "biome format",
+    "check": "biome check",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,mjs,cjs,json,jsonc}": "biome check --no-errors-on-unmatched"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:dev",
+    "@vitest/coverage-v8": "catalog:dev",
+    "husky": "catalog:dev",
+    "lint-staged": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vitest": "catalog:dev"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "@astro-slides/mcp-server",
+  "version": "0.0.0",
+  "private": false,
+  "type": "module",
+  "description": "Model Context Protocol tool surface for reading, writing, presenting, and exporting decks.",
+  "license": "MIT",
+  "author": "James Luterek"
+}

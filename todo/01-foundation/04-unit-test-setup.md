@@ -1,10 +1,10 @@
 ---
 title: Set up Vitest with a sample passing test
 phase: 01-foundation
-status: pending
+status: done
 created: 2026-06-30
-started:
-ended:
+started: 2026-06-30
+ended: 2026-06-30
 ---
 
 ## Goal
@@ -23,8 +23,29 @@ Install and configure Vitest for unit tests at the workspace level. A single pas
 
 ## Notes / decisions
 
-(Fill in during work — workspace mode vs single-config, jsdom vs node environment defaults, alias setup.)
+- **Vitest 3.2.6** + **`@vitest/coverage-v8`** (both `catalog:dev`, `^3.0.0`).
+- **Single root config** (`vitest.config.ts`), not `test.projects`/workspace mode.
+  One glob — `packages/*/src/**/*.test.ts` — discovers every package's tests. No
+  per-package config (the criterion explicitly wants no duplicates). When the
+  client package needs jsdom, it gets added as a `test.projects` entry then, not now.
+- **Environment:** `node` default. jsdom deferred until there's DOM code to test.
+- **Test import path:** sample test imports `../index.js` (not `../index`) — nodenext
+  + `verbatimModuleSyntax` require the `.js` extension on relative ESM imports, and
+  it resolves to the `.ts` source under both tsc and Vite.
+- **Test files are typechecked:** they live under `src/`, so `tsc -b` includes them.
+  Confirmed `pnpm typecheck` stays green with the test present.
+- **Coverage:** v8 provider, reporters text/html/lcov, excludes test files and dist.
+  `coverage/` is already gitignored. esbuild's postinstall build script was ignored
+  by pnpm (security default) — Vitest still runs fine, so left it unapproved.
+- **Scripts:** `test` = `vitest run` (one-shot, CI-safe), `test:watch` = `vitest`,
+  `test:coverage` = `vitest run --coverage`.
 
 ## Outcome
 
-_Fill in when status flips to `done`._
+Vitest configured workspace-wide with a passing sample test.
+
+- Created `vitest.config.ts` and `packages/types/src/__tests__/placeholder.test.ts`.
+- Added `vitest` + `@vitest/coverage-v8` (`catalog:dev`); scripts `test`,
+  `test:watch`, `test:coverage`.
+- `pnpm test` → 1 passed. `pnpm test:coverage` → green (types/index.ts 100%).
+- typecheck / lint / format:check all still pass with the test file in place.

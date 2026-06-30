@@ -11,13 +11,13 @@ Stand up the monorepo, tooling, and CI so subsequent phases have a typed, tested
 
 ## Exit criteria
 
-- [ ] `pnpm install` from a fresh clone produces a working workspace.
-- [ ] All packages typecheck (`pnpm typecheck` runs `tsc -b --noEmit`).
-- [ ] All packages lint/format clean (`pnpm lint`, `pnpm format:check`).
-- [ ] A sample unit test runs (`pnpm test`).
-- [ ] Pre-commit hooks block unformatted / unlinted commits.
-- [ ] GitHub Actions runs lint + typecheck + test on PR and main.
-- [ ] `docs/built/01-foundation.md` summarizes the conventions chosen.
+- [x] `pnpm install` from a fresh clone produces a working workspace.
+- [x] All packages typecheck (`pnpm typecheck` runs `tsc -b --noEmit`).
+- [x] All packages lint/format clean (`pnpm lint`, `pnpm format:check`).
+- [x] A sample unit test runs (`pnpm test`).
+- [x] Pre-commit hooks block unformatted / unlinted commits.
+- [~] GitHub Actions runs lint + typecheck + test on PR and main. — workflow authored & YAML-validated; **not yet executed** (no git remote configured / nothing pushed).
+- [ ] `docs/built/01-foundation.md` summarizes the conventions chosen. — part of phase closure; written when the phase is archived.
 
 ## Locked decisions
 
@@ -34,12 +34,12 @@ See `docs/architecture/dependencies.md` for the full library matrix.
 
 ## Tasks
 
-- [ ] [`01-monorepo-setup.md`](./01-monorepo-setup.md) — pnpm workspaces, root config, package skeletons
-- [ ] [`02-typescript-config.md`](./02-typescript-config.md) — strict tsconfig base + project references
-- [ ] [`03-linting-and-formatting.md`](./03-linting-and-formatting.md) — Biome
-- [ ] [`04-unit-test-setup.md`](./04-unit-test-setup.md) — Vitest, sample test
-- [ ] [`05-editor-config-and-git-hooks.md`](./05-editor-config-and-git-hooks.md) — EditorConfig, Husky, lint-staged
-- [ ] [`06-ci-pipeline.md`](./06-ci-pipeline.md) — GitHub Actions
+- [x] [`01-monorepo-setup.md`](./01-monorepo-setup.md) — pnpm workspaces, root config, package skeletons
+- [x] [`02-typescript-config.md`](./02-typescript-config.md) — strict tsconfig base + project references
+- [x] [`03-linting-and-formatting.md`](./03-linting-and-formatting.md) — Biome
+- [x] [`04-unit-test-setup.md`](./04-unit-test-setup.md) — Vitest, sample test
+- [x] [`05-editor-config-and-git-hooks.md`](./05-editor-config-and-git-hooks.md) — EditorConfig, Husky, lint-staged
+- [x] [`06-ci-pipeline.md`](./06-ci-pipeline.md) — GitHub Actions
 
 ## Parallel work
 
@@ -67,4 +67,25 @@ E2E test setup (Playwright) is deferred to Phase 04 when there's a runtime to dr
 
 ## Outcome
 
-_Fill in when the phase closes._
+All six tasks `done` (2026-06-30). The workspace is typed, linted, tested, and
+commit-gated end to end.
+
+**Built:** pnpm workspace (6 package skeletons + `dev`/`frontend`/`prod` catalogs) ·
+strict `tsconfig.base.json` + project references (`pnpm typecheck` = `tsc -b
+--noEmit`) · Biome 2.5 lint+format · Vitest 3.2 with v8 coverage and a passing
+sample test · `.editorconfig` + Husky v9 + lint-staged pre-commit gate · GitHub
+Actions `ci.yml` (lint / typecheck / test jobs).
+
+**Verified locally:** `pnpm install` (frozen-lockfile too), `typecheck`, `lint`,
+`format:check`, `test`/`test:coverage` all green; pre-commit blocks a bad commit in
+~1s; typecheck proven to catch real errors.
+
+**Two items remain before this phase can be archived (per `todo/README.md` §
+Completing a phase):**
+1. **Exercise CI** — needs a git remote + first push. The repo has no remote yet and
+   nothing is committed. Workflow is authored and YAML-valid; expected green.
+2. **Distill** — write `docs/built/01-foundation.md`, then `mv` this folder to
+   `todo/archive/` and flip `ROADMAP.md` to done.
+
+Holding the archive ritual open until (1) is confirmed keeps the exit criteria
+honest. Nothing in Phase 02 is blocked by either item.

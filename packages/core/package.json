@@ -1,0 +1,9 @@
+{
+  "name": "@astro-slides/core",
+  "version": "0.0.0",
+  "private": false,
+  "type": "module",
+  "description": "Astro integration, Vite plugins, and the slide compilation pipeline.",
+  "license": "MIT",
+  "author": "James Luterek"
+}

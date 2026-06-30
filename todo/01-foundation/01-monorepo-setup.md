@@ -1,10 +1,10 @@
 ---
 title: Set up pnpm workspaces and package skeletons
 phase: 01-foundation
-status: pending
+status: done
 created: 2026-06-30
-started:
-ended:
+started: 2026-06-30
+ended: 2026-06-30
 ---
 
 ## Goal
@@ -30,8 +30,33 @@ Create the monorepo structure with pnpm workspaces and catalog versioning per AD
 
 ## Notes / decisions
 
-(Fill in during work — corepack enable approach, catalog naming conventions, any deviations from Slidev's shape.)
+- **Catalogs:** mirrored Slidev's `dev` / `frontend` / `prod` split. Seeded each
+  with its most central locked pick (dev tooling; `astro`; `zod`) so the shape is
+  real, not empty. Catalog entries are inert until a package references
+  `catalog:<name>`, so seeding them does not pull anything on install — later
+  phases add entries as they wire up tools.
+- **Workspace globs:** included `themes/*` and `examples/*` alongside `packages/*`
+  per `directory-conventions.md`. Those dirs don't exist yet; pnpm ignores
+  empty globs without error.
+- **`.nvmrc`:** pinned to major `24` (current Node LTS, and pre-25 so the Corepack
+  removal doesn't bite). Avoids churn from patch-version pinning.
+- **`packageManager`:** `pnpm@10.27.0` (installed version). pnpm offered an upgrade
+  to 11.9.0 via Corepack — **declined**, Corepack is banned project-wide.
+- **No `bin` on `@astro-slides/cli` yet:** declaring `astro-slides` now would point
+  at a non-existent dist file. Deferred to the phase that builds the CLI entry.
+- **CONTRIBUTING.md** (standalone-pnpm-install guidance) remains deferred to Phase 18
+  per the task; not created here.
 
 ## Outcome
 
-_Fill in when status flips to `done`._
+Monorepo scaffolded and installing cleanly.
+
+- Created: `pnpm-workspace.yaml`, root `package.json`, `.npmrc`, `.nvmrc`,
+  `pnpm-lock.yaml`, and six package skeletons under `packages/`
+  (`cli`, `core`, `client`, `parser`, `types`, `mcp-server`) — each with a
+  `package.json` (`@astro-slides/<name>`, `private: false`, `0.0.0`, `type: module`),
+  a `src/index.ts` placeholder export, and a `README.md`.
+- `pnpm install` succeeds from clean (7 projects = 6 packages + root).
+- `pnpm -r exec pwd` lists all six packages.
+- Next: task 02 (TypeScript config) — sequential dependency, packages now exist
+  for `references`.

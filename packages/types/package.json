@@ -1,0 +1,9 @@
+{
+  "name": "@astro-slides/types",
+  "version": "0.0.0",
+  "private": false,
+  "type": "module",
+  "description": "Shared TypeScript types for astro-slides, inferred from Zod schemas.",
+  "license": "MIT",
+  "author": "James Luterek"
+}

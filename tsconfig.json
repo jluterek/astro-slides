@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "//": "Solution-style root config. Holds no files of its own; aggregates every package via references so `tsc -b` builds/typechecks the whole workspace in dependency order.",
+  "files": [],
+  "references": [
+    { "path": "packages/types" },
+    { "path": "packages/parser" },
+    { "path": "packages/core" },
+    { "path": "packages/client" },
+    { "path": "packages/cli" },
+    { "path": "packages/mcp-server" }
+  ]
+}

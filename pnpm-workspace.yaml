@@ -1,0 +1,30 @@
+packages:
+  - 'packages/*'
+  - 'themes/*'
+  - 'examples/*'
+
+# Catalog versioning keeps every workspace package on the same dependency
+# versions. Packages reference these via `"catalog:dev"` etc. in their
+# package.json. Mirrors Slidev's dev/frontend/prod split.
+#
+# Entries are added as each phase wires up the tools that need them; an entry
+# here is inert until a package actually depends on it.
+catalogs:
+  # Build, lint, test, and type tooling shared across every package.
+  dev:
+    typescript: ^5.8.0
+    '@types/node': ^24.0.0
+    tsup: ^8.5.0
+    vitest: ^3.0.0
+    '@vitest/coverage-v8': ^3.0.0
+    '@biomejs/biome': ^2.0.0
+    husky: ^9.1.0
+    lint-staged: ^15.2.0
+
+  # Browser / Astro-facing runtime dependencies (Phase 03+).
+  frontend:
+    astro: ^5.0.0
+
+  # Non-UI runtime libraries used by parser / MCP / CLI (Phase 02+).
+  prod:
+    zod: ^4.0.0

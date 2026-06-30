@@ -1,0 +1,9 @@
+{
+  "name": "@astro-slides/client",
+  "version": "0.0.0",
+  "private": false,
+  "type": "module",
+  "description": "Runtime UI — layouts, click runtime, transitions, and presenter mode.",
+  "license": "MIT",
+  "author": "James Luterek"
+}
