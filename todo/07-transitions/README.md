@@ -7,41 +7,60 @@ ended:
 
 ## Goal
 
-Implement slide-level transitions per ADR-0006: the View Transitions API for browsers that support it, a FLIP-based fallback (adapted from reveal.js's `autoanimate.js`) for browsers that don't. Element pairing across slides uses `view-transition-name` (and a higher-level `<Morph id="…">` component that emits it).
+Implement slide-level transitions per ADR-0006: the View Transitions API for browsers that support it, a FLIP-based fallback (adapted from reveal.js's `autoanimate.js`) for browsers that don't. Element pairing across slides uses `transition:name` (Astro's binding) and a higher-level `<Morph id="…">` component that emits the attribute.
 
 ## Exit criteria
 
 - [ ] Built-in slide-level transitions: `fade`, `fade-out`, `slide-up`, `slide-down`, `slide-left`, `slide-right`, `view-transition`. Per-slide `transition:` frontmatter overrides the deck default.
 - [ ] `<Morph id="logo">` (or similar) component on two consecutive slides causes the named element to morph between positions/sizes/styles.
-- [ ] On browsers with `document.startViewTransition`, the morph uses VTA; on others, the FLIP fallback runs.
+- [ ] On browsers with `document.startViewTransition`, the morph uses VTA via Astro's `<ClientRouter />`; on others, the FLIP fallback runs.
 - [ ] Feature detection happens once at runtime; behavior is consistent within a session.
-- [ ] Reduced-motion (`prefers-reduced-motion`) softens or disables transitions automatically.
+- [ ] Reduced-motion (`prefers-reduced-motion`) softens or disables transitions automatically (Astro's `<ClientRouter />` already handles this — verify and document).
 - [ ] FLIP implementation matches matched elements by `data-morph-id` (explicit) and by heading text content (heuristic), à la reveal.js.
 - [ ] Trade-off cases documented in `docs/built/07-transitions.md`: where VTA and FLIP differ.
 
-## Planned tasks
+## Locked decisions
 
-- Built-in CSS transitions (`fade`, `slide-*`)
-- Astro view-transitions wiring (rely on Astro's `<ViewTransitions />`)
-- `<Morph>` component → emits `view-transition-name`
-- FLIP fallback implementation (port from `reveal.js/js/controllers/autoanimate.js`)
-- Feature detection + transition dispatcher
-- Reduced-motion handling
-- Visual snapshot tests for both VTA and FLIP paths
+- **Primary API:** `<ClientRouter />` from `astro:transitions` (renamed from `<ViewTransitions />` in Astro 5).
+- **Element pairing:** Astro's `transition:name="<name>"` attribute. `<Morph id="X">` is sugar that emits `transition:name={X}`.
+- **Fallback:** Hand-rolled FLIP in `packages/client/src/transitions/flip.ts`, ported from reveal.js's `autoanimate.js` (see `docs/reference-applications/reveal.js.md` § *Auto-Animate*).
+- **No third-party animation library.** No Motion, no Framer Motion, no react-spring for slide-level transitions. Per-element click animations (Phase 06) use CSS only.
+- **Reduced motion:** Astro handles natively; we document and verify, not implement separately.
+- **Feature detection:** at runtime once, on first transition. Cached for the session.
+
+## Tasks (planned)
+
+- Built-in CSS transitions (`fade`, `slide-*`) — `packages/client/src/styles/transitions.css`
+- Astro `<ClientRouter />` wiring on slide routes
+- `<Morph>` component (emits `transition:name`)
+- FLIP fallback implementation (port from reveal.js)
+- Feature detection + dispatcher (`startMorph()`)
+- Reduced-motion verification
+- Visual snapshot tests (Playwright) for both VTA and FLIP paths
+
+## Parallel work
+
+| Stage | Can run in parallel |
+| --- | --- |
+| Built-in CSS transitions + `<ClientRouter />` wiring | parallel — independent files |
+| **`<Morph>` component, FLIP fallback, feature detection** | parallel after wiring |
+| Visual snapshot tests | parallel with implementations |
 
 ## Dependencies
 
 - Phase 04 (runtime core — transitions trigger on navigation)
 - Phase 05 (layouts — transitions wrap layout boundaries)
 
+## Risks
+
+- **VTA support is improving but uneven.** Chromium full, Safari partial (16.4+), Firefox landed. FLIP fallback covers the gap.
+- **FLIP visual fidelity won't perfectly match VTA.** Different composition models (FLIP transforms at the element level, VTA uses pseudo-elements `::view-transition-old/new`). Document the difference in `docs/built/07-transitions.md`.
+- **Astro's `<ClientRouter />` does its own DOM swapping.** Our FLIP fallback must defer to or replace Astro's behavior when VTA isn't supported. Test the integration carefully.
+- **Click step animations (Phase 06) are CSS-only** — confirmed not to use VTA. This means click animations and slide animations have different timing models. Document.
+
 ## Notes
 
-The View Transitions API is the primary; FLIP is the safety net. We accept that some morph nuances will differ between paths — see `docs/decisions/0006-view-transitions-with-flip-fallback.md` for the rationale.
-
 Reference: `docs/reference-applications/reveal.js.md` § *Auto-Animate — reveal.js's Morph-equivalent (deep dive)* — this is the algorithm we port for FLIP. `docs/reference-applications/marp.md` § *Code patterns worth studying* on VTA usage.
-
-Open questions:
-- Whether per-element transitions (`<Click>` step animations from Phase 06) should also feature-detect VTA or stick to CSS transitions. Current plan: CSS for fragments, VTA only for slide-level.
 
 ## Outcome
 

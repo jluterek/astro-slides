@@ -20,30 +20,58 @@ Implement editable PPTX export per ADR-0007: map the slide AST to PptxGenJS API 
 - [ ] Snapshot tests: known input AST → expected PptxGenJS calls.
 - [ ] Round-trip smoke test: export → open in headless LibreOffice → assert basic structural integrity.
 
-## Planned tasks
+## Locked decisions
 
-- AST → PptxGenJS mapper (`packages/cli/src/exporters/pptx.ts`)
-- Coordinate translation utilities (px ↔ EMU, accounting for deck dimensions)
-- Theme → OOXML color/font mapping
-- Per-element mappers: text, list, code, image, table, shape, link, notes
-- Image-rasterization fallback per slide (use the PNG path from Phase 12)
-- Chart mapper (with embedded Excel data)
+- **PPTX engine:** `PptxGenJS` v4+. Direct dependency.
+- **Coordinate space:** CSS pixels → EMU (`914400 EMU per inch`, slide width 1920 px = 20 in default). Wrapper utility in `packages/cli/src/exporters/pptx/units.ts`.
+- **Fallback path:** image rasterization uses the same PNG capture pipeline from Phase 12 — call it directly when `exportAs: image` is set or when an element type isn't natively expressible.
+- **Theme palette mapping:** map our `--slide-*` tokens to OOXML theme colors at export time. Fonts pass through. Document the gaps (gradients beyond 2-stop linear/radial, CSS filters, etc.).
+- **Chart embedding:** use PptxGenJS's chart API with embedded Excel data so PowerPoint's "Edit in Excel" works.
+- **Progress UI:** `listr2`.
+
+## Tasks (planned)
+
+- AST → PptxGenJS mapper (`packages/cli/src/exporters/pptx/index.ts`)
+- Coordinate translation utilities (`units.ts`)
+- Theme → OOXML color/font mapping (`theme.ts`)
+- Per-element mappers — **independent files, parallel-friendly:**
+  - `text.ts` (heading, paragraph, list)
+  - `code.ts` (rasterized via image fallback)
+  - `image.ts`
+  - `table.ts` (with auto-paging)
+  - `shape.ts` (basic shapes, hyperlinks)
+  - `chart.ts` (with embedded Excel)
+  - `notes.ts` (speaker notes)
+- Image-rasterization fallback per slide (uses Phase 12 PNG capture)
 - Fidelity-gap documentation (what doesn't survive, with screenshots)
 - Snapshot tests
+- LibreOffice headless smoke test (CI)
+
+## Parallel work
+
+| Stage | Can run in parallel |
+| --- | --- |
+| Coordinate utils + theme mapper | first |
+| **Per-element mappers (text, code, image, table, shape, chart, notes)** | **highly parallel** — seven independent files |
+| AST walker that dispatches to mappers | after all mappers exist |
+| Image-rasterization fallback | parallel with mappers |
+| Snapshot tests + LibreOffice smoke | parallel with mappers |
 
 ## Dependencies
 
 - Phase 12 (export-web — image fallback uses the same PNG capture path)
 - All earlier phases must produce a stable AST (this exporter consumes it)
 
+## Risks
+
+- **PptxGenJS string-concat XML internally.** Typos in property names produce malformed XML and PowerPoint's "needs repair" dialog. Mitigation: snapshot tests on every mapper output.
+- **PptxGenJS theme palette gap.** Theme palette beyond fonts requires forking OOXML theme XML. Document; consider upstream PR.
+- **Image placeholders only partially supported** (text placeholders work; image placeholders incomplete). Workaround: absolute positioning.
+- **LibreOffice headless dependency in CI:** install in the GitHub Action or skip the smoke test for fast runs.
+
 ## Notes
 
-PptxGenJS docs and gaps are captured in `docs/reference-applications/PptxGenJS.md`. Key constraints to expect:
-- No animation/transition API in OOXML — we drop them, documented.
-- Theme palette beyond fonts requires forking the theme XML. May need an upstream contribution or a fork-and-patch.
-- Placeholders for images aren't fully supported in PptxGenJS — workaround uses absolute positioning.
-
-We accept the fidelity gaps because editable PPTX is the differentiator vs. image-only competitors.
+Full PptxGenJS API surface is in `docs/reference-applications/PptxGenJS.md`. The mapping is mostly mechanical for text/image/table/chart; the complexity is in edge cases (CSS-only effects, web components, animations don't survive — these become image fallbacks).
 
 ## Outcome
 

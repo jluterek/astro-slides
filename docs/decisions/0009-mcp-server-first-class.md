@@ -23,7 +23,12 @@ Ship a real MCP server as a CLI subcommand:
 astro-slides mcp-server
 ```
 
-Transports: **stdio** (for Claude Code, Cursor, Windsurf, Continue) and **SSE** / **WebSocket** (for remote / web-based MCP clients) — same tool surface, different transport.
+Transports: **stdio** by default (for Claude Code, Cursor, Windsurf, Continue, which spawn the server). For remote clients, **Streamable HTTP** (the MCP spec's modern HTTP transport, which replaces deprecated SSE) via `@hono/mcp` or the SDK's `StreamableHTTPServerTransport`. WebSocket is **not** in v1 — not yet in the official MCP spec.
+
+Library choices (research-verified June 2026):
+- SDK: `@modelcontextprotocol/sdk` v1.29 currently, migrating to v2.0 when GA on 2026-07-28.
+- HTTP server: `Hono` + `@hono/mcp`.
+- Tool schemas: `Zod` v4 (Standard Schema compliant; SDK accepts directly).
 
 Tool surface (initial set):
 
@@ -35,7 +40,9 @@ Tool surface (initial set):
 | Capture | `screenshot_slide`, `start_recording`, `stop_recording` |
 | Export | `export_pdf`, `export_pptx`, `export_png`, `export_md` |
 
-Tool definitions are **generated from TypeScript types** (see ADR-0003) — the same `SlidesAction` / `SlidesQuery` types that the runtime uses. The MCP layer is a transport for those types, not a parallel schema.
+Tool schemas are authored as **Zod definitions** that double as TypeScript type sources (Zod 4's inference + `z.toJSONSchema()`). The runtime types in `@astro-slides/types` and the MCP tool schemas are co-located in `packages/mcp-server/src/tools/`, so drift between the runtime contract and the MCP contract is impossible — they're literally the same declaration. Frontmatter JSON Schema is similarly generated from Zod for editor IntelliSense.
+
+This amends an earlier framing of "schemas generated from TS types" — practically, **schemas are authored as Zod**, TypeScript types are *inferred from* Zod, and JSON Schema is *generated from* Zod. The directionality is `Zod → TS types → editor IntelliSense / runtime validation / MCP schemas`. This was research-verified: the MCP SDK accepts Standard Schema (Zod/Valibot/ArkType), not raw JSON Schema, and there is no native "TS interface → MCP tool schema" pipeline.
 
 A **skill bundle** ships alongside (`skills/astro-slides/SKILL.md` + structured per-feature reference markdown) for clients without MCP support.
 
@@ -45,4 +52,4 @@ A **skill bundle** ships alongside (`skills/astro-slides/SKILL.md` + structured 
 - The MCP server can run alongside the Vite dev server during development, so AI edits are reflected via HMR (same Vite plugin layer that handles file watches).
 - Tool contract never drifts from the runtime contract because both come from the same TS types.
 - Trade-off: ongoing maintenance of the MCP tool surface as features evolve. Mitigated by keeping the tool list small and stable; new features go through new tool versions, not surface expansion.
-- Trade-off: security model — an MCP client connected over the network can mutate decks. Mitigated by binding to localhost by default; remote/network MCP requires an explicit flag and an auth token.
+- Trade-off: security model — an MCP client connected over the network can mutate decks. Mitigated by binding to localhost by default; remote/network MCP requires an explicit flag and an auth token. v1 supports a static bearer token (`--token <secret>` or `ASTRO_SLIDES_MCP_TOKEN`). **OAuth 2.1 + PKCE** is the MCP-spec-mandated approach for non-loopback Streamable HTTP — implementation is deferred to a follow-up because the spec, the SDK, and our threat model are still settling. Document the gap in `docs/built/14-mcp-server.md`.

@@ -9,7 +9,7 @@ ended:
 
 ## Goal
 
-Pick and configure a lint/format tool. The decision is between Biome (one fast Rust-based tool covering both) and ESLint + Prettier (mature, deeper TypeScript rule coverage). Default to Biome unless we hit a blocker — capture the choice as an ADR if it has lasting consequences.
+Configure Biome as the lint and format tool. **Decision locked** in Phase 01 README — Biome covers both, fast, modern, sufficient for our coding style. If a specific TS rule we want is missing, add ESLint as a supplement (not a replacement).
 
 ## Acceptance criteria
 

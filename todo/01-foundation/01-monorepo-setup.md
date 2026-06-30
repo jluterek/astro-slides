@@ -14,7 +14,8 @@ Create the monorepo structure with pnpm workspaces and catalog versioning per AD
 ## Acceptance criteria
 
 - [ ] `pnpm-workspace.yaml` exists at repo root with `packages/*` glob and catalogs (`dev`, `frontend`, `prod`) declared. Mirror Slidev's catalog shape (see `docs/reference-applications/slidev.md`).
-- [ ] Root `package.json` declares `private: true` and `packageManager: pnpm@<version>`. No top-level runtime deps yet.
+- [ ] Root `package.json` declares `private: true` and `packageManager: pnpm@<version>` (current stable pnpm 10+). No top-level runtime deps yet.
+- [ ] **pnpm installation:** standalone install only — `curl -fsSL https://get.pnpm.io/install.sh | sh` or `npm i -g pnpm`. **Do not use Corepack** (removed in Node 25+). Document this in CONTRIBUTING.md (deferred to Phase 18).
 - [ ] `.npmrc` enforces strict workspace behavior (`auto-install-peers=true`, `link-workspace-packages=true`, `prefer-workspace-packages=true`).
 - [ ] `.nvmrc` pinned to current Node LTS.
 - [ ] Package skeletons created under `packages/`, each with `package.json` (name `@astro-slides/<name>`, `private: false`, version `0.0.0`), a `src/` directory, and a `README.md`:
