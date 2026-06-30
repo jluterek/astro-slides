@@ -1,8 +1,8 @@
 ---
 title: Phase 02 — Parser
-status: active
+status: done
 started: 2026-06-30
-ended:
+ended: 2026-06-30
 ---
 
 ## Goal
@@ -11,20 +11,20 @@ Implement the MDX/MD → slide AST pipeline. The parser is the load-bearing piec
 
 ## Exit criteria
 
-- [ ] Parser produces a typed `Deck` → `Slide[]` AST from `.mdx` and `.md` inputs.
-- [ ] `docs/architecture/ast.md` filled in with the final AST types (status moves to `stable`).
-- [ ] `docs/architecture/frontmatter.md` filled in with the final field schema.
-- [ ] Frontmatter (YAML) parsed into typed `Headmatter` (deck-level) and `Frontmatter` (slide-level).
-- [ ] `---` slide separator works correctly inside MDX, including not splitting on fenced code blocks or HTML comments.
-- [ ] Trailing HTML-comment-per-slide treated as speaker notes.
-- [ ] Slot sugar (`::name::`) lowered to JSX named slots.
-- [ ] Snippet imports (`<<< @/file#region`) inlined with region detection across common syntaxes.
-- [ ] Slide imports (`src:` frontmatter) resolve recursively with frontmatter merge semantics.
-- [ ] Marp directive parser (`<!-- _class: -->`, `<!-- _backgroundColor: -->`, etc.) emits the same AST.
-- [ ] Parse-time **image-usage extraction** and **feature detection** (KaTeX, Mermaid, Monaco) for downstream tree-shaking.
-- [ ] Sync + async parse functions exposed (sync for tooling, async for the dev server).
-- [ ] Zod schemas for frontmatter, generated to JSON Schema via `z.toJSONSchema()` and published as `@astro-slides/types/schemas/frontmatter.json`.
-- [ ] Comprehensive unit tests for the splitter, frontmatter merge, slot sugar, snippet imports, slide imports.
+- [x] Parser produces a typed `Deck` → `Slide[]` AST from `.mdx` and `.md` inputs.
+- [x] `docs/architecture/ast.md` filled in with the final AST types (status moves to `stable`).
+- [x] `docs/architecture/frontmatter.md` filled in with the final field schema.
+- [x] Frontmatter (YAML) parsed into typed `Headmatter` (deck-level) and `Frontmatter` (slide-level).
+- [x] `---` slide separator works correctly inside MDX, including not splitting on fenced code blocks or HTML comments.
+- [x] Trailing HTML-comment-per-slide treated as speaker notes.
+- [x] Slot sugar (`::name::`) — lowered to a structured `slots` map (`default` + named); see *Outcome*.
+- [x] Snippet imports (`<<< @/file#region`) inlined with region detection across common syntaxes.
+- [x] Slide imports (`src:` frontmatter) resolve recursively with frontmatter merge semantics.
+- [x] Marp directive parser (`<!-- _class: -->`, `<!-- _backgroundColor: -->`, etc.) emits the same AST.
+- [x] Parse-time **image-usage extraction** and **feature detection** (KaTeX, Mermaid, Monaco) for downstream tree-shaking.
+- [x] Sync + async parse functions exposed (sync for tooling, async for the dev server).
+- [x] Zod schemas for frontmatter, generated to JSON Schema via `z.toJSONSchema()` and published as `@astro-slides/types/schemas/frontmatter.json`.
+- [x] Comprehensive unit tests for the splitter, frontmatter merge, slot sugar, snippet imports, slide imports.
 
 ## Locked decisions
 
@@ -82,4 +82,22 @@ Reference: `docs/reference-applications/slidev.md` § *Markdown → slide AST*, 
 
 ## Outcome
 
-_Fill in when the phase closes._
+All exit criteria met; CI green on PR #2. Distilled to
+[`docs/built/02-parser.md`](../../docs/built/02-parser.md).
+
+**Shipped:** `@astro-slides/types` (AST + Zod frontmatter schemas + JSON Schema
+generator) and `@astro-slides/parser` (splitter, frontmatter, notes, slot sugar,
+snippet imports, recursive `src:` imports, Marp directives, feature/image detection,
+sync+async API, summaries). 62 tests, 92% coverage.
+
+**Notable decisions (see built doc):**
+- Parser is **source-level** — produces transformed MDX/Markdown *source* per slide;
+  MDX→tree compilation is Phase 03. Resolves the `ast.md` "raw AST vs transformed?"
+  question in favor of transformed source.
+- **Slot sugar → structured `slots` map**, not literal JSX named slots (MDX/React has
+  no Vue-style slot primitive). Layouts (Phase 05) consume the map.
+- **Splitter**: separator `---` doubles as the next slide's frontmatter opener;
+  frontmatter vs separator disambiguated by YAML-mapping detection.
+- **Click-step fields** exist in the AST but are populated by Phase 06.
+- `typecheck` moved `tsc -b --noEmit` → `tsc -b` (composite refs require emit); CI lint
+  job now runs `pnpm check` to match the pre-commit hook.

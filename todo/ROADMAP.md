@@ -4,7 +4,7 @@ The phase index. Always current. Update when a phase starts or ends.
 
 ## Active
 
-- [`02-parser`](./02-parser/README.md) — MDX/MD → slide AST. (started 2026-06-30)
+- _None. Phase 02 closed; Phase 03 (astro-integration) is next up._
 
 ## Planned
 
@@ -34,6 +34,7 @@ Phases are listed in dependency order. They can be re-sequenced if a later phase
 | # | Phase | Distilled summary |
 | --- | --- | --- |
 | 01 | `01-foundation` | [`docs/built/01-foundation.md`](../docs/built/01-foundation.md) — monorepo, strict TS, Biome, Vitest, Husky, CI (closed 2026-06-30) |
+| 02 | `02-parser` | [`docs/built/02-parser.md`](../docs/built/02-parser.md) — MDX/MD → typed slide AST; Zod frontmatter; parser package (closed 2026-06-30) |
 
 ---
 
