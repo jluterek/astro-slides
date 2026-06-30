@@ -9,6 +9,19 @@ This file is the process doc. Read it once. It describes how we plan, execute, a
 3. **Completed work becomes documentation.** A phase that finishes produces a single distilled summary in `docs/built/`. The detailed history is archived but rarely re-read.
 4. **Decisions are separated from tasks.** Cross-cutting "we chose X because Y" notes go into `docs/decisions/` as ADRs, not buried inside task files.
 
+## Git workflow
+
+Changes land via **feature branch → PR → CI → merge on green**. Don't push directly to
+`main`.
+
+- Branch per task/phase (`git switch -c <kind>/<short-name>`), push, open a PR
+  (`gh pr create`), let CI gate it (Lint & format / Typecheck / Test), then
+  `gh pr merge` once green.
+- This is **convention, not enforcement** — `main` has no branch protection because
+  the repo is a free *private* repo (GitHub gates protection + rulesets behind Pro /
+  public). Treat it as if enforced. To make it real later: make the repo public or
+  upgrade to Pro, then add a ruleset requiring a PR + the three checks.
+
 ## Folder layout
 
 ```
