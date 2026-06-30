@@ -1,8 +1,8 @@
 ---
 title: Phase 01 — Foundation
-status: active
+status: done
 started: 2026-06-30
-ended:
+ended: 2026-06-30
 ---
 
 ## Goal
@@ -16,8 +16,8 @@ Stand up the monorepo, tooling, and CI so subsequent phases have a typed, tested
 - [x] All packages lint/format clean (`pnpm lint`, `pnpm format:check`).
 - [x] A sample unit test runs (`pnpm test`).
 - [x] Pre-commit hooks block unformatted / unlinted commits.
-- [~] GitHub Actions runs lint + typecheck + test on PR and main. — workflow authored & YAML-validated; **not yet executed** (no git remote configured / nothing pushed).
-- [ ] `docs/built/01-foundation.md` summarizes the conventions chosen. — part of phase closure; written when the phase is archived.
+- [x] GitHub Actions runs lint + typecheck + test on PR and main. — verified green on `main` (run 28474099564); PR trigger configured identically.
+- [x] `docs/built/01-foundation.md` summarizes the conventions chosen.
 
 ## Locked decisions
 
@@ -80,12 +80,7 @@ Actions `ci.yml` (lint / typecheck / test jobs).
 `format:check`, `test`/`test:coverage` all green; pre-commit blocks a bad commit in
 ~1s; typecheck proven to catch real errors.
 
-**Two items remain before this phase can be archived (per `todo/README.md` §
-Completing a phase):**
-1. **Exercise CI** — needs a git remote + first push. The repo has no remote yet and
-   nothing is committed. Workflow is authored and YAML-valid; expected green.
-2. **Distill** — write `docs/built/01-foundation.md`, then `mv` this folder to
-   `todo/archive/` and flip `ROADMAP.md` to done.
-
-Holding the archive ritual open until (1) is confirmed keeps the exit criteria
-honest. Nothing in Phase 02 is blocked by either item.
+**Closed.** Foundation committed (`3140f48`) and pushed to
+`github.com/jluterek/astro-slides`; CI verified green on `main` (run 28474099564).
+Distilled to [`docs/built/01-foundation.md`](../../docs/built/01-foundation.md); folder
+archived; `ROADMAP.md` flipped to done. Next: Phase 02 (parser).

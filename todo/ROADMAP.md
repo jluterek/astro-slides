@@ -4,7 +4,7 @@ The phase index. Always current. Update when a phase starts or ends.
 
 ## Active
 
-- [`01-foundation`](./01-foundation/README.md) — monorepo, tooling, CI baseline. (started 2026-06-30)
+- _None. Phase 01 closed; Phase 02 (parser) is next up._
 
 ## Planned
 
@@ -32,7 +32,9 @@ Phases are listed in dependency order. They can be re-sequenced if a later phase
 
 ## Done
 
-_None yet. Completed phases link to their distilled summary in `docs/built/`._
+| # | Phase | Distilled summary |
+| --- | --- | --- |
+| 01 | `01-foundation` | [`docs/built/01-foundation.md`](../docs/built/01-foundation.md) — monorepo, strict TS, Biome, Vitest, Husky, CI (closed 2026-06-30) |
 
 ---
 
