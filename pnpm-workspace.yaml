@@ -28,3 +28,4 @@ catalogs:
   # Non-UI runtime libraries used by parser / MCP / CLI (Phase 02+).
   prod:
     zod: ^4.0.0
+    yaml: ^2.0.0

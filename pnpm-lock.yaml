@@ -24,6 +24,13 @@ catalogs:
     vitest:
       specifier: ^3.0.0
       version: 3.2.6
+  prod:
+    yaml:
+      specifier: ^2.0.0
+      version: 2.9.0
+    zod:
+      specifier: ^4.0.0
+      version: 4.4.3
 
 importers:
 
@@ -56,9 +63,20 @@ importers:
 
   packages/mcp-server: {}
 
-  packages/parser: {}
+  packages/parser:
+    dependencies:
+      '@astro-slides/types':
+        specifier: workspace:*
+        version: link:../types
+      yaml:
+        specifier: catalog:prod
+        version: 2.9.0
 
-  packages/types: {}
+  packages/types:
+    dependencies:
+      zod:
+        specifier: catalog:prod
+        version: 4.4.3
 
 packages:
 
@@ -1072,6 +1090,9 @@ packages:
     engines: {node: '>= 14.6'}
     hasBin: true
 
+  zod@4.4.3:
+    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
+
 snapshots:
 
   '@ampproject/remapping@2.3.0':
@@ -1955,3 +1976,5 @@ snapshots:
       strip-ansi: 7.2.0
 
   yaml@2.9.0: {}
+
+  zod@4.4.3: {}

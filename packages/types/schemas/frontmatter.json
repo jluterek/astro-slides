@@ -1,0 +1,397 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "astro-slides frontmatter",
+  "description": "Generated from Zod schemas in @astro-slides/types. Do not edit by hand.",
+  "$defs": {
+    "headmatter": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "title": {
+          "default": "",
+          "type": "string"
+        },
+        "theme": {
+          "default": "starter",
+          "type": "string"
+        },
+        "class": {
+          "default": "",
+          "type": "string"
+        },
+        "aspectRatio": {
+          "default": "16:9",
+          "type": "string"
+        },
+        "canvasWidth": {
+          "default": 1920,
+          "type": "number"
+        },
+        "colorSchema": {
+          "default": "auto",
+          "type": "string",
+          "enum": [
+            "auto",
+            "light",
+            "dark",
+            "all"
+          ]
+        },
+        "transition": {
+          "default": "fade",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "duration": {
+                  "type": "number"
+                },
+                "easing": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "additionalProperties": {}
+            }
+          ]
+        },
+        "fonts": {
+          "type": "object",
+          "properties": {
+            "sans": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "serif": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "mono": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "weights": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "italic": {
+              "type": "boolean"
+            },
+            "provider": {
+              "type": "string"
+            },
+            "local": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            }
+          },
+          "additionalProperties": {}
+        },
+        "seoMeta": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "image": {
+              "type": "string"
+            },
+            "ogTitle": {
+              "type": "string"
+            },
+            "ogDescription": {
+              "type": "string"
+            },
+            "ogImage": {
+              "type": "string"
+            },
+            "twitterCard": {
+              "type": "string"
+            },
+            "twitterTitle": {
+              "type": "string"
+            },
+            "twitterDescription": {
+              "type": "string"
+            },
+            "twitterImage": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": {}
+        },
+        "drawings": {
+          "default": {
+            "persist": false
+          },
+          "type": "object",
+          "properties": {
+            "persist": {
+              "default": false,
+              "type": "boolean"
+            },
+            "presenterOnly": {
+              "type": "boolean"
+            },
+            "syncAll": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "persist"
+          ],
+          "additionalProperties": {}
+        },
+        "record": {
+          "default": false,
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "dev",
+                "prod"
+              ]
+            },
+            {
+              "type": "boolean",
+              "const": false
+            }
+          ]
+        },
+        "presenter": {
+          "default": true,
+          "type": "boolean"
+        },
+        "routerMode": {
+          "default": "history",
+          "type": "string",
+          "enum": [
+            "history",
+            "hash"
+          ]
+        },
+        "duration": {
+          "type": "string"
+        },
+        "addons": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "mdc": {
+          "default": false,
+          "type": "boolean"
+        },
+        "monaco": {
+          "default": false,
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "dev",
+                "prod"
+              ]
+            },
+            {
+              "type": "boolean",
+              "const": false
+            }
+          ]
+        },
+        "marp": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "title",
+        "theme",
+        "class",
+        "aspectRatio",
+        "canvasWidth",
+        "colorSchema",
+        "transition",
+        "drawings",
+        "record",
+        "presenter",
+        "routerMode",
+        "addons",
+        "mdc",
+        "monaco"
+      ],
+      "additionalProperties": {}
+    },
+    "frontmatter": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "layout": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        },
+        "transition": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "duration": {
+                  "type": "number"
+                },
+                "easing": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "additionalProperties": {}
+            }
+          ]
+        },
+        "clicks": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "clicksStart": {
+          "default": 0,
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "level": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "hide": {
+          "default": false,
+          "type": "boolean"
+        },
+        "hideInToc": {
+          "default": false,
+          "type": "boolean"
+        },
+        "src": {
+          "type": "string"
+        },
+        "routeAlias": {
+          "type": "string"
+        },
+        "zoom": {
+          "default": 1,
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "preload": {
+          "default": false,
+          "type": "boolean"
+        },
+        "exportAs": {
+          "default": "editable",
+          "type": "string",
+          "enum": [
+            "editable",
+            "image"
+          ]
+        },
+        "background": {
+          "type": "string"
+        },
+        "dragPos": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "clickAnimation": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "clicksStart",
+        "hide",
+        "hideInToc",
+        "zoom",
+        "preload",
+        "exportAs"
+      ],
+      "additionalProperties": {}
+    }
+  }
+}
