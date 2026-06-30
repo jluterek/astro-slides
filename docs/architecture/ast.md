@@ -1,54 +1,77 @@
 # Slide AST shape
 
-- **Status:** stub (designed in Phase 02)
+- **Status:** stable (finalized in Phase 02)
 - **Owner phase:** Phase 02
+- **Source of truth:** `packages/types/src/ast.ts` (+ `frontmatter.ts` for `Frontmatter`/`Headmatter`)
 
-The canonical TypeScript shape of the parsed deck. Every downstream consumer — runtime, presenter, exporter, MCP server — sees the same AST.
+The canonical shape of a parsed deck. Every downstream consumer — runtime, presenter,
+exporter, MCP server, AI tools — sees this same AST. Frontmatter types are inferred from
+Zod (`z.infer`); AST types are plain structural types (they describe parser output, not
+validated user input).
 
-## Scope
-
-This spec defines:
-- `Deck`, `Slide`, `Frontmatter`, `Headmatter`, `ClickStep`, `SlideSummary`, `DeckSummary`
-- Serialization back to source (for `astro-slides format` and MCP writes)
-- The `revision` hash used for HMR change detection
-
-## Sketch (lands in Phase 02)
+## Types
 
 ```ts
-export type Deck = {
-  source: string;           // entry path
-  headmatter: Headmatter;
-  slides: Slide[];
+type Deck = {
+  source: string;            // entry path the deck was parsed from
+  headmatter: Headmatter;    // deck-level config (first frontmatter block)
+  slides: Slide[];           // flattened, after `src:` imports are inlined
+  features: DetectedFeatures; // OR of every slide's detectedFeatures
 };
 
-export type Slide = {
-  no: number;                       // 1-based
+type Slide = {
+  index: number;             // 0-based position in the flattened deck
+  no: number;                // 1-based slide number (URLs, authors)
   frontmatter: Frontmatter;
-  body: MdxAst;                     // MDX AST root
-  notes: string | null;             // last HTML comment, markdown
-  clickSteps: ClickStep[];          // parse-time resolved (ADR-0008)
-  totalClicks: number;              // = max(clickSteps[i].at), or override
-  layout: string;                   // resolved layout name
-  detectedFeatures: DetectedFeatures; // katex, mermaid, monaco, etc.
-  revision: string;                 // content hash for HMR
+  source: string;            // file the content came from (after `src:` resolution)
+  content: string;           // transformed MDX/Markdown body (slot sugar lowered,
+                             //   snippets inlined, Marp directives stripped) = default slot
+  slots: SlideSlots;         // { default, [name] } from `::name::` sugar
+  notes: string | null;      // last HTML comment, as Markdown
+  clickSteps: ClickStep[];   // parse-time click plan (ADR-0008); populated in Phase 06
+  totalClicks: number;       // computed; frontmatter.clicks overrides; 0 until Phase 06
+  layout: string;            // resolved: `cover` for slide 1, else `default`, unless overridden
+  detectedFeatures: DetectedFeatures;
+  images: string[];          // image srcs for preloading
+  revision: string;          // FNV-1a content hash for HMR change detection
 };
 
-export type ClickStep = {
-  at: number;                       // 1-based step index
-  target?: string;                  // CSS selector or component ref
-  animation?: string;               // "fade" | "up" | "scale" | composable
-  rangeEnd?: number;                // for `<Click at="[2,5]">`
+type ClickStep = { at: number; target?: string; animation?: string; rangeEnd?: number };
+type SlideSlots = { default: string; [name: string]: string };
+type DetectedFeatures = {
+  katex: boolean; mermaid: boolean; plantuml: boolean;
+  monaco: boolean; twoslash: boolean; magicMove: boolean;
 };
+
+// Compact, render-free views for manifests / MCP / TOCs:
+type SlideSummary = { no; title: string | null; layout; notes; totalClicks; hide };
+type DeckSummary = { source; title; slideCount; totalClicks; slides: SlideSummary[] };
 ```
 
-Types live in `packages/types/src/ast.ts`. The parser package depends only on `@astro-slides/types`.
+## Resolved open questions
 
-## Open questions
+- **Is `body` a raw MDX AST or transformed source?** It is **transformed source** (a
+  string), exposed as `content` (+ structured `slots`). The Phase 02 parser is
+  deliberately free of any MDX compiler / Astro coupling — slot sugar, snippet inlining,
+  Marp normalization, and feature detection all happen at the source level. MDX → HAST
+  compilation is the Astro integration's job (Phase 03).
+- **How are `src:` imports represented?** **Inlined** — imported slides are flattened
+  into the parent's `slides` array in place, with the importing slide's frontmatter
+  overriding the first imported slide's. No reference node survives in the AST.
+- **Do we need a separate `RenderedSlide` type?** Not in the parser. Runtime-only
+  concerns (resolved layout component refs, theme bindings) layer on in Phase 04+; the
+  parser stops at `layout` as a *name*.
 
-- Should `body` be the raw MDX AST, or a transformed "slide AST" with our remark plugins already applied (slot sugar lowered, snippets inlined, etc.)?
-- How are imported slides (`src:` frontmatter) represented — inlined into the parent's `slides` array, or kept as a reference?
-- Do we need a separate `RenderedSlide` type for runtime that adds resolved layout component refs, theme bindings?
+## Constraints
+
+- **Per-collection remark plugins are not supported in Astro 5+** (research-confirmed).
+  The Astro integration (Phase 03) registers plugins globally and keys behavior off the
+  file path — the parser itself doesn't depend on this.
+- **MDX 3 AST conventions differ from MDX 1** — relevant only once Phase 03 compiles the
+  `content` string; the Phase 02 AST is MDX-version-agnostic.
+- **Click steps must be statically discoverable** (ADR-0008). `clickSteps`/`totalClicks`
+  are AST fields now; Phase 06 fills them.
 
 ## Change history
 
-- 2026-06-30 — stub (Phase 01 prep). Full spec in Phase 02.
+- 2026-06-30 — finalized in Phase 02. Types live in `packages/types/src/ast.ts`.

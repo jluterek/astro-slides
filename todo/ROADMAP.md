@@ -4,7 +4,7 @@ The phase index. Always current. Update when a phase starts or ends.
 
 ## Active
 
-- _None. Phase 01 closed; Phase 02 (parser) is next up._
+- [`02-parser`](./02-parser/README.md) — MDX/MD → slide AST. (started 2026-06-30)
 
 ## Planned
 
@@ -12,7 +12,6 @@ Phases are listed in dependency order. They can be re-sequenced if a later phase
 
 | # | Phase | One-liner |
 | --- | --- | --- |
-| 02 | [`02-parser`](./02-parser/README.md) | MDX/MD → slide AST: frontmatter, separators, slot sugar, snippet imports, slide imports |
 | 03 | [`03-astro-integration`](./03-astro-integration/README.md) | Astro integration, Vite plugins, virtual modules, content collections, per-slide routes |
 | 04 | [`04-runtime-core`](./04-runtime-core/README.md) | Slide rendering, navigation, URL state, keyboard/touch, the `past/present/future` state machine |
 | 05 | [`05-themes-and-layouts`](./05-themes-and-layouts/README.md) | Filesystem-layered themes, built-in layouts, CSS-custom-property tokens |

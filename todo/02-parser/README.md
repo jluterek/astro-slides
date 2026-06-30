@@ -1,7 +1,7 @@
 ---
 title: Phase 02 — Parser
-status: pending
-started:
+status: active
+started: 2026-06-30
 ended:
 ---
 
@@ -36,19 +36,25 @@ Implement the MDX/MD → slide AST pipeline. The parser is the load-bearing piec
 - **Marp directive parser:** hand-rolled (the grammar is small and stable; no third-party lib worth pulling in).
 - **Frontmatter schema:** authored as Zod v4 in `packages/types/src/frontmatter.ts`. JSON Schema and TS types both derive from Zod.
 
-## Tasks (planned)
+## Tasks
 
-- AST type design + `docs/architecture/ast.md` finalization (must be first — everything else depends)
-- Frontmatter Zod schemas + `docs/architecture/frontmatter.md` finalization
-- Markdown splitter (`---` aware of fences and HTML comments) — port the algorithm from Slidev's `packages/parser/src/core.ts`
-- Speaker-notes extraction (last HTML comment)
-- Slot-sugar remark plugin (`::name::` → JSX named slots)
-- Snippet-import remark plugin with region detection
-- Slide-import resolver (recursive with frontmatter merge)
-- Marp directive parser → AST normalization
-- Feature detection pass
-- File watcher integration (Phase 03 wires this)
-- JSON Schema build script
+Tracked inline (not as separate files) — the units are tightly coupled through the
+shared AST/schema, so one branch carries them. Checked off as completed:
+
+- [x] AST type design + `docs/architecture/ast.md` finalization (first — everything depends)
+- [x] Frontmatter Zod schemas + `docs/architecture/frontmatter.md` finalization
+- [x] Markdown splitter (`---` aware of fences and HTML comments)
+- [x] Speaker-notes extraction (last HTML comment)
+- [x] Slot sugar (`::name::`) lowering
+- [x] Snippet imports (`<<< @/file#region`) with region detection
+- [x] Slide-import resolver (`src:`, recursive with frontmatter merge)
+- [x] Marp directive parser → AST normalization
+- [x] Feature detection + image-usage extraction
+- [x] Public sync + async parse API
+- [x] Zod → JSON Schema build script (`@astro-slides/types/schemas/frontmatter.json`)
+- [x] Comprehensive unit tests
+
+File watcher integration is intentionally left to Phase 03 (needs the Astro/Vite glue).
 
 ## Parallel work
 

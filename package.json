@@ -12,7 +12,7 @@
     "pnpm": ">=10"
   },
   "scripts": {
-    "typecheck": "tsc -b --noEmit",
+    "typecheck": "tsc -b",
     "lint": "biome lint",
     "lint:fix": "biome lint --write",
     "format": "biome format --write",
@@ -21,6 +21,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "gen:schemas": "node packages/types/scripts/gen-schemas.ts",
     "prepare": "husky"
   },
   "lint-staged": {

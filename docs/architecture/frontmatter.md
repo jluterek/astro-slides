@@ -1,9 +1,10 @@
 # Frontmatter schema
 
-- **Status:** draft (full spec lands in Phase 02)
+- **Status:** stable (finalized in Phase 02)
 - **Owner phase:** Phase 02
+- **Source of truth:** `packages/types/src/frontmatter.ts` (Zod v4)
 
-The complete YAML frontmatter reference for both headmatter (first frontmatter block, deck-level) and per-slide frontmatter.
+The complete YAML frontmatter reference for both headmatter (first frontmatter block, deck-level) and per-slide frontmatter. The tables below are documentation; the authoritative schema is the Zod source, from which TS types (`z.infer`) and the editor JSON Schema (`z.toJSONSchema()`) are both derived. Objects are **loose** — unknown keys (layout-specific fields, unmodeled Marp/Slidev fields) pass through rather than being stripped, per ADR-0002.
 
 ## Headmatter (deck-level — first frontmatter block)
 
@@ -68,8 +69,20 @@ rightClass: pl-4
 
 ## Validation
 
-A JSON Schema is generated from these types via `ts-json-schema-generator` at build time and published at `node_modules/@astro-slides/types/schemas/frontmatter.json`. Editors (VS Code, Cursor) auto-load it via the `$schema` key in headmatter or via the `astro-slides` VS Code extension (post-v1).
+The Zod schemas in `packages/types/src/frontmatter.ts` are canonical. From them:
+
+- **TS types** are inferred via `z.infer` (`Headmatter`, `Frontmatter`).
+- **The editor JSON Schema** is generated via Zod 4's built-in `z.toJSONSchema()`
+  (`pnpm gen:schemas`) and published at
+  `@astro-slides/types/schemas/frontmatter.json` (`$defs.headmatter`,
+  `$defs.frontmatter`). Editors auto-load it via a `$schema` key or the (post-v1)
+  VS Code extension.
+
+The parser runs raw YAML through `HeadmatterSchema.parse` (deck-level) and
+`FrontmatterSchema.parse` (per-slide), which applies the defaults documented above.
+The first frontmatter block doubles as both headmatter and slide 1's frontmatter — it
+is run through both schemas.
 
 ## Change history
 
-- 2026-06-30 — initial spec (Phase 01 prep). Schema lands in Phase 02.
+- 2026-06-30 — finalized in Phase 02. Canonical Zod source in `packages/types/src/frontmatter.ts`; JSON Schema via `z.toJSONSchema()`.
