@@ -69,10 +69,10 @@ choices made during the phase, each recorded in its archived task file:
 - **Pushing workflow files needs the `workflow` OAuth scope.** The first `git push` was
   rejected for `.github/workflows/ci.yml`; `gh`'s token lacked `workflow`. SSH bypasses
   the scope but no key was loaded in-env, so the fix was `gh auth refresh -s workflow`.
-- **GitHub Actions Node 20 deprecation warning.** `actions/checkout@v4`,
-  `setup-node@v4`, `upload-artifact@v4`, `pnpm/action-setup@v4` still ship a Node 20
-  runtime; the runner force-runs them on Node 24 and warns. Informational — bump to
-  the actions' Node 24 majors when released. (See *Loose ends*.)
+- **GitHub Actions Node 20 deprecation warning.** The originally-pinned `@v4` actions
+  shipped a Node 20 runtime and warned. **Resolved** post-close by bumping to the Node
+  24 majors (checkout v7, setup-node v6, upload-artifact v7, pnpm/action-setup v6) —
+  CI re-verified green (run 28482121318), warning gone.
 - **esbuild's postinstall build script is blocked by pnpm's default** — Vitest runs fine
   anyway, so it was left unapproved.
 
@@ -82,8 +82,6 @@ choices made during the phase, each recorded in its archived task file:
 - **`@astro-slides/cli` `bin`** — not declared until there's a built entry to point at.
 - **No inter-package `references` / `exports` maps yet** — added when the first real
   cross-package import lands (Phase 02+ / first `tsup` build).
-- **GitHub Actions Node 20 deprecation** — pinned actions still target Node 20; refresh
-  to Node 24 majors when published. No functional impact today.
 - **Branch protection** — documented in the archived task 06 outcome; apply in repo
   Settings (require the three checks before merge).
 - **jsdom / `test.projects`** — deferred until the client package needs a DOM environment.
