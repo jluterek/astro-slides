@@ -47,4 +47,5 @@ test-results/
 # Reference applications
 # Git clones of upstream projects studied during design. Not committed.
 # Re-clone from upstream if needed; see docs/reference-applications/00-overview.md for the list.
-reference-applications/
+# Leading slash anchors to repo root so docs/reference-applications/ is NOT excluded.
+/reference-applications/
