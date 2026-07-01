@@ -1111,6 +1111,13 @@ const exportCommand = defineCommand({
 // type-stripped bin can `import()` it at runtime (the parser is inlined — it can't be
 // imported as workspace TS, the same wall the export pipeline hit). We hand the server our
 // own bin path so its export/capture tools re-spawn the tested Playwright pipeline.
+//
+// The import is loaded through a non-literal specifier + `@vite-ignore` so Vitest (which
+// transforms this file when testing the export helpers) doesn't try to resolve the bundle's
+// `dist/` at test time — it's only needed when the command actually runs. `typeof import`
+// keeps full typing (type-erased, so it never reaches Vite).
+type McpServerModule = typeof import("@astro-slides/mcp-server");
+const MCP_SERVER_PACKAGE = "@astro-slides/mcp-server";
 const mcpServerCommand = defineCommand({
   meta: { name: "mcp-server", description: "Run the MCP server (stdio or Streamable HTTP)." },
   args: {
@@ -1124,7 +1131,9 @@ const mcpServerCommand = defineCommand({
     "sync-token": { type: "string", description: "Token for the sync gateway." },
   },
   async run({ args }) {
-    const { runMcpServer } = await import("@astro-slides/mcp-server");
+    const { runMcpServer } = (await import(
+      /* @vite-ignore */ MCP_SERVER_PACKAGE
+    )) as McpServerModule;
     const transport = args.transport === "http" ? "http" : "stdio";
     const token = args.token ?? process.env.ASTRO_SLIDES_MCP_TOKEN;
     const handle = await runMcpServer({
