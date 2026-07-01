@@ -79,6 +79,16 @@ describe("initDeck", () => {
     expect(root.querySelector(".as-status")?.textContent).toBe("Slide 2 of 3: Body");
   });
 
+  it("opens the presenter view for the current slide with the P key", () => {
+    const root = buildDeck(1);
+    handle = initDeck(root);
+    const open = vi.spyOn(window, "open").mockReturnValue(null);
+    press("ArrowRight"); // -> slide 2
+    press("p", "KeyP");
+    expect(open).toHaveBeenCalledWith("/presenter/talk/2", "_blank", "noopener");
+    open.mockRestore();
+  });
+
   it("toggles overview with the O key", () => {
     const root = buildDeck(1);
     handle = initDeck(root);

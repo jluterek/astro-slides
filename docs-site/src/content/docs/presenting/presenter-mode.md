@@ -23,6 +23,12 @@ spot at:
 /presenter/mydeck/4
 ```
 
+:::tip[Launch it from the deck]
+From any slide, press **`P`** (or open the keyboard-help overlay with `?` and click
+**Open presenter view**) to open the presenter view for the current deck at the current
+slide in a new tab — no need to type the URL.
+:::
+
 A typical setup:
 
 1. Open the deck normally (`/mydeck/1`) and drag that window onto the **projector /

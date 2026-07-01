@@ -1,24 +1,119 @@
 ---
+import { configs } from "@astro-slides/configs";
 import { slides } from "@astro-slides/slides";
 
 /**
- * SPA entry (Phase 12). Redirects `/` to the first deck's first slide. Rendered as a
- * static page (meta-refresh + JS) so it works on any static host, and copied to
- * `404.html` by the `astro:build:done` hook so refreshed deep links resolve too.
+ * SPA entry (Phase 12) + deck dashboard. With a single deck this meta-refresh **redirects**
+ * `/` to its first slide (unchanged behavior); with multiple decks it renders a **dashboard**
+ * listing every deck with links to open, present, and print it. Rendered statically so it works
+ * on any host, and copied to `404.html` by the `astro:build:done` hook so unknown paths land
+ * here too. Base-path aware via `import.meta.env.BASE_URL`.
  */
-const first = [...slides].sort((a, b) => a.no - b.no)[0];
-const target = first ? `/${encodeURIComponent(first.deck)}/${first.no}` : "/";
+const base = import.meta.env.BASE_URL;
+
+const ordered = [...slides].sort((a, b) => a.no - b.no);
+const byDeck = new Map<string, typeof slides>();
+for (const s of ordered) {
+  const list = byDeck.get(s.deck) ?? [];
+  list.push(s);
+  byDeck.set(s.deck, list);
+}
+
+const decks = [...byDeck.entries()].map(([name, list]) => {
+  const cfg = (configs[name] ?? {}) as { title?: string; theme?: string };
+  const title = cfg.title ?? list.find((s) => s.title)?.title ?? name;
+  return { name, title, count: list.length, theme: cfg.theme ?? "starter" };
+});
+
+const single = decks.length <= 1;
+const first = ordered[0];
+const target = first ? `${base}${encodeURIComponent(first.deck)}/${first.no}` : base;
+const deckUrl = (deck: string): string => `${base}${encodeURIComponent(deck)}`;
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="refresh" content={`0; url=${target}`} />
-    <link rel="canonical" href={target} />
-    <title>Redirecting…</title>
-    <script is:inline set:html={`location.replace(${JSON.stringify(target)})`}></script>
-  </head>
-  <body>
-    <p>Redirecting to <a href={target}>the deck</a>…</p>
-  </body>
-</html>
+{
+  single ? (
+    <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="refresh" content={`0; url=${target}`} />
+        <link rel="canonical" href={target} />
+        <title>Redirecting…</title>
+        <script is:inline set:html={`location.replace(${JSON.stringify(target)})`} />
+      </head>
+      <body>
+        <p>
+          Redirecting to <a href={target}>the deck</a>…
+        </p>
+      </body>
+    </html>
+  ) : (
+    <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Decks</title>
+        <style
+          is:inline
+          set:html={`
+          :root { color-scheme: dark; }
+          * { box-sizing: border-box; }
+          body {
+            margin: 0; min-height: 100vh;
+            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+            color: oklch(95% 0.01 265);
+            background: oklch(17% 0.035 275)
+              radial-gradient(120% 90% at 15% 0%, oklch(72% 0.17 285 / 0.18), transparent 55%) fixed;
+          }
+          .wrap { max-width: 60rem; margin: 0 auto; padding: 4rem 1.5rem; }
+          h1 { font-size: 2rem; margin: 0 0 0.25rem; letter-spacing: -0.02em; }
+          .sub { color: oklch(70% 0.03 270); margin: 0 0 2.5rem; }
+          .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); }
+          .card {
+            background: oklch(24% 0.04 275); border: 1px solid oklch(42% 0.05 280);
+            border-radius: 14px; padding: 1.25rem 1.35rem;
+          }
+          .card h2 { font-size: 1.2rem; margin: 0 0 0.35rem; }
+          .card h2 a { color: inherit; text-decoration: none; }
+          .card h2 a:hover { text-decoration: underline; }
+          .meta { color: oklch(70% 0.03 270); font-size: 0.85rem; margin: 0 0 1rem; }
+          .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+          .actions a {
+            font-size: 0.85rem; text-decoration: none; padding: 0.35rem 0.7rem; border-radius: 8px;
+            border: 1px solid oklch(42% 0.05 280); color: oklch(95% 0.01 265);
+          }
+          .actions a.primary { background: oklch(72% 0.17 285); border-color: transparent; color: oklch(16% 0.03 275); }
+          .actions a:hover { filter: brightness(1.1); }
+        `}
+        />
+      </head>
+      <body>
+        <main class="wrap">
+          <h1>Decks</h1>
+          <p class="sub">
+            {decks.length} decks in this project. Pick one to open, present, or print.
+          </p>
+          <div class="grid">
+            {decks.map((d) => (
+              <article class="card">
+                <h2>
+                  <a href={`${deckUrl(d.name)}/1`}>{d.title}</a>
+                </h2>
+                <p class="meta">{`${d.count} ${d.count === 1 ? "slide" : "slides"} · ${d.theme}`}</p>
+                <div class="actions">
+                  <a class="primary" href={`${deckUrl(d.name)}/1`}>
+                    Open
+                  </a>
+                  <a href={`${base}presenter/${encodeURIComponent(d.name)}/1`} target="_blank" rel="noopener">
+                    Present
+                  </a>
+                  <a href={`${base}print/${encodeURIComponent(d.name)}`}>Print</a>
+                </div>
+              </article>
+            ))}
+          </div>
+        </main>
+      </body>
+    </html>
+  )
+}

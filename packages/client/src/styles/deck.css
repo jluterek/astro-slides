@@ -170,6 +170,20 @@
 .as-help-panel dd {
   margin: 0;
 }
+.as-help-present {
+  margin-top: 1.25rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font: inherit;
+  color: var(--slide-accent-fg, #fff);
+  background: var(--slide-accent, #4f46e5);
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.as-help-present:hover {
+  filter: brightness(1.08);
+}
 
 /* Blackout overlay (Phase 10) — synced across windows via shared state. */
 .as-blackout {
