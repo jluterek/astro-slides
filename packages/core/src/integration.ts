@@ -90,7 +90,13 @@ export function astroSlides(options: AstroSlidesOptions = {}): AstroIntegration 
           entrypoint: fileURLToPath(new URL("./routes/slide.astro", import.meta.url)),
           prerender: true,
         });
-        logger.info("Registered virtual modules and the /[deck]/[slide] route.");
+        // Presenter view (Phase 10) — a hydrated React island at /presenter/<deck>/<n>.
+        injectRoute({
+          pattern: "/presenter/[deck]/[slide]",
+          entrypoint: fileURLToPath(new URL("./routes/presenter.astro", import.meta.url)),
+          prerender: true,
+        });
+        logger.info("Registered virtual modules and the deck + presenter routes.");
       },
     },
   };

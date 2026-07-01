@@ -23,10 +23,13 @@
   "dependencies": {
     "@astro-slides/types": "workspace:*",
     "@shikijs/magic-move": "catalog:frontend",
+    "cmdk": "catalog:frontend",
     "fitty": "catalog:frontend",
     "lz-string": "catalog:frontend",
     "mermaid": "catalog:frontend",
     "nanostores": "catalog:frontend",
+    "react-hotkeys-hook": "catalog:frontend",
+    "react-resizable-panels": "catalog:frontend",
     "shiki": "catalog:frontend",
     "tinykeys": "catalog:frontend"
   },

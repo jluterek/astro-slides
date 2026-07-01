@@ -1,64 +1,72 @@
 # Sync state
 
-- **Status:** stub (designed in Phase 10)
+- **Status:** implemented (Phase 10)
 - **Owner phase:** Phase 10
+- **Code:** `packages/client/src/sync/` (`types.ts`, `channel.ts`, `store.ts`, `time.ts`)
 
-The shape of state shared across presenter window, audience window, and connected mobile remotes — plus the sync protocol layered on `BroadcastChannel` (same-origin) and WebSocket (Phase 11, cross-origin/device).
+The state shared across the presenter window, audience window, and (Phase 11) mobile remotes, plus the sync protocol layered on `BroadcastChannel` (same-origin) and WebSocket (Phase 11, cross-origin/device).
 
-## Scope
+## `SharedState` (as shipped)
 
-- The `SharedState` shape
-- Reducer-style updates (action types)
-- Channel naming (`astro-slides:<deck-id>`)
-- Conflict resolution (last-write-wins for v1; deferred CRDT)
-- How drawings, timer, and recording state participate
-
-## Sketch (lands in Phase 10)
+Phase 10 syncs the small, always-present slice; drawings and recording arrive in Phase 11 as additional action types on the same channel.
 
 ```ts
-export type SharedState = {
-  no: number;                 // current slide
-  step: number;               // current click index within slide
-  timer: {
-    mode: "stopwatch" | "countdown" | "off";
-    startedAt: number | null; // epoch ms
-    pausedAt: number | null;
-    durationMs: number | null;
-  };
+export interface TimerState {
+  mode: "stopwatch" | "countdown" | "off";
+  startedAt: number | null;    // epoch ms of the current run (null = paused/stopped)
+  elapsedBeforePause: number;  // ms accumulated across previous runs
+  durationMs: number | null;   // countdown length
+}
+
+export interface SharedState {
+  no: number;      // current slide
+  step: number;    // current click index within the slide
   blackout: boolean;
-  drawings: DrawingFrame[];   // per slide
-  recording: { active: boolean; kind: "screen" | "camera" | "both" } | null;
-  lastUpdate: { source: ClientId; at: number };
-};
+  timer: TimerState;
+}
 
 export type SyncAction =
-  | { type: "goto"; no: number; step?: number }
-  | { type: "step"; step: number }
-  | { type: "timer/start" | "timer/pause" | "timer/reset" }
-  | { type: "blackout/toggle" }
-  | { type: "drawing/append"; no: number; svgPath: string }
-  | { type: "drawing/clear"; no: number }
-  | { type: "recording/start"; kind: "screen" | "camera" | "both" }
-  | { type: "recording/stop" };
+  | { type: "goto"; no: number; step: number }
+  | { type: "blackout"; on: boolean }
+  | { type: "timer/start"; at: number }        // `at` = epoch ms (keeps the reducer pure)
+  | { type: "timer/pause"; at: number }
+  | { type: "timer/reset" }
+  | { type: "timer/mode"; mode: TimerMode; durationMs: number | null }
+  | { type: "hello" }                          // join handshake: request a snapshot
+  | { type: "state"; state: SharedState };     // snapshot reply
 ```
+
+`reduce(state, action)` is a pure function (unit-tested). Local `dispatch` reduces **and** broadcasts; received actions reduce **without** re-broadcasting, so there is no echo loop.
+
+## Timer drift
+
+The timer syncs `startedAt` (epoch ms) and `elapsedBeforePause`, never a computed elapsed value. Every window recomputes `elapsedMs = elapsedBeforePause + (now - startedAt)` locally, so clocks can't drift apart. `displayMs` derives the countdown remainder from the same fields.
 
 ## Channel naming
 
-Same-origin: `BroadcastChannel("astro-slides:<deck-id>")` where `<deck-id>` is the deck's slug. Multi-deck pages avoid collisions because the channel key is per-deck.
+Same-origin: `BroadcastChannel("astro-slides:<deck-id>")`, per-deck so multi-deck pages don't collide. The presenter's **next-slide preview** uses a separate `astro-slides:<deck-id>:preview` channel so it can be driven to the *next* click independently of the main window.
 
-Cross-origin (Phase 11): WebSocket gateway at `/__astro-slides/sync?deck=<deck-id>&token=<token>` fans out actions between BroadcastChannel and the WebSocket.
+Cross-origin (Phase 11): a WebSocket gateway fans actions between the BroadcastChannel and remote clients.
+
+## Join / reconnect
+
+On creation a window posts `hello`; any publishing peer replies with a `state` snapshot, so a freshly-opened or reloaded window adopts the current slide/step/timer/blackout. Follow-only windows (the preview iframe) set `publish: false` and never answer `hello`.
+
+## Wiring
+
+- **Runtime** (`runtime.ts`): each `.as-deck` creates a `SyncStore`. Local navigation publishes `goto`; remote `goto` is applied via `DeckController.applyRemote` (URL replace, no history entry). `blackout` toggles a full-screen overlay. `?as-preview` puts the window in follow-only mode on the `preview` channel.
+- **Presenter** (`PresenterApp.tsx`): owns a main store (drives the audience + current iframe) and a preview store (drives the next iframe with `nextState(current)`), plus the timer/blackout controls.
 
 ## Conflict resolution
 
-- Last-write-wins. The `lastUpdate.source` and `lastUpdate.at` fields exist for debugging, not arbitration.
-- Drawing appends are commutative (additive); clear is a destructive event with timestamp.
-- A future CRDT-based collaborative-edit mode can slot in by replacing the channel layer — see ADR-0010.
+Last-write-wins; the small state and human-paced actions make arbitration unnecessary. A future CRDT collaborative-edit mode can replace the channel layer — see ADR-0010.
 
-## Open questions
+## Deferred to Phase 11
 
-- Whether the timer's `startedAt` is per-client (local) or per-deck (synced). Probably synced.
-- How a late-joining mobile remote bootstraps state (snapshot on first message?).
+- Drawing frames (`drawing/append`, `drawing/clear`) and recording state on the same channel.
+- The WebSocket transport + mobile remote bootstrap.
 
 ## Change history
 
-- 2026-06-30 — stub (Phase 01 prep). Full spec in Phase 10.
+- 2026-06-30 — stub (Phase 01 prep).
+- 2026-07-01 — implemented in Phase 10: `SharedState` (slide/step/blackout/timer), pure reducer, BroadcastChannel transport, hello/state handshake, preview channel.

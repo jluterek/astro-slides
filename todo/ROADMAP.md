@@ -4,7 +4,7 @@ The phase index. Always current. Update when a phase starts or ends.
 
 ## Active
 
-- _None. Phase 09 closed (KaTeX math + Mermaid + PlantUML); Phase 10 (presenter mode) is next up._
+- _None. Phase 10 closed (presenter mode + BroadcastChannel sync); Phase 11 (drawing and recording) is next up._
 
 ## Planned
 
@@ -12,7 +12,6 @@ Phases are listed in dependency order. They can be re-sequenced if a later phase
 
 | # | Phase | One-liner |
 | --- | --- | --- |
-| 10 | [`10-presenter-mode`](./10-presenter-mode/README.md) | Speaker view, BroadcastChannel sync, timer, notes, next-slide preview |
 | 11 | [`11-drawing-and-recording`](./11-drawing-and-recording/README.md) | Drauu drawing overlay, RecordRTC capture, mobile remote (QR + WebSocket) |
 | 12 | [`12-export-web`](./12-export-web/README.md) | PDF, PNG, standalone HTML, SPA build, per-slide embeds |
 | 13 | [`13-export-pptx`](./13-export-pptx/README.md) | Real editable PPTX via PptxGenJS, image-rasterized fallback per slide |
@@ -35,6 +34,7 @@ Phases are listed in dependency order. They can be re-sequenced if a later phase
 | 07 | `07-transitions` | [`docs/built/07-transitions.md`](../docs/built/07-transitions.md) — CSS slide transitions + `<Morph>` object continuity; same-document VTA (single-page runtime) with reveal.js-style FLIP fallback (closed 2026-07-01) |
 | 08 | `08-code-rendering` | [`docs/built/08-code-rendering.md`](../docs/built/08-code-rendering.md) — build-time Shiki highlighting (dual themes), static + click-stepped line highlight, `<<<` snippet imports, Twoslash, Magic Move (closed 2026-07-01) |
 | 09 | `09-math-and-diagrams` | [`docs/built/09-math-and-diagrams.md`](../docs/built/09-math-and-diagrams.md) — build-time KaTeX (inline/block/stepped via remark-math), lazy Shadow-DOM Mermaid, PlantUML server images; conditional inclusion (closed 2026-07-01) |
+| 10 | `10-presenter-mode` | [`docs/built/10-presenter-mode.md`](../docs/built/10-presenter-mode.md) — presenter view (3 panes, next-preview, notes, timer), BroadcastChannel sync, blackout, cmdk palette (closed 2026-07-01) |
 
 ---
 

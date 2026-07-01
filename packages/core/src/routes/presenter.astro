@@ -1,0 +1,52 @@
+---
+import PresenterApp from "@astro-slides/client/components/presenter/PresenterApp.tsx";
+import { parseTimeString } from "@astro-slides/client";
+import { configs } from "@astro-slides/configs";
+import { slides } from "@astro-slides/slides";
+import { renderNotes } from "../notes.js";
+import "@astro-slides/client/styles/presenter.css";
+
+/**
+ * Presenter route (Phase 10). Renders the speaker view as a hydrated React island. It
+ * gets per-slide metadata (title, rendered notes, click totals) and drives the audience
+ * window + preview iframe over BroadcastChannel. The actual slide visuals are shown via
+ * iframes pointed at the normal `/[deck]/[slide]` route, so all rendering is reused.
+ */
+export function getStaticPaths() {
+  return slides.map((slide) => ({
+    params: { deck: slide.deck, slide: String(slide.no) },
+    props: { deck: slide.deck, start: slide.no },
+  }));
+}
+
+const { deck, start } = Astro.props;
+const config = configs[deck] ?? {};
+const durationMs = parseTimeString(config.duration ?? null);
+
+const deckSlides = slides
+  .filter((s) => s.deck === deck)
+  .sort((a, b) => a.no - b.no)
+  .map((s) => ({
+    no: s.no,
+    title: s.title ?? null,
+    notesHtml: renderNotes(s.notes),
+    totalClicks: s.totalClicks,
+  }));
+---
+
+<html lang="en" data-color-scheme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Presenter — {deck}</title>
+  </head>
+  <body>
+    <PresenterApp
+      client:load
+      deckId={deck}
+      slides={deckSlides}
+      start={start}
+      durationMs={durationMs}
+    />
+  </body>
+</html>
