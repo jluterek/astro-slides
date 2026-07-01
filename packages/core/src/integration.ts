@@ -1,6 +1,9 @@
 import { fileURLToPath } from "node:url";
+import mdx from "@astrojs/mdx";
+import react from "@astrojs/react";
 import type { AstroIntegration } from "astro";
 import Icons from "unplugin-icons/vite";
+import { remarkClicks } from "./remark-clicks.js";
 import { astroSlidesVitePlugin, type VitePluginOptions } from "./vite-plugin.js";
 
 export interface AstroSlidesOptions {
@@ -24,6 +27,9 @@ export function astroSlides(options: AstroSlidesOptions = {}): AstroIntegration 
         const pluginOptions: VitePluginOptions = { root };
         if (options.decks) pluginOptions.decks = options.decks;
         updateConfig({
+          // Slides compile as MDX (components in scope) with React islands. The
+          // remark-clicks plugin resolves click steps at compile time (ADR-0008).
+          integrations: [react(), mdx({ remarkPlugins: [remarkClicks] })],
           vite: {
             plugins: [
               astroSlidesVitePlugin(pluginOptions),

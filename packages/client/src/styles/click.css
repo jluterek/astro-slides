@@ -1,0 +1,46 @@
+/*
+ * Click-step reveal animations. Elements carry `[data-click]` (a step index) and,
+ * for ranges, `[data-click-to]`. The runtime toggles `.as-click-shown` when the
+ * current step reaches the element's step. Default reveal is a fade; directional
+ * modifiers add a slide/scale via `as-anim-*` classes the components emit.
+ */
+
+.as-slide [data-click] {
+  opacity: 0;
+  transition:
+    opacity var(--slide-transition-duration, 0.3s) ease,
+    transform var(--slide-transition-duration, 0.3s) ease;
+}
+.as-slide [data-click].as-click-shown {
+  opacity: 1;
+  transform: none;
+}
+
+/* Directional enter offsets (applied while hidden). */
+.as-slide .as-anim-up:not(.as-click-shown) {
+  transform: translateY(0.6em);
+}
+.as-slide .as-anim-down:not(.as-click-shown) {
+  transform: translateY(-0.6em);
+}
+.as-slide .as-anim-left:not(.as-click-shown) {
+  transform: translateX(0.6em);
+}
+.as-slide .as-anim-right:not(.as-click-shown) {
+  transform: translateX(-0.6em);
+}
+.as-slide .as-anim-scale:not(.as-click-shown) {
+  transform: scale(0.85);
+}
+
+/* In overview mode every step is shown so thumbnails are complete. */
+.as-deck.as-overview .as-slide [data-click] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .as-slide [data-click] {
+    transition: none;
+  }
+}

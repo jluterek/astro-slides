@@ -23,6 +23,8 @@ catalogs:
     vite: ^6.0.0
     jsdom: ^25.0.0
     '@playwright/test': ^1.48.0
+    '@types/react': ^19.0.0
+    '@types/react-dom': ^19.0.0
 
   # Browser / Astro-facing runtime dependencies (Phase 03+).
   frontend:
@@ -32,6 +34,10 @@ catalogs:
     fitty: ^2.4.0
     unplugin-icons: ^0.21.0
     '@iconify-json/carbon': ^1.2.0
+    '@astrojs/mdx': ^4.3.0
+    '@astrojs/react': ^4.3.0
+    react: ^19.0.0
+    react-dom: ^19.0.0
 
   # Non-UI runtime libraries used by parser / MCP / CLI (Phase 02+).
   prod:
@@ -44,3 +50,4 @@ catalogs:
     remark-rehype: ^11.0.0
     remark-gfm: ^4.0.0
     rehype-stringify: ^10.0.0
+    unist-util-visit: ^5.0.0

@@ -1,7 +1,7 @@
 ---
 import { fmString, type LayoutProps } from "../src/layout-types.ts";
 type Props = LayoutProps;
-const { slots, frontmatter, title } = Astro.props;
+const { frontmatter, title } = Astro.props;
 const url = fmString(frontmatter, "url");
 ---
 
@@ -10,6 +10,6 @@ const url = fmString(frontmatter, "url");
     <div class="layout-media">
       {url && <iframe src={url} title={title ?? "Embedded content"} loading="lazy" />}
     </div>
-    <div class="layout-col" set:html={slots.default ?? ""}></div>
+    <div class="layout-col"><slot /></div>
   </div>
 </div>

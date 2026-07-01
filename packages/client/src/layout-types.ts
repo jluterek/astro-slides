@@ -1,14 +1,13 @@
 /**
  * The prop contract every built-in layout `.astro` receives from the deck route.
- * Content arrives as pre-rendered HTML (the default slot in `html`; all named
- * slots in `slots`) which layouts inject via `set:html`.
+ * Slide content arrives as Astro **slots** (the compiled MDX): the default slot for
+ * body content, plus named slots (`right`, `left`) for multi-column layouts. Media
+ * layouts read the image/iframe URL from `frontmatter`.
  */
 export interface LayoutProps {
   no: number;
   title: string | null;
   layout: string;
-  html: string;
-  slots: Record<string, string>;
   frontmatter: Record<string, unknown>;
 }
 

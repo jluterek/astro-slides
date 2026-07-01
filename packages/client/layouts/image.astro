@@ -1,12 +1,12 @@
 ---
 import { fmString, type LayoutProps } from "../src/layout-types.ts";
 type Props = LayoutProps;
-const { slots, frontmatter, title } = Astro.props;
+const { frontmatter, title } = Astro.props;
 const image = fmString(frontmatter, "image");
-const caption = slots.default ?? "";
+const hasCaption = Astro.slots.has("default");
 ---
 
-<div class:list={["slide-layout", "layout-image", !caption && "is-fullbleed"]}>
+<div class:list={["slide-layout", "layout-image", !hasCaption && "is-fullbleed"]}>
   <div class="layout-media">{image && <img src={image} alt={title ?? ""} />}</div>
-  {caption && <div class="layout-caption" set:html={caption} />}
+  {hasCaption && <div class="layout-caption"><slot /></div>}
 </div>

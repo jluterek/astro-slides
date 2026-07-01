@@ -1,4 +1,15 @@
 ---
+import Click from "@astro-slides/client/components/Click.tsx";
+import After from "@astro-slides/client/components/After.tsx";
+import Clicks from "@astro-slides/client/components/Clicks.tsx";
+import FlexBlock from "@astro-slides/client/components/FlexBlock.astro";
+import FitText from "@astro-slides/client/components/FitText.astro";
+import Grid from "@astro-slides/client/components/Grid.astro";
+import HStack from "@astro-slides/client/components/HStack.astro";
+import Morph from "@astro-slides/client/components/Morph.astro";
+import RenderWhen from "@astro-slides/client/components/RenderWhen.astro";
+import Stack from "@astro-slides/client/components/Stack.astro";
+import Wrap from "@astro-slides/client/components/Wrap.astro";
 import { configs } from "@astro-slides/configs";
 import { layouts } from "@astro-slides/layouts";
 import { slides } from "@astro-slides/slides";
@@ -7,13 +18,28 @@ import "@astro-slides/client/styles/deck.css";
 import "@astro-slides/client/styles/base.css";
 import "@astro-slides/client/styles/layouts.css";
 import "@astro-slides/client/styles/primitives.css";
+import "@astro-slides/client/styles/click.css";
 
 /**
- * Deck route. Renders the whole deck as a `<section>` stack (current = `present`),
- * each slide wrapped in its resolved layout component. Layouts come from the
- * `@astro-slides/layouts` virtual module (user/theme/built-in layered). The runtime
- * (Phase 04) drives navigation client-side.
+ * Deck route. Renders the whole deck as a `<section>` stack (current = `present`).
+ * Each slide's content is a compiled MDX component per slot; components (`<Click>`,
+ * layout primitives, icons) are injected via the MDX `components` prop. The runtime
+ * (Phase 04) drives navigation + click stepping client-side.
  */
+const COMPONENTS = {
+  Click,
+  After,
+  Clicks,
+  Stack,
+  HStack,
+  Grid,
+  Wrap,
+  FlexBlock,
+  FitText,
+  Morph,
+  RenderWhen,
+};
+
 export function getStaticPaths() {
   const byDeck = new Map<string, typeof slides>();
   for (const s of slides) {
@@ -34,16 +60,14 @@ const [aw, ah] = String(config.aspectRatio ?? "16:9").split(":").map(Number);
 const designWidth = Number(config.canvasWidth ?? 1920);
 const designHeight = Math.round(designWidth * (aw && ah ? ah / aw : 9 / 16));
 
-const scheme = config.colorSchema === "light" || config.colorSchema === "dark"
-  ? config.colorSchema
-  : undefined;
+const scheme =
+  config.colorSchema === "light" || config.colorSchema === "dark" ? config.colorSchema : undefined;
 
 const stateClass = (no: number): string =>
   no < current.no ? "past" : no > current.no ? "future" : "present";
 
-// A background frontmatter value that looks like a path/URL becomes a cover image;
-// anything else is treated as a CSS color/gradient.
-const isImageRef = (v: string): boolean => /^(https?:|\/|\.|data:)/.test(v) || /\.(png|jpe?g|gif|webp|avif|svg)$/i.test(v);
+const isImageRef = (v: string): boolean =>
+  /^(https?:|\/|\.|data:)/.test(v) || /\.(png|jpe?g|gif|webp|avif|svg)$/i.test(v);
 const backgroundStyle = (v: string | null): string | undefined => {
   if (!v) return undefined;
   return isImageRef(v) ? `background-image:url('${v}')` : `background:${v}`;
@@ -71,6 +95,9 @@ const fallbackLayout = layouts.default ?? layouts["404"];
         {
           deckSlides.map((s) => {
             const Layout = layouts[s.layout] ?? fallbackLayout;
+            const Default = s.slots.default;
+            const Left = s.slots.left;
+            const Right = s.slots.right;
             return (
               <section
                 class:list={["as-slide", stateClass(s.no), s.class]}
@@ -81,14 +108,11 @@ const fallbackLayout = layouts.default ?? layouts["404"];
                 data-background={s.background ?? undefined}
                 style={backgroundStyle(s.background)}
               >
-                <Layout
-                  no={s.no}
-                  title={s.title}
-                  layout={s.layout}
-                  html={s.html}
-                  slots={s.slots}
-                  frontmatter={s.frontmatter}
-                />
+                <Layout no={s.no} title={s.title} layout={s.layout} frontmatter={s.frontmatter}>
+                  {Default && <Default components={COMPONENTS} />}
+                  {Left && <Left slot="left" components={COMPONENTS} />}
+                  {Right && <Right slot="right" components={COMPONENTS} />}
+                </Layout>
               </section>
             );
           })

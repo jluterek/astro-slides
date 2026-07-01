@@ -49,3 +49,6 @@ test-results/
 # Re-clone from upstream if needed; see docs/reference-applications/00-overview.md for the list.
 # Leading slash anchors to repo root so docs/reference-applications/ is NOT excluded.
 /reference-applications/
+
+# astro-slides generated per-slide MDX modules
+.astro-slides/

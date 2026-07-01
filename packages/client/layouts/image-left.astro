@@ -1,13 +1,13 @@
 ---
 import { fmString, type LayoutProps } from "../src/layout-types.ts";
 type Props = LayoutProps;
-const { slots, frontmatter, title } = Astro.props;
+const { frontmatter, title } = Astro.props;
 const image = fmString(frontmatter, "image");
 ---
 
 <div class="slide-layout layout-image-left">
   <div class="layout-split">
     <div class="layout-media">{image && <img src={image} alt={title ?? ""} />}</div>
-    <div class="layout-col" set:html={slots.default ?? ""}></div>
+    <div class="layout-col"><slot /></div>
   </div>
 </div>

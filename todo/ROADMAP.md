@@ -4,7 +4,7 @@ The phase index. Always current. Update when a phase starts or ends.
 
 ## Active
 
-- _None. Phase 05 closed; Phase 06 (click-model) is next up — note the MDX-compilation prerequisite flagged in Phase 05's outcome._
+- _None. Phase 06 closed (MDX+React foundation + click model); Phase 07 (transitions) is next up._
 
 ## Planned
 
@@ -12,7 +12,6 @@ Phases are listed in dependency order. They can be re-sequenced if a later phase
 
 | # | Phase | One-liner |
 | --- | --- | --- |
-| 06 | [`06-click-model`](./06-click-model/README.md) | Parse-time click resolution, `<Click>` / `<Clicks>` / `<After>` components, click runtime |
 | 07 | [`07-transitions`](./07-transitions/README.md) | View Transitions API + FLIP fallback for slide morphs |
 | 08 | [`08-code-rendering`](./08-code-rendering/README.md) | Shiki, Magic Move, Twoslash, line-step reveals |
 | 09 | [`09-math-and-diagrams`](./09-math-and-diagrams/README.md) | KaTeX, Mermaid, PlantUML with click-step reveals |
@@ -35,6 +34,7 @@ Phases are listed in dependency order. They can be re-sequenced if a later phase
 | 03 | `03-astro-integration` | [`docs/built/03-astro-integration.md`](../docs/built/03-astro-integration.md) — Astro integration, virtual modules, per-slide routes, CLI, demo (closed 2026-06-30) |
 | 04 | `04-runtime-core` | [`docs/built/04-runtime-core.md`](../docs/built/04-runtime-core.md) — in-browser runtime: state machine, navigation, URL/keyboard/touch, scaling, overview, Playwright e2e (closed 2026-06-30) |
 | 05 | `05-themes-and-layouts` | [`docs/built/05-themes-and-layouts.md`](../docs/built/05-themes-and-layouts.md) — 21 layouts, 8 primitives, `--slide-*` tokens + starter theme, layered layout resolver, unplugin-icons (closed 2026-06-30) |
+| 06 | `06-click-model` | [`docs/built/06-click-model.md`](../docs/built/06-click-model.md) — MDX+React foundation (slides compile as MDX); parse-time `<Click>`/`<After>`/`<Clicks>` resolution; runtime stepping (closed 2026-06-30) |
 
 ---
 

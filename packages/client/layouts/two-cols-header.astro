@@ -1,16 +1,12 @@
 ---
 import type { LayoutProps } from "../src/layout-types.ts";
 type Props = LayoutProps;
-const { slots } = Astro.props;
-const header = slots.default ?? "";
-const left = slots.left ?? "";
-const right = slots.right ?? "";
 ---
 
 <div class="slide-layout layout-two-cols-header">
-  <div class="layout-header" set:html={header}></div>
+  <div class="layout-header"><slot /></div>
   <div class="layout-cols">
-    <div class="layout-col" set:html={left}></div>
-    <div class="layout-col" set:html={right}></div>
+    <div class="layout-col"><slot name="left" /></div>
+    <div class="layout-col"><slot name="right" /></div>
   </div>
 </div>

@@ -1,13 +1,12 @@
 ---
 import type { LayoutProps } from "../src/layout-types.ts";
 type Props = LayoutProps;
-const { html } = Astro.props;
 ---
 
 <div class="slide-layout layout-error">
   <div>
     <h1>Error</h1>
     <p class="layout-code">Something went wrong rendering this slide</p>
-    <Fragment set:html={html} />
+    <slot />
   </div>
 </div>
