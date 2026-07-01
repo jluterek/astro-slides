@@ -1,7 +1,13 @@
 # MCP tool surface
 
-- **Status:** draft (transport details research-verified; tool definitions land in Phase 14)
+- **Status:** shipped (Phase 14). See `docs/built/14-mcp-server.md` for what was built + descoped.
 - **Owner phase:** Phase 14
+
+> **Shipped deltas from this draft:** recording tools (`start_recording`/`stop_recording`) are
+> descoped (interactive browser capture); write tools are **text-level** (splitter block
+> slicing + reparse-verify), not AST serialization — the parser has no serializer; the schema
+> pipeline authors Zod (frontmatter JSON Schema from Zod stays in `@astro-slides/types`). The
+> server ships as a tsup-bundled package the CLI imports.
 
 The complete MCP server contract: tools, transports, schemas, auth.
 

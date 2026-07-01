@@ -12,6 +12,7 @@
     "pnpm": ">=10"
   },
   "scripts": {
+    "build": "pnpm --filter @astro-slides/mcp-server build",
     "typecheck": "tsc -b",
     "lint": "biome lint",
     "lint:fix": "biome lint --write",

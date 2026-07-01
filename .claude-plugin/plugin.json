@@ -1,0 +1,16 @@
+{
+  "name": "astro-slides",
+  "version": "0.0.0",
+  "description": "Author, present, and export web-native slide decks with astro-slides (Astro + MDX). Bundles the astro-slides skill and its MCP server.",
+  "author": { "name": "James Luterek" },
+  "license": "MIT",
+  "homepage": "https://github.com/jluterek/astro-slides",
+  "keywords": ["slides", "presentation", "astro", "mdx", "mcp"],
+  "skills": ["./skills/astro-slides/SKILL.md"],
+  "mcpServers": {
+    "astro-slides": {
+      "command": "astro-slides",
+      "args": ["mcp-server", "."]
+    }
+  }
+}

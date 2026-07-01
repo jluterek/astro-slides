@@ -209,15 +209,6 @@ const buildCommand = defineCommand({
   },
 });
 
-const notImplemented = (name: string, phase: string) =>
-  defineCommand({
-    meta: { name, description: `(${phase}) not implemented yet.` },
-    run() {
-      console.error(pc.yellow(`\`astro-slides ${name}\` arrives in ${phase}.`));
-      process.exit(1);
-    },
-  });
-
 // --- Export (Phase 12) -----------------------------------------------------
 // Web-format export: PDF (Playwright + pdf-lib), PNG (per slide / per click), and an
 // offline HTML bundle. Kept inline (no relative imports) so the `bin` runs it under
@@ -1115,6 +1106,47 @@ const exportCommand = defineCommand({
   },
 });
 
+// --- MCP server (Phase 14) -------------------------------------------------
+// The tool surface lives in `@astro-slides/mcp-server`, bundled by tsup so this
+// type-stripped bin can `import()` it at runtime (the parser is inlined — it can't be
+// imported as workspace TS, the same wall the export pipeline hit). We hand the server our
+// own bin path so its export/capture tools re-spawn the tested Playwright pipeline.
+const mcpServerCommand = defineCommand({
+  meta: { name: "mcp-server", description: "Run the MCP server (stdio or Streamable HTTP)." },
+  args: {
+    root: { type: "positional", required: false, description: "Project directory (default: cwd)." },
+    transport: { type: "string", default: "stdio", description: "stdio | http" },
+    host: { type: "string", default: "127.0.0.1", description: "http bind host" },
+    port: { type: "string", default: "4444", description: "http port" },
+    token: { type: "string", description: "Bearer token (or ASTRO_SLIDES_MCP_TOKEN)." },
+    "read-only": { type: "boolean", default: false, description: "Disable write tools." },
+    "sync-gateway": { type: "string", description: "Running dev gateway URL for navigate tools." },
+    "sync-token": { type: "string", description: "Token for the sync gateway." },
+  },
+  async run({ args }) {
+    const { runMcpServer } = await import("@astro-slides/mcp-server");
+    const transport = args.transport === "http" ? "http" : "stdio";
+    const token = args.token ?? process.env.ASTRO_SLIDES_MCP_TOKEN;
+    const handle = await runMcpServer({
+      root: args.root ?? process.cwd(),
+      readOnly: Boolean(args["read-only"]),
+      transport,
+      host: args.host,
+      port: Number(args.port),
+      ...(process.argv[1] ? { cliBin: process.argv[1] } : {}),
+      ...(token ? { token } : {}),
+      ...(args["sync-gateway"] ? { syncGateway: args["sync-gateway"] } : {}),
+      ...(args["sync-token"] ? { syncToken: args["sync-token"] } : {}),
+    });
+    // stdout is the stdio transport's channel — status goes to stderr only.
+    if (transport === "http" && handle) {
+      console.error(pc.green(`MCP server listening on ${handle.url}`));
+    } else {
+      console.error(pc.dim("MCP server ready on stdio."));
+    }
+  },
+});
+
 export const main = defineCommand({
   meta: {
     name: "astro-slides",
@@ -1125,6 +1157,6 @@ export const main = defineCommand({
     dev: devCommand,
     build: buildCommand,
     export: exportCommand,
-    "mcp-server": notImplemented("mcp-server", "Phase 14"),
+    "mcp-server": mcpServerCommand,
   },
 });

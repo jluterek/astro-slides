@@ -94,3 +94,7 @@ catalogs:
     listr2: ^10.0.0
     # PPTX export (Phase 13, ADR-0007) — editable OOXML via PptxGenJS.
     pptxgenjs: ^4.0.0
+    # MCP server (Phase 14, ADR-0009). SDK v1.29 bridge until v2 GA; @hono/mcp is the
+    # Streamable HTTP transport. The navigate tools' WS client uses Node's global WebSocket.
+    '@modelcontextprotocol/sdk': ^1.29.0
+    '@hono/mcp': ^0.3.0

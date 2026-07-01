@@ -98,9 +98,10 @@ Every entry includes the package, current version (June 2026 snapshot), why it w
 
 | Category | Library | Why | Caveat |
 | --- | --- | --- | --- |
-| MCP SDK | `@modelcontextprotocol/sdk` v1.29 (target v2.x when GA 2026-07-28) | Official. | Targets latest stable when Phase 14 starts. |
-| Transport (local) | stdio (SDK built-in) | Trusted process boundary. | — |
-| Transport (network) | Streamable HTTP via `@hono/mcp` (or SDK's `StreamableHTTPServerTransport`) | Replaces deprecated SSE. | OAuth 2.1 + PKCE for non-loopback — implementing minimally for v1, full OAuth deferred. |
+| MCP SDK | `@modelcontextprotocol/sdk` (installed v1.29.0) | Official. `registerTool` takes a **ZodRawShape** `inputSchema` (object of validators), not a `z.object`; server class at `server/mcp.js`. | v2 not GA at phase start; on v1.29 until then. |
+| Transport (local) | stdio (SDK built-in) — `StdioServerTransport` | Trusted process boundary. | — |
+| Transport (network) | Streamable HTTP via `@hono/mcp` (installed v0.3.0) — `StreamableHTTPTransport` on `@hono/node-server` | Replaces deprecated SSE. Stateless per-request (fresh server per request). | OAuth 2.1 + PKCE for non-loopback deferred; v1 uses a static bearer token. |
+| Server bundling | `tsup` (already dev-dep) | `@astro-slides/mcp-server` bundles workspace deps into one plain-JS `dist/index.js` so the type-stripped CLI can `import()` it; `tsc` emits `.d.ts` only. | Needs `pnpm build`; CI runs it in the typecheck job. |
 | Tool schemas | `Zod` v4+ with `.describe()` | Standard Schema compliant, SDK accepts directly. Built-in `z.toJSONSchema()` for editor schemas. | Zod 4 has breaking changes vs Zod 3 — start fresh. |
 
 ## Schema generation (frontmatter IntelliSense)
