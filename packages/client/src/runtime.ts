@@ -4,10 +4,19 @@ import { DeckController, type SlideMeta } from "./navigation.js";
 import { applyScale, type Size } from "./scaling.js";
 import { createDeckStore, type DeckStore } from "./store.js";
 import { bindTouch } from "./touch.js";
+import { createSlideTransition } from "./transitions/index.js";
 import { bindOverviewClicks, ensureHelpOverlay } from "./ui.js";
 import { parseLocation } from "./url.js";
 
 const DEFAULT_DESIGN: Size = { width: 1280, height: 720 };
+
+/** Parse a CSS time token (`400ms` / `0.4s`) to milliseconds. */
+function parseDuration(value: string, fallback = 400): number {
+  const v = value.trim();
+  if (v.endsWith("ms")) return Number.parseFloat(v) || fallback;
+  if (v.endsWith("s")) return (Number.parseFloat(v) || fallback / 1000) * 1000;
+  return fallback;
+}
 
 export interface DeckHandle {
   controller: DeckController;
@@ -61,7 +70,14 @@ export function initDeck(root: HTMLElement): DeckHandle {
 
   const statusRegion = root.querySelector<HTMLElement>(".as-status");
   const announcer = createAnnouncer(statusRegion ?? root);
-  const controller = new DeckController({ root, sections, slides, store, announcer });
+
+  // Read the theme's transition timing so FLIP fallbacks match the CSS defaults.
+  const styles = getComputedStyle(root);
+  const duration = parseDuration(styles.getPropertyValue("--slide-transition-duration"), 400);
+  const easing = styles.getPropertyValue("--slide-transition-easing").trim();
+  const transition = createSlideTransition(root, easing ? { duration, easing } : { duration });
+
+  const controller = new DeckController({ root, sections, slides, store, announcer, transition });
 
   // --- Overview + help chrome ------------------------------------------------
   const help = ensureHelpOverlay(root);

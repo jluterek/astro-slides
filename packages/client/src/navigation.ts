@@ -1,6 +1,7 @@
 import type { Announcer } from "./a11y.js";
 import { applySlideStates } from "./state-machine.js";
 import type { DeckStore } from "./store.js";
+import type { SlideTransition } from "./transitions/index.js";
 import { basePath, buildLocation, type DeckLocation, parseLocation } from "./url.js";
 
 /** Minimal per-slide metadata the navigation core needs. */
@@ -55,6 +56,8 @@ export interface DeckControllerOptions {
   slides: SlideMeta[];
   store: DeckStore;
   announcer: Announcer;
+  /** Wraps the DOM mutation for slide changes so transitions (VTA/FLIP) can run. */
+  transition?: SlideTransition;
 }
 
 /**
@@ -108,14 +111,33 @@ export class DeckController {
     this.apply(gotoState(loc.slide, this.opts.slides, loc.step), "none");
   }
 
+  private sectionFor(slide: number): HTMLElement | null {
+    return this.opts.sections.find((s) => Number(s.dataset.slideNo) === slide) ?? null;
+  }
+
   private apply(next: NavState, url: UrlMode): void {
-    const changed = next.slide !== this.state.slide || next.step !== this.state.step;
+    const slideChanged = next.slide !== this.state.slide;
+    const changed = slideChanged || next.step !== this.state.step;
+    const fromSlide = this.state.slide;
     this.state = next;
 
-    applySlideStates(this.opts.sections, next.slide);
-    this.opts.root.dataset.current = String(next.slide);
-    this.opts.root.dataset.step = String(next.step);
-    this.applyStepReveal(next);
+    const mutate = (): void => {
+      applySlideStates(this.opts.sections, next.slide);
+      this.opts.root.dataset.current = String(next.slide);
+      this.opts.root.dataset.step = String(next.step);
+      this.applyStepReveal(next);
+    };
+
+    // Slide changes run through the transition (VTA/FLIP); step-only changes and
+    // the initial `replace` apply instantly.
+    if (slideChanged && this.opts.transition && url !== "replace") {
+      this.opts.transition(mutate, {
+        from: this.sectionFor(fromSlide),
+        to: this.sectionFor(next.slide),
+      });
+    } else {
+      mutate();
+    }
 
     this.opts.store.slide.set(next.slide);
     this.opts.store.step.set(next.step);

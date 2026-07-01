@@ -1,0 +1,57 @@
+/*
+ * Built-in slide-level transitions (ADR-0006). These are pure CSS, keyed off the
+ * `past`/`present`/`future` state machine and a `data-transition` name set per
+ * section (frontmatter `transition`) or on the deck (headmatter default). The base
+ * `.as-slide` in deck.css provides the fade; directional variants add movement.
+ *
+ * Object continuity (`<Morph>`) is handled separately at runtime via the View
+ * Transitions API (or a FLIP fallback) — see transitions/.
+ */
+
+/* fade / fade-out / view-transition — opacity only (the base .as-slide behavior).
+   `view-transition` also opts the swap into the VTA root cross-fade at runtime. */
+
+/* Directional slides keep the moving slide opaque so it slides rather than fades. */
+.as-slide[data-transition^="slide-"].past,
+.as-slide[data-transition^="slide-"].future {
+  opacity: 1;
+}
+
+.as-slide[data-transition="slide-left"].past {
+  transform: translateX(-100%);
+}
+.as-slide[data-transition="slide-left"].future {
+  transform: translateX(100%);
+}
+.as-slide[data-transition="slide-right"].past {
+  transform: translateX(100%);
+}
+.as-slide[data-transition="slide-right"].future {
+  transform: translateX(-100%);
+}
+.as-slide[data-transition="slide-up"].past {
+  transform: translateY(-100%);
+}
+.as-slide[data-transition="slide-up"].future {
+  transform: translateY(100%);
+}
+.as-slide[data-transition="slide-down"].past {
+  transform: translateY(100%);
+}
+.as-slide[data-transition="slide-down"].future {
+  transform: translateY(-100%);
+}
+
+/* Opt out entirely. */
+.as-slide[data-transition="none"] {
+  transition: none;
+}
+
+/* During a FLIP morph the runtime flags the deck; suppress the section-level
+   transition so it doesn't fight the per-element FLIP animation. */
+.as-deck[data-morphing="flip"] .as-slide {
+  transition: none;
+}
+
+/* Reduced motion (`.as-slide { transition: none }`) is handled in deck.css; the
+   runtime also short-circuits to an instant apply via `prefersReducedMotion()`. */

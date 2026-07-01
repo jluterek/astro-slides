@@ -19,6 +19,7 @@ import "@astro-slides/client/styles/base.css";
 import "@astro-slides/client/styles/layouts.css";
 import "@astro-slides/client/styles/primitives.css";
 import "@astro-slides/client/styles/click.css";
+import "@astro-slides/client/styles/transitions.css";
 
 /**
  * Deck route. Renders the whole deck as a `<section>` stack (current = `present`).
@@ -66,6 +67,23 @@ const scheme =
 const stateClass = (no: number): string =>
   no < current.no ? "past" : no > current.no ? "future" : "present";
 
+// Resolve a transition (string preset or `{name,duration,easing}` object) into the
+// `data-transition` key plus optional per-slide timing CSS vars. Per-slide frontmatter
+// overrides the deck default; the deck default keys the root for VT-root cross-fades.
+type TransitionValue = string | { name?: string; duration?: number; easing?: string } | undefined;
+const deckTransition = config.transition as TransitionValue;
+const transitionName = (t: TransitionValue): string =>
+  (typeof t === "string" ? t : t?.name) ?? "fade";
+const transitionStyle = (t: TransitionValue): string | undefined => {
+  if (typeof t !== "object" || !t) return undefined;
+  const parts: string[] = [];
+  if (t.duration != null) parts.push(`--slide-transition-duration:${t.duration}ms`);
+  if (t.easing) parts.push(`--slide-transition-easing:${t.easing}`);
+  return parts.length ? parts.join(";") : undefined;
+};
+const slideTransition = (fm: Record<string, unknown>): TransitionValue =>
+  (fm.transition as TransitionValue) ?? deckTransition;
+
 const isImageRef = (v: string): boolean =>
   /^(https?:|\/|\.|data:)/.test(v) || /\.(png|jpe?g|gif|webp|avif|svg)$/i.test(v);
 const backgroundStyle = (v: string | null): string | undefined => {
@@ -88,6 +106,7 @@ const fallbackLayout = layouts.default ?? layouts["404"];
       data-deck={current.deck}
       data-current={current.no}
       data-total={deckSlides.length}
+      data-transition={transitionName(deckTransition)}
       data-design-width={designWidth}
       data-design-height={designHeight}
     >
@@ -98,6 +117,10 @@ const fallbackLayout = layouts.default ?? layouts["404"];
             const Default = s.slots.default;
             const Left = s.slots.left;
             const Right = s.slots.right;
+            const t = slideTransition(s.frontmatter);
+            const style = [backgroundStyle(s.background), transitionStyle(t)]
+              .filter(Boolean)
+              .join(";");
             return (
               <section
                 class:list={["as-slide", stateClass(s.no), s.class]}
@@ -105,8 +128,9 @@ const fallbackLayout = layouts.default ?? layouts["404"];
                 data-steps={s.totalClicks}
                 data-layout={s.layout}
                 data-title={s.title ?? ""}
+                data-transition={transitionName(t)}
                 data-background={s.background ?? undefined}
-                style={backgroundStyle(s.background)}
+                style={style || undefined}
               >
                 <Layout no={s.no} title={s.title} layout={s.layout} frontmatter={s.frontmatter}>
                   {Default && <Default components={COMPONENTS} />}

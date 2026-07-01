@@ -1,7 +1,10 @@
 ---
-// Marks an element as paired across slides for View Transitions (Phase 07). Sets a
-// `view-transition-name` so the browser morphs the element between slides that
-// share the same `id`. Renders inert until Phase 07 wires the transition driver.
+// Marks an element as paired across slides for object continuity (Phase 07, ADR-0006).
+// The transition driver matches `data-morph` ids between the outgoing and incoming
+// slide and morphs them — assigning `view-transition-name` on the fly for a
+// same-document View Transition, or running a FLIP animation where VTA is absent.
+// No static `view-transition-name` here: both slides live in one DOM, so a shared
+// static name would collide.
 interface Props {
   id: string;
   as?: string;
@@ -10,6 +13,6 @@ interface Props {
 const { id, as: Tag = "span", class: cls } = Astro.props;
 ---
 
-<Tag class:list={["p-morph", cls]} data-morph={id} style={`view-transition-name:${id}`}>
+<Tag class:list={["p-morph", cls]} data-morph={id}>
   <slot />
 </Tag>
