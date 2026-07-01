@@ -21,6 +21,9 @@ catalogs:
     '@biomejs/biome': ^2.0.0
     husky: ^9.1.0
     lint-staged: ^15.2.0
+    # Release tooling (Phase 18) — Changesets for version bumps + GitHub-flavored changelogs.
+    '@changesets/cli': ^2.31.0
+    '@changesets/changelog-github': ^0.7.0
     vite: ^6.0.0
     jsdom: ^25.0.0
     '@playwright/test': ^1.48.0

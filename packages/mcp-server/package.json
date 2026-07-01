@@ -1,6 +1,6 @@
 {
   "name": "@astro-slides/mcp-server",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": false,
   "type": "module",
   "description": "Model Context Protocol tool surface for reading, writing, presenting, and exporting decks.",
@@ -13,7 +13,9 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "!**/__tests__",
+    "!**/*.test.*"
   ],
   "scripts": {
     "build": "tsup"
@@ -31,5 +33,28 @@
   "devDependencies": {
     "@types/node": "catalog:dev",
     "tsup": "catalog:dev"
+  },
+  "homepage": "https://jluterek.github.io/astro-slides/",
+  "bugs": {
+    "url": "https://github.com/jluterek/astro-slides/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jluterek/astro-slides.git",
+    "directory": "packages/mcp-server"
+  },
+  "keywords": [
+    "astro-slides",
+    "presentation",
+    "slides",
+    "deck",
+    "mcp",
+    "model-context-protocol",
+    "ai",
+    "agent"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

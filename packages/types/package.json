@@ -1,6 +1,6 @@
 {
   "name": "@astro-slides/types",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": false,
   "type": "module",
   "description": "Shared TypeScript types for astro-slides, inferred from Zod schemas.",
@@ -15,5 +15,33 @@
   },
   "dependencies": {
     "zod": "catalog:prod"
+  },
+  "homepage": "https://jluterek.github.io/astro-slides/",
+  "bugs": {
+    "url": "https://github.com/jluterek/astro-slides/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jluterek/astro-slides.git",
+    "directory": "packages/types"
+  },
+  "keywords": [
+    "astro-slides",
+    "presentation",
+    "slides",
+    "deck",
+    "zod",
+    "types",
+    "schema"
+  ],
+  "files": [
+    "src",
+    "schemas",
+    "!**/__tests__",
+    "!**/*.test.ts"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "create-astro-slides",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": false,
   "type": "module",
   "description": "Scaffold a new astro-slides deck project — pnpm create astro-slides <target>.",
@@ -17,7 +17,9 @@
   },
   "files": [
     "bin",
-    "src"
+    "src",
+    "!**/__tests__",
+    "!**/*.test.ts"
   ],
   "dependencies": {
     "@clack/prompts": "catalog:prod",
@@ -25,5 +27,28 @@
   },
   "devDependencies": {
     "@types/node": "catalog:dev"
+  },
+  "homepage": "https://jluterek.github.io/astro-slides/",
+  "bugs": {
+    "url": "https://github.com/jluterek/astro-slides/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jluterek/astro-slides.git",
+    "directory": "packages/create-astro-slides"
+  },
+  "keywords": [
+    "astro-slides",
+    "presentation",
+    "slides",
+    "deck",
+    "create",
+    "scaffold",
+    "starter",
+    "generator"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

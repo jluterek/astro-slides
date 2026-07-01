@@ -1,6 +1,6 @@
 {
   "name": "@astro-slides/core",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": false,
   "type": "module",
   "description": "Astro integration, Vite plugins, and the slide compilation pipeline.",
@@ -51,5 +51,33 @@
     "@types/plantuml-encoder": "catalog:dev",
     "astro": "catalog:frontend",
     "vite": "catalog:dev"
+  },
+  "homepage": "https://jluterek.github.io/astro-slides/",
+  "bugs": {
+    "url": "https://github.com/jluterek/astro-slides/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jluterek/astro-slides.git",
+    "directory": "packages/core"
+  },
+  "keywords": [
+    "astro-slides",
+    "presentation",
+    "slides",
+    "deck",
+    "astro",
+    "astro-integration",
+    "mdx",
+    "withastro"
+  ],
+  "files": [
+    "src",
+    "!**/__tests__",
+    "!**/*.test.ts"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }
