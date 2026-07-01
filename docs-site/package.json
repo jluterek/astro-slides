@@ -1,0 +1,17 @@
+{
+  "name": "@astro-slides/docs-site",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Starlight documentation site for astro-slides (we dogfood Astro).",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "catalog:frontend",
+    "astro": "catalog:frontend",
+    "sharp": "catalog:frontend"
+  }
+}

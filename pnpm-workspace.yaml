@@ -2,6 +2,7 @@ packages:
   - 'packages/*'
   - 'themes/*'
   - 'examples/*'
+  - 'docs-site'
 
 # Catalog versioning keeps every workspace package on the same dependency
 # versions. Packages reference these via `"catalog:dev"` etc. in their
@@ -39,6 +40,9 @@ catalogs:
     '@iconify-json/carbon': ^1.2.0
     '@astrojs/mdx': ^4.3.0
     '@astrojs/react': ^4.3.0
+    # Docs site (Phase 17) — Starlight 0.37 is the last line peering on Astro 5.
+    '@astrojs/starlight': ^0.37.0
+    sharp: ^0.34.0
     react: ^19.0.0
     react-dom: ^19.0.0
     # Code rendering (Phase 08): Shiki + Magic Move + Twoslash.
@@ -76,6 +80,8 @@ catalogs:
     yaml: ^2.0.0
     citty: ^0.1.6
     picocolors: ^1.1.0
+    # Interactive prompts for the create-astro-slides scaffolder (Phase 17).
+    '@clack/prompts': ^1.6.0
     unified: ^11.0.0
     remark-parse: ^11.0.0
     remark-rehype: ^11.0.0

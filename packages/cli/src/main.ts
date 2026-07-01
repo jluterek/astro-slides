@@ -1,3 +1,4 @@
+import { type ChildProcess, spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
@@ -89,6 +90,49 @@ export function attachShortcuts(
   };
 }
 
+/** Locate a deck source file to open in `$EDITOR` — root `slides.{mdx,md}`, else the first
+ * `content/decks/<name>/slides.{mdx,md}`, else the project root. Pure — unit-tested. */
+export function findDeckSource(root: string): string {
+  for (const name of ["slides.mdx", "slides.md"]) {
+    const p = join(root, name);
+    if (existsSync(p)) return p;
+  }
+  const decksDir = join(root, "content", "decks");
+  if (existsSync(decksDir)) {
+    for (const entry of readdirSync(decksDir).sort()) {
+      for (const name of ["slides.mdx", "slides.md"]) {
+        const p = join(decksDir, entry, name);
+        if (existsSync(p)) return p;
+      }
+    }
+  }
+  return root;
+}
+
+/** Command to open a URL/path in the OS default handler. Pure — unit-tested. */
+export function openCommand(
+  platform: NodeJS.Platform,
+  target: string,
+): { cmd: string; args: string[] } {
+  if (platform === "darwin") return { cmd: "open", args: [target] };
+  if (platform === "win32") return { cmd: "cmd", args: ["/c", "start", "", target] };
+  return { cmd: "xdg-open", args: [target] };
+}
+
+/** Resolve the `$VISUAL`/`$EDITOR` command for a file, or null when neither is set. The editor
+ * string may carry flags (e.g. `"code -w"`), so it is split on whitespace. Pure — unit-tested. */
+export function editorCommand(
+  env: NodeJS.ProcessEnv,
+  file: string,
+): { cmd: string; args: string[] } | null {
+  const editor = env.VISUAL || env.EDITOR;
+  if (!editor) return null;
+  const parts = editor.split(/\s+/).filter(Boolean);
+  const cmd = parts[0];
+  if (!cmd) return null;
+  return { cmd, args: [...parts.slice(1), file] };
+}
+
 // --- Mobile remote (Phase 11) ---------------------------------------------
 // Helpers for `dev --remote`. Kept in this self-contained file (no relative imports)
 // so the `bin` can run it directly under Node's type stripping. Pure parts are
@@ -178,7 +222,8 @@ const devCommand = defineCommand({
       if (token) process.env.ASTRO_SLIDES_REMOTE_TOKEN = token;
     }
 
-    const server = await astro.dev({ root, ...(remote ? { server: { host: true } } : {}) });
+    const devOptions = remote ? { server: { host: true } } : {};
+    let server = await astro.dev({ root, ...devOptions });
     console.log(shortcutHelp());
 
     if (remote) {
@@ -187,13 +232,59 @@ const devCommand = defineCommand({
       printRemote(buildRemoteUrl({ host, port, token: token || undefined }), !!password);
     }
 
+    // Wire the in-TTY shortcuts (SHORTCUTS map) to real actions. `open`/`edit` shell out to the
+    // OS default handler / `$EDITOR`; `restart` recycles Astro's dev server; `m` toggles a child
+    // MCP server (HTTP) pointed at this dev deck so an agent can connect while you present.
+    const deckSource = findDeckSource(root);
+    let mcpChild: ChildProcess | null = null;
+    const bin = process.argv[1];
+
+    const openBrowser = (): void => {
+      const port = server.address?.port ?? DEFAULT_PORT;
+      const { cmd, args } = openCommand(process.platform, `http://localhost:${port}/`);
+      spawn(cmd, args, { stdio: "ignore", detached: true }).unref();
+    };
+    const openEditor = (): void => {
+      const ec = editorCommand(process.env, deckSource);
+      if (!ec) {
+        console.log(pc.dim("  Set $EDITOR (or $VISUAL) to use the edit shortcut."));
+        return;
+      }
+      spawn(ec.cmd, ec.args, { stdio: "inherit" });
+    };
+    const restart = async (): Promise<void> => {
+      console.log(pc.dim("  Restarting the dev server…"));
+      await server.stop();
+      server = await astro.dev({ root, ...devOptions });
+    };
+    const toggleMcp = (): void => {
+      if (mcpChild) {
+        mcpChild.kill();
+        mcpChild = null;
+        console.log(pc.dim("  MCP server stopped."));
+        return;
+      }
+      if (!bin) {
+        console.log(pc.dim("  Cannot resolve the CLI entry to start the MCP server."));
+        return;
+      }
+      mcpChild = spawn(process.execPath, [bin, "mcp-server", "--transport", "http"], {
+        stdio: ["ignore", "inherit", "inherit"],
+      });
+      console.log(pc.dim("  MCP server started (HTTP). Press m again to stop."));
+    };
     const quit = async (): Promise<void> => {
+      mcpChild?.kill();
       await server.stop();
       process.exit(0);
     };
     attachShortcuts({
-      quit: () => void quit(),
+      restart: () => void restart(),
+      open: openBrowser,
+      edit: openEditor,
       clear: () => console.clear(),
+      mcp: toggleMcp,
+      quit: () => void quit(),
     });
   },
 });

@@ -140,6 +140,18 @@ Themes are folders of CSS (ADR-0005). Bundled themes (starter, cosmic, marp-*) l
 `packages/client/src/themes/` and are imported by the deck + print routes; a deck opts in via
 `theme:` headmatter, which stamps `data-theme` and scopes non-default tokens under `[data-theme]`.
 
+## Docs site + scaffolder (Phase 17)
+
+| Category | Library | Why | Caveat |
+| --- | --- | --- | --- |
+| Docs framework | `@astrojs/starlight` v0.37 | Dogfood Astro. Sidebar, search (Pagefind), MDX. | **Pinned to 0.37** — the last line peering on Astro 5; 0.38+ requires Astro 6. Lives in `docs-site/` (a workspace app, not a composite-TS package). |
+| Docs image processing | `sharp` v0.34 | Starlight/Astro asset optimization. | — |
+| Scaffolder prompts | `@clack/prompts` v1.6 | Interactive `pnpm create astro-slides` UI (target → theme). | Locked since Phase 00; first used here. Bin runs TS via Node type-stripping (no build). |
+
+The docs site deploys to GitHub Pages via `.github/workflows/docs.yml` (`base: /astro-slides/`).
+Enabling Pages is a one-time repo setting. `create-astro-slides` is published separately from
+`@astro-slides/cli` (the `pnpm create *` convention).
+
 ## Things we are NOT pulling in
 
 Recording these so we don't accidentally regress:
@@ -158,3 +170,4 @@ Recording these so we don't accidentally regress:
 
 - 2026-06-30 — initial spec, three research agents grounded the picks (MCP SDK, Astro ecosystem, NPM library landscape).
 - 2026-07-01 — Phase 16: added Fontsource `@fontsource-variable/inter` + `@fontsource/space-grotesk` (self-hosted OFL) for the Cosmic theme; recorded the oklch-no-fallback and `@import`-from-theme decisions.
+- 2026-07-01 — Phase 17: added `@astrojs/starlight` v0.37 (pinned for Astro 5) + `sharp` for the docs site, and `@clack/prompts` for the `create-astro-slides` scaffolder.

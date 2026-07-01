@@ -1,0 +1,60 @@
+---
+title: astro-slides
+description: A web-native presentation framework built on Astro, TypeScript, and MDX, with a first-class MCP server.
+template: splash
+hero:
+  tagline: Author decks in Markdown and MDX. Present in the browser. Export to PDF, PNG, and editable PowerPoint. Drive it with an AI agent.
+  actions:
+    - text: Get started
+      link: getting-started/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/jluterek/astro-slides
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Why astro-slides
+
+<CardGrid stagger>
+  <Card title="Web-native" icon="laptop">
+    Slides are HTML. View Transitions drive slide changes, click-stepped reveals, and a live
+    presenter view — no runtime lock-in.
+  </Card>
+  <Card title="Author in Markdown" icon="pencil">
+    MDX is the primary format, with Marp- and Slidev-compatible Markdown as a secondary path.
+    Layout primitives and components when you need them.
+  </Card>
+  <Card title="Export everywhere" icon="download">
+    One deck exports to PDF, PNG, an offline HTML bundle, and *editable* PPTX.
+  </Card>
+  <Card title="Agent-driveable" icon="rocket">
+    A first-class MCP server exposes read, write, navigate, and export tools so an AI agent can
+    build and drive your deck.
+  </Card>
+</CardGrid>
+
+## Ships with a flagship theme
+
+Every deck opts into a bundled theme with one line of frontmatter. **Cosmic** — the flagship —
+is a dark-primary, oklch-tuned space theme with self-hosted type and landing-page-quality
+layouts, so a five-minute deck already looks ready to present.
+
+<img src={`${import.meta.env.BASE_URL}img/hero-cover.png`} alt="The Cosmic theme cover slide" />
+
+<img src={`${import.meta.env.BASE_URL}img/hero-metrics.png`} alt="A Cosmic metrics slide" />
+
+## Install
+
+```bash
+# Scaffold a new deck project
+pnpm create astro-slides my-talk
+
+# Or add the CLI to an existing project
+pnpm add -D @astro-slides/cli
+```
+
+Then author `slides.mdx`, run `astro-slides dev`, and present.
