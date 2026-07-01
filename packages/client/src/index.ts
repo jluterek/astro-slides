@@ -1,6 +1,8 @@
 export type { Announcer } from "./a11y.js";
 export { createAnnouncer } from "./a11y.js";
+export { initFitText } from "./fit-text.js";
 export { bindKeyboard, type NavActions, SHORTCUTS } from "./keyboard.js";
+export { fmString, type LayoutProps } from "./layout-types.js";
 export {
   DeckController,
   type DeckControllerOptions,
@@ -10,6 +12,7 @@ export {
   prevState,
   type SlideMeta,
 } from "./navigation.js";
+export { cssVars, type FlexBlockVariant, flexBlockClass } from "./primitives.js";
 export { type DeckHandle, initAllDecks, initDeck } from "./runtime.js";
 export { applyScale, computeScale, type Size } from "./scaling.js";
 export { applySlideStates, type SlideState, slideState } from "./state-machine.js";

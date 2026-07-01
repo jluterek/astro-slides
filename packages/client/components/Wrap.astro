@@ -1,0 +1,12 @@
+---
+import { cssVars } from "../src/primitives.ts";
+// Centered max-width content wrap (WebSlides `.wrap`).
+interface Props {
+  max?: string;
+  class?: string;
+}
+const { max, class: cls } = Astro.props;
+const style = cssVars({ max });
+---
+
+<div class:list={["p-wrap", cls]} style={style || undefined}><slot /></div>

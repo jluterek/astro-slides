@@ -59,9 +59,9 @@ Every entry includes the package, current version (June 2026 snapshot), why it w
 | Keyboard shortcuts (React UI) | `react-hotkeys-hook` v5+ | Component-scoped binding for the presenter / editor panels. | — |
 | Touch / swipe | Pointer Events (Phase 04); `@use-gesture/core` reserved for Phase 11 | Swipe-to-navigate is one horizontal gesture — raw Pointer Events are zero-dep and jsdom-testable. | `@use-gesture` earns its place with multi-touch (drawing/pinch-zoom) in Phase 11; `react-swipeable` is a fallback. |
 | Command palette | `cmdk` v1.1+ (paco) | Unstyled, composable, ships its own fuzzy scorer. | React-only — fine since interactive UI is React islands. |
-| Auto-fit text | `fitty` v2.4+ | What reveal.js uses; tiny. | RAF poll has constant CPU — opt-in per slide, not global. |
+| Auto-fit text | `fitty` (installed v2.4.2) | What reveal.js uses; tiny. Wraps `<FitText>`. | RAF poll has constant CPU — opt-in per element, not global. Default export; top-level `types`. |
 | Fragment animation helper | `@formkit/auto-animate` v0.9 | Drop-in for list/grid mutation reveals. | Optional — most click animations are CSS-only; this is the "I added a list item" case. |
-| Icons | `unplugin-icons` v23 (with `@iconify-json/*` collections) | Tree-shakes per-icon, MDX-friendly (`<Icon name="carbon:edit"/>`). | astro-icon is Astro-only and stale; skip it. |
+| Icons | `unplugin-icons` (installed v0.21.0) + `@iconify-json/carbon` v1.2 | Tree-shakes per-icon; wired via the integration as `Icons({ compiler: "astro" })` → `~icons/carbon/*`. | astro-icon is Astro-only and stale; skip it. Author-facing use in slides waits on the MDX gap (Phase 05 note); usable in layouts now. |
 
 ## Code / math / diagrams (already locked via ADRs)
 

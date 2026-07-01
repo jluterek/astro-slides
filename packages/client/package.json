@@ -11,10 +11,18 @@
       "types": "./src/index.ts",
       "import": "./src/index.ts"
     },
-    "./styles/deck.css": "./src/styles/deck.css"
+    "./fit-text": {
+      "types": "./src/fit-text.ts",
+      "import": "./src/fit-text.ts"
+    },
+    "./styles/*": "./src/styles/*",
+    "./themes/*": "./src/themes/*",
+    "./components/*": "./components/*",
+    "./layouts/*": "./layouts/*"
   },
   "dependencies": {
     "@astro-slides/types": "workspace:*",
+    "fitty": "catalog:frontend",
     "nanostores": "catalog:frontend",
     "tinykeys": "catalog:frontend"
   }

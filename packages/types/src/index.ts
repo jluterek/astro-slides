@@ -6,3 +6,4 @@ export const TYPES_PACKAGE_VERSION = "0.0.0";
 
 export * from "./ast.js";
 export * from "./frontmatter.js";
+export * from "./theme.js";

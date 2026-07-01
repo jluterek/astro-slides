@@ -1,0 +1,110 @@
+/*
+ * Base slide typography + element styling. Reads only theme tokens. Bridges the
+ * theme tokens into the runtime's structural vars (`--as-bg`/`--as-fg` from
+ * deck.css) so a theme drives the deck background and text color.
+ */
+
+.as-deck {
+  --as-bg: var(--slide-bg);
+  --as-fg: var(--slide-fg);
+  font-family: var(--slide-font-body);
+}
+
+.as-slide {
+  font-size: var(--slide-font-size-base);
+  line-height: var(--slide-line-height);
+  color: var(--slide-fg);
+}
+
+/* Per-slide background override (frontmatter `background`). */
+.as-slide[data-background] {
+  background-size: cover;
+  background-position: center;
+}
+
+.as-slide h1,
+.as-slide h2,
+.as-slide h3,
+.as-slide h4 {
+  font-family: var(--slide-font-heading);
+  font-weight: var(--slide-heading-weight);
+  line-height: var(--slide-heading-line-height);
+  margin: 0 0 var(--slide-space-4);
+  text-wrap: balance;
+}
+.as-slide h1 {
+  font-size: var(--slide-text-4xl);
+}
+.as-slide h2 {
+  font-size: var(--slide-text-2xl);
+}
+.as-slide h3 {
+  font-size: var(--slide-text-xl);
+}
+.as-slide p,
+.as-slide ul,
+.as-slide ol,
+.as-slide blockquote,
+.as-slide pre {
+  margin: 0 0 var(--slide-space-4);
+}
+.as-slide ul,
+.as-slide ol {
+  padding-inline-start: var(--slide-space-6);
+}
+.as-slide li {
+  margin-bottom: var(--slide-space-2);
+}
+.as-slide a {
+  color: var(--slide-link);
+  text-underline-offset: 0.15em;
+}
+.as-slide strong {
+  color: var(--slide-fg);
+}
+.as-slide code {
+  font-family: var(--slide-font-mono);
+  font-size: 0.9em;
+  background: var(--slide-code-bg);
+  color: var(--slide-code-fg);
+  padding: 0.1em 0.35em;
+  border-radius: 6px;
+}
+.as-slide pre {
+  font-family: var(--slide-font-mono);
+  background: var(--slide-code-bg);
+  color: var(--slide-code-fg);
+  padding: var(--slide-space-4);
+  border-radius: var(--slide-block-radius);
+  overflow: auto;
+}
+.as-slide pre code {
+  background: none;
+  padding: 0;
+}
+.as-slide blockquote {
+  border-inline-start: 4px solid var(--slide-accent);
+  padding-inline-start: var(--slide-space-4);
+  color: var(--slide-muted);
+  font-style: italic;
+}
+.as-slide img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--slide-block-radius);
+}
+.as-slide table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.as-slide th,
+.as-slide td {
+  border: 1px solid var(--slide-border);
+  padding: var(--slide-space-2) var(--slide-space-3);
+  text-align: left;
+}
+.as-slide hr {
+  border: none;
+  border-top: 1px solid var(--slide-border);
+  margin: var(--slide-space-4) 0;
+}

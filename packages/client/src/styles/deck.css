@@ -23,12 +23,16 @@
   font-family: system-ui, sans-serif;
 }
 
-/* The design-space canvas, uniformly scaled to fit the window. */
+/* The design-space canvas, absolutely centered then uniformly scaled to fit the
+   window. Absolute centering (rather than grid centering) is used because browsers
+   align a grid item larger than its cell to the start, not the center. */
 .as-viewport {
-  position: relative;
+  position: absolute;
+  top: 50%;
+  left: 50%;
   width: var(--as-design-w);
   height: var(--as-design-h);
-  transform: scale(var(--as-scale));
+  transform: translate(-50%, -50%) scale(var(--as-scale));
   transform-origin: center center;
 }
 
@@ -37,7 +41,9 @@
   position: absolute;
   inset: 0;
   box-sizing: border-box;
-  padding: 4% 6%;
+  /* Padding is owned by the layout (`.slide-layout`), so full-bleed layouts can
+     reach the edges. */
+  padding: 0;
   overflow: hidden;
   opacity: 0;
   visibility: hidden;
@@ -86,6 +92,9 @@
   overflow: auto;
 }
 .as-deck.as-overview .as-viewport {
+  position: static;
+  top: auto;
+  left: auto;
   width: 100%;
   height: auto;
   min-height: 100%;

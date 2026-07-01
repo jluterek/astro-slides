@@ -1,0 +1,99 @@
+/*
+ * Starter theme — the bundled fallback. Deliberately plain: it exists so layout
+ * correctness is testable independent of visual identity (the "Cosmic" flagship
+ * lands in Phase 16). A theme is just a folder of CSS that sets `--slide-*` tokens;
+ * layouts and primitives read only those tokens, never hard-coded values.
+ *
+ * Colors use oklch() (well-supported in 2026). Light is the default; dark applies
+ * under `prefers-color-scheme: dark` unless a deck forces a scheme (Phase headmatter
+ * `colorSchema`, wired via a `data-color-scheme` attribute on the deck root).
+ */
+
+:root {
+  /* Color — semantic, not physical */
+  --slide-bg: oklch(99% 0 0);
+  --slide-fg: oklch(21% 0.01 260);
+  --slide-accent: oklch(55% 0.2 264);
+  --slide-accent-fg: oklch(99% 0 0);
+  --slide-muted: oklch(55% 0.02 260);
+  --slide-border: oklch(90% 0.01 260);
+  --slide-surface: oklch(97% 0.005 260);
+  --slide-link: var(--slide-accent);
+  --slide-code-bg: oklch(96% 0.005 260);
+  --slide-code-fg: oklch(30% 0.03 264);
+  --slide-danger: oklch(58% 0.22 27);
+  --slide-info: oklch(60% 0.16 240);
+
+  /* Block family (FlexBlock cells, cards) */
+  --slide-block-bg: var(--slide-surface);
+  --slide-block-border: var(--slide-border);
+  --slide-block-radius: 12px;
+
+  /* Typography */
+  --slide-font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --slide-font-heading: var(--slide-font-body);
+  --slide-font-mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, monospace;
+  --slide-font-size-base: 24px;
+  --slide-font-size-scale: 1.25;
+  --slide-line-height: 1.5;
+  --slide-heading-line-height: 1.1;
+  --slide-heading-weight: 700;
+
+  /* Type scale (modular, base * scale^n) */
+  --slide-text-sm: calc(var(--slide-font-size-base) / var(--slide-font-size-scale));
+  --slide-text-md: var(--slide-font-size-base);
+  --slide-text-lg: calc(var(--slide-font-size-base) * var(--slide-font-size-scale));
+  --slide-text-xl: calc(var(--slide-text-lg) * var(--slide-font-size-scale));
+  --slide-text-2xl: calc(var(--slide-text-xl) * var(--slide-font-size-scale));
+  --slide-text-3xl: calc(var(--slide-text-2xl) * var(--slide-font-size-scale));
+  --slide-text-4xl: calc(var(--slide-text-3xl) * var(--slide-font-size-scale));
+
+  /* Spacing — 8px rhythm */
+  --slide-space-unit: 8px;
+  --slide-space-1: calc(var(--slide-space-unit) * 1);
+  --slide-space-2: calc(var(--slide-space-unit) * 2);
+  --slide-space-3: calc(var(--slide-space-unit) * 3);
+  --slide-space-4: calc(var(--slide-space-unit) * 4);
+  --slide-space-6: calc(var(--slide-space-unit) * 6);
+  --slide-space-8: calc(var(--slide-space-unit) * 8);
+  --slide-space-12: calc(var(--slide-space-unit) * 12);
+
+  /* Layout */
+  --slide-canvas-width: 1920px;
+  --slide-canvas-height: 1080px;
+  --slide-padding: var(--slide-space-8);
+  --slide-content-max: 1400px;
+
+  /* Transitions */
+  --slide-transition-duration: 400ms;
+  --slide-transition-easing: cubic-bezier(0.26, 0.86, 0.44, 0.985);
+}
+
+/* Dark variant. `data-color-scheme` on the deck root can force a scheme; when it's
+   "auto" (default) we defer to the OS preference. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-color-scheme="light"]) {
+    --slide-bg: oklch(20% 0.015 260);
+    --slide-fg: oklch(96% 0.005 260);
+    --slide-accent: oklch(72% 0.16 264);
+    --slide-accent-fg: oklch(20% 0.015 260);
+    --slide-muted: oklch(72% 0.02 260);
+    --slide-border: oklch(35% 0.02 260);
+    --slide-surface: oklch(26% 0.02 260);
+    --slide-code-bg: oklch(28% 0.02 260);
+    --slide-code-fg: oklch(90% 0.02 264);
+  }
+}
+
+/* Forced-dark decks (headmatter colorSchema: dark) regardless of OS. */
+:root[data-color-scheme="dark"] {
+  --slide-bg: oklch(20% 0.015 260);
+  --slide-fg: oklch(96% 0.005 260);
+  --slide-accent: oklch(72% 0.16 264);
+  --slide-accent-fg: oklch(20% 0.015 260);
+  --slide-muted: oklch(72% 0.02 260);
+  --slide-border: oklch(35% 0.02 260);
+  --slide-surface: oklch(26% 0.02 260);
+  --slide-code-bg: oklch(28% 0.02 260);
+  --slide-code-fg: oklch(90% 0.02 264);
+}

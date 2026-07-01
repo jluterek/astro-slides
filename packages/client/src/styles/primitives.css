@@ -1,0 +1,98 @@
+/*
+ * Layout primitive styling. The primitives are thin `.astro` components
+ * (`packages/client/components/*.astro`) that emit these classes; the CSS is
+ * centralized so a theme can restyle primitives via tokens.
+ */
+
+.p-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-gap, var(--slide-space-4));
+  align-items: var(--p-align, stretch);
+  justify-content: var(--p-justify, flex-start);
+}
+.p-hstack {
+  display: flex;
+  flex-direction: row;
+  gap: var(--p-gap, var(--slide-space-4));
+  align-items: var(--p-align, center);
+  justify-content: var(--p-justify, flex-start);
+}
+.p-grid {
+  display: grid;
+  gap: var(--p-gap, var(--slide-space-4));
+  grid-template-columns: var(--p-cols, repeat(2, 1fr));
+}
+.p-wrap {
+  width: 100%;
+  max-width: var(--p-max, var(--slide-content-max));
+  margin-inline: auto;
+}
+
+/* FlexBlock — equal-height, auto-wrapping cells. */
+.p-flexblock {
+  display: grid;
+  gap: var(--p-gap, var(--slide-space-4));
+  grid-template-columns: repeat(var(--p-cols, 3), 1fr);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.p-flexblock > * {
+  background: var(--slide-block-bg);
+  border: 1px solid var(--slide-block-border);
+  border-radius: var(--slide-block-radius);
+  padding: var(--slide-space-4);
+}
+.p-flexblock.variant-metrics {
+  text-align: center;
+}
+.p-flexblock.variant-metrics :is(strong, b, .metric) {
+  display: block;
+  font-size: var(--slide-text-3xl);
+  color: var(--slide-accent);
+  font-weight: var(--slide-heading-weight);
+}
+.p-flexblock.variant-clients > * {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.p-flexblock.variant-steps {
+  counter-reset: step;
+}
+.p-flexblock.variant-steps > * {
+  counter-increment: step;
+}
+.p-flexblock.variant-steps > *::before {
+  content: counter(step);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2em;
+  height: 2em;
+  margin-bottom: var(--slide-space-2);
+  border-radius: 50%;
+  background: var(--slide-accent);
+  color: var(--slide-accent-fg);
+  font-weight: var(--slide-heading-weight);
+}
+
+/* FitText — sized by the fitty client script; this is the pre-JS baseline. */
+.p-fittext {
+  display: block;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* RenderWhen — hidden unless the current mode matches. The runtime sets
+   `data-mode` on the deck root; default (unset) counts as "slide". */
+.p-renderwhen {
+  display: contents;
+}
+.as-deck:not([data-mode="presenter"]) .p-renderwhen[data-when="presenter"],
+.as-deck:not([data-mode="print"]) .p-renderwhen[data-when="print"],
+.as-deck[data-mode="presenter"] .p-renderwhen[data-when="slide"],
+.as-deck[data-mode="print"] .p-renderwhen[data-when="slide"] {
+  display: none;
+}

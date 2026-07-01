@@ -1,0 +1,18 @@
+---
+// Auto-fit-text to its container width via fitty (reveal.js `r-fit-text`).
+interface Props {
+  min?: number;
+  max?: number;
+  class?: string;
+}
+const { min, max, class: cls } = Astro.props;
+---
+
+<span class:list={["p-fittext", cls]} data-min={min} data-max={max}><slot /></span>
+
+<script>
+  import { initFitText } from "@astro-slides/client/fit-text";
+  const run = () => initFitText();
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run);
+  else run();
+</script>

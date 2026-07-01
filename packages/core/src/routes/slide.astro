@@ -1,13 +1,18 @@
 ---
 import { configs } from "@astro-slides/configs";
+import { layouts } from "@astro-slides/layouts";
 import { slides } from "@astro-slides/slides";
+import "@astro-slides/client/themes/starter/theme.css";
 import "@astro-slides/client/styles/deck.css";
+import "@astro-slides/client/styles/base.css";
+import "@astro-slides/client/styles/layouts.css";
+import "@astro-slides/client/styles/primitives.css";
 
 /**
- * Deck route. Every `/{deck}/{slide}` URL renders the whole deck as a stack of
- * `<section>` elements — the current slide gets `present`, the rest `past`/`future`
- * — so the in-browser runtime can navigate client-side without a full reload while
- * each slide URL stays a real, deep-linkable static page.
+ * Deck route. Renders the whole deck as a `<section>` stack (current = `present`),
+ * each slide wrapped in its resolved layout component. Layouts come from the
+ * `@astro-slides/layouts` virtual module (user/theme/built-in layered). The runtime
+ * (Phase 04) drives navigation client-side.
  */
 export function getStaticPaths() {
   const byDeck = new Map<string, typeof slides>();
@@ -29,11 +34,25 @@ const [aw, ah] = String(config.aspectRatio ?? "16:9").split(":").map(Number);
 const designWidth = Number(config.canvasWidth ?? 1920);
 const designHeight = Math.round(designWidth * (aw && ah ? ah / aw : 9 / 16));
 
+const scheme = config.colorSchema === "light" || config.colorSchema === "dark"
+  ? config.colorSchema
+  : undefined;
+
 const stateClass = (no: number): string =>
   no < current.no ? "past" : no > current.no ? "future" : "present";
+
+// A background frontmatter value that looks like a path/URL becomes a cover image;
+// anything else is treated as a CSS color/gradient.
+const isImageRef = (v: string): boolean => /^(https?:|\/|\.|data:)/.test(v) || /\.(png|jpe?g|gif|webp|avif|svg)$/i.test(v);
+const backgroundStyle = (v: string | null): string | undefined => {
+  if (!v) return undefined;
+  return isImageRef(v) ? `background-image:url('${v}')` : `background:${v}`;
+};
+
+const fallbackLayout = layouts.default ?? layouts["404"];
 ---
 
-<html lang="en">
+<html lang="en" data-color-scheme={scheme}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -50,16 +69,29 @@ const stateClass = (no: number): string =>
     >
       <div class="as-viewport">
         {
-          deckSlides.map((s) => (
-            <section
-              class:list={["as-slide", stateClass(s.no)]}
-              data-slide-no={s.no}
-              data-steps={s.totalClicks}
-              data-layout={s.layout}
-              data-title={s.title ?? ""}
-              set:html={s.html}
-            />
-          ))
+          deckSlides.map((s) => {
+            const Layout = layouts[s.layout] ?? fallbackLayout;
+            return (
+              <section
+                class:list={["as-slide", stateClass(s.no), s.class]}
+                data-slide-no={s.no}
+                data-steps={s.totalClicks}
+                data-layout={s.layout}
+                data-title={s.title ?? ""}
+                data-background={s.background ?? undefined}
+                style={backgroundStyle(s.background)}
+              >
+                <Layout
+                  no={s.no}
+                  title={s.title}
+                  layout={s.layout}
+                  html={s.html}
+                  slots={s.slots}
+                  frontmatter={s.frontmatter}
+                />
+              </section>
+            );
+          })
         }
       </div>
       <div class="as-status" aria-live="polite" aria-atomic="true"></div>
