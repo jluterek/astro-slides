@@ -8,6 +8,7 @@ export interface NavActions {
   last(): void;
   toggleOverview(): void;
   toggleHelp(): void;
+  openPresenter(): void;
   escape(): void;
 }
 
@@ -17,6 +18,7 @@ export const SHORTCUTS: ReadonlyArray<{ keys: string; label: string }> = [
   { keys: "← / ↑", label: "Previous slide or step" },
   { keys: "Home / End", label: "First / last slide" },
   { keys: "O", label: "Toggle overview" },
+  { keys: "P", label: "Open presenter view" },
   { keys: "?", label: "Toggle this help" },
   { keys: "Esc", label: "Close overview / help" },
 ];
@@ -38,6 +40,7 @@ export function bindKeyboard(target: Window | HTMLElement, actions: NavActions):
     Home: (e) => run(e, actions.first),
     End: (e) => run(e, actions.last),
     o: (e) => run(e, actions.toggleOverview),
+    p: (e) => run(e, actions.openPresenter),
     "Shift+?": (e) => run(e, actions.toggleHelp),
     Escape: (e) => run(e, actions.escape),
   });

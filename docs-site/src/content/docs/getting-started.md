@@ -156,7 +156,10 @@ pnpm astro-slides dev
 
 This boots the Astro dev server with hot reload. Open the printed URL to view the
 deck; each slide has its own URL (e.g. `/<deck>/3`), and a presenter view lives
-at `/presenter/<deck>/<n>`.
+at `/presenter/<deck>/<n>`. If a project has **more than one deck**, the root URL
+(`/`) shows a **dashboard** listing them all with open / present / print links; a
+single-deck project redirects straight to the first slide. From any slide, press
+**`P`** to open the presenter view for the current spot in a new tab.
 
 While the server runs, single-key shortcuts are available in the terminal —
 press `?` to list them. See the [CLI reference](/reference/cli/) for the full

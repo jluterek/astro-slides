@@ -116,7 +116,19 @@ export function initDeck(root: HTMLElement): DeckHandle {
   const controller = new DeckController({ root, sections, slides, store, announcer, transition });
 
   // --- Overview + help chrome ------------------------------------------------
-  const help = ensureHelpOverlay(root);
+  // Open the presenter view for this deck at the current slide, in a new window. No-op in
+  // embed mode and in the presenter's own follow-only preview iframe (`?as-preview`).
+  const openPresenter = (): void => {
+    if (root.classList.contains("as-embed")) return;
+    if (new URLSearchParams(location.search).has("as-preview")) return;
+    const deck = root.dataset.deck ?? "";
+    // Vite substitutes `import.meta.env.BASE_URL` at bundle time; the client tsconfig doesn't
+    // pull in vite/client types, so read it through a cast rather than widening the config.
+    const base = (import.meta as ImportMeta & { env?: { BASE_URL?: string } }).env?.BASE_URL || "/";
+    const url = `${base}presenter/${encodeURIComponent(deck)}/${controller.current.slide}`;
+    window.open(url, "_blank", "noopener");
+  };
+  const help = ensureHelpOverlay(root, openPresenter);
   const setOverview = (on: boolean): void => {
     root.classList.toggle("as-overview", on);
     store.overview.set(on);
@@ -131,6 +143,7 @@ export function initDeck(root: HTMLElement): DeckHandle {
     last: () => controller.last(),
     toggleOverview: () => setOverview(!store.overview.get()),
     toggleHelp: () => setHelp(help.hidden),
+    openPresenter,
     escape: () => {
       if (!help.hidden) setHelp(false);
       else if (store.overview.get()) setOverview(false);
