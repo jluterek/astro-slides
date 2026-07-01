@@ -4,7 +4,7 @@ The phase index. Always current. Update when a phase starts or ends.
 
 ## Active
 
-- _None. Phase 02 closed; Phase 03 (astro-integration) is next up._
+- _None. Phase 03 closed; Phase 04 (runtime-core) is next up._
 
 ## Planned
 
@@ -12,7 +12,6 @@ Phases are listed in dependency order. They can be re-sequenced if a later phase
 
 | # | Phase | One-liner |
 | --- | --- | --- |
-| 03 | [`03-astro-integration`](./03-astro-integration/README.md) | Astro integration, Vite plugins, virtual modules, content collections, per-slide routes |
 | 04 | [`04-runtime-core`](./04-runtime-core/README.md) | Slide rendering, navigation, URL state, keyboard/touch, the `past/present/future` state machine |
 | 05 | [`05-themes-and-layouts`](./05-themes-and-layouts/README.md) | Filesystem-layered themes, built-in layouts, CSS-custom-property tokens |
 | 06 | [`06-click-model`](./06-click-model/README.md) | Parse-time click resolution, `<Click>` / `<Clicks>` / `<After>` components, click runtime |
@@ -35,6 +34,7 @@ Phases are listed in dependency order. They can be re-sequenced if a later phase
 | --- | --- | --- |
 | 01 | `01-foundation` | [`docs/built/01-foundation.md`](../docs/built/01-foundation.md) — monorepo, strict TS, Biome, Vitest, Husky, CI (closed 2026-06-30) |
 | 02 | `02-parser` | [`docs/built/02-parser.md`](../docs/built/02-parser.md) — MDX/MD → typed slide AST; Zod frontmatter; parser package (closed 2026-06-30) |
+| 03 | `03-astro-integration` | [`docs/built/03-astro-integration.md`](../docs/built/03-astro-integration.md) — Astro integration, virtual modules, per-slide routes, CLI, demo (closed 2026-06-30) |
 
 ---
 

@@ -1,0 +1,16 @@
+{
+  "name": "@astro-slides/example-minimal",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Minimal astro-slides deck — boots with `astro-slides dev`.",
+  "scripts": {
+    "dev": "astro-slides dev",
+    "build": "astro build"
+  },
+  "dependencies": {
+    "@astro-slides/cli": "workspace:*",
+    "@astro-slides/core": "workspace:*",
+    "astro": "catalog:frontend"
+  }
+}

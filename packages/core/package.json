@@ -5,5 +5,29 @@
   "type": "module",
   "description": "Astro integration, Vite plugins, and the slide compilation pipeline.",
   "license": "MIT",
-  "author": "James Luterek"
+  "author": "James Luterek",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@astro-slides/parser": "workspace:*",
+    "@astro-slides/types": "workspace:*",
+    "picocolors": "catalog:prod",
+    "rehype-stringify": "catalog:prod",
+    "remark-gfm": "catalog:prod",
+    "remark-parse": "catalog:prod",
+    "remark-rehype": "catalog:prod",
+    "unified": "catalog:prod"
+  },
+  "peerDependencies": {
+    "astro": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:dev",
+    "astro": "catalog:frontend",
+    "vite": "catalog:dev"
+  }
 }

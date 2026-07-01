@@ -1,0 +1,31 @@
+---
+import { ClientRouter } from "astro:transitions";
+import { slides } from "@astro-slides/slides";
+
+export function getStaticPaths() {
+  return slides.map((slide) => ({
+    params: { deck: slide.deck, slide: String(slide.no) },
+    props: slide,
+  }));
+}
+
+const slide = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{slide.title ?? `${slide.deck} — ${slide.no}`}</title>
+    <ClientRouter />
+  </head>
+  <body>
+    <main
+      class="astro-slide"
+      data-deck={slide.deck}
+      data-slide-no={slide.no}
+      data-layout={slide.layout}
+      set:html={slide.html}
+    />
+  </body>
+</html>

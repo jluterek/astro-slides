@@ -53,7 +53,9 @@ Executed pre-existing ADRs (0003 TS-strict, 0004 pnpm); no new ADRs. Load-bearin
 choices made during the phase, each recorded in its archived task file:
 
 - **Catalogs seeded, not empty** — entries are inert until referenced, so seeding is safe.
-- **`tsc -b --noEmit` for typecheck** — supported in TS 5.9; emits nothing. Negative-tested.
+- **`tsc -b` for typecheck** — originally `tsc -b --noEmit`; changed in Phase 02 when the
+  first cross-package reference made `--noEmit` illegal (referenced composite projects
+  must emit). Output lands in gitignored `dist/`. Negative-tested.
 - **Pre-commit uses `biome check` (no `--write`)** — a strict *gate* that blocks rather
   than silently auto-fixing staged files. Switch to `--write` if auto-fix DX is preferred.
 - **No Corepack anywhere** — banned (Node 25 removal); pnpm via standalone install and
