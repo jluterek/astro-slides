@@ -1,9 +1,12 @@
 {
   "extends": "../../tsconfig.base.json",
+  "//": "tsc emits declarations only (dist/*.d.ts) for project-reference typecheck; the runtime bundle (dist/index.js, workspace deps inlined to cross the CLI's type-stripping wall) is produced by tsup. Different extensions → no collision.",
   "compilerOptions": {
     "composite": true,
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "dist",
+    "emitDeclarationOnly": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [{ "path": "../parser" }, { "path": "../types" }]
 }

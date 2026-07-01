@@ -4,7 +4,7 @@ The phase index. Always current. Update when a phase starts or ends.
 
 ## Active
 
-- _None. Phase 13 closed (PPTX export: editable OOXML + image fallback); Phase 14 (MCP server) is next up._
+- _None. Phase 14 closed (MCP server: 20-tool surface, stdio + Streamable HTTP, skill bundle); Phase 15 (Marp/Slidev compatibility) is next up._
 
 ## Planned
 
@@ -12,7 +12,6 @@ Phases are listed in dependency order. They can be re-sequenced if a later phase
 
 | # | Phase | One-liner |
 | --- | --- | --- |
-| 14 | [`14-mcp-server`](./14-mcp-server/README.md) | MCP server CLI subcommand, tool surface, stdio + SSE transports, skill bundle |
 | 15 | [`15-marp-slidev-compatibility`](./15-marp-slidev-compatibility/README.md) | Marp directive support, Slidev component shims, gap documentation |
 | 16 | [`16-default-theme`](./16-default-theme/README.md) | "Cosmic" flagship theme: WebSlides-quality design DNA, dark/light variants |
 | 17 | [`17-docs-and-examples`](./17-docs-and-examples/README.md) | Starlight docs site, sample decks, CLI in-TTY shortcuts |
@@ -35,6 +34,7 @@ Phases are listed in dependency order. They can be re-sequenced if a later phase
 | 11 | `11-drawing-and-recording` | [`docs/built/11-drawing-and-recording.md`](../docs/built/11-drawing-and-recording.md) — drauu drawing overlay + laser, RecordRTC capture, Hono/WebSocket sync gateway + `/entry` phone remote, `--remote` QR (closed 2026-07-01) |
 | 12 | `12-export-web` | [`docs/built/12-export-web.md`](../docs/built/12-export-web.md) — `/print` route + `@page` PDF, Playwright `export` (PDF/PNG/HTML), `?embed=1` pages, SPA `/` redirect + `404.html` (closed 2026-07-01) |
 | 13 | `13-export-pptx` | [`docs/built/13-export-pptx.md`](../docs/built/13-export-pptx.md) — editable PPTX via PptxGenJS from rendered-DOM extraction (text/lists/tables/images/notes), code + `exportAs:image`/`--rasterize` fallback (closed 2026-07-01) |
+| 14 | `14-mcp-server` | [`docs/built/14-mcp-server.md`](../docs/built/14-mcp-server.md) — first-class MCP server (`astro-slides mcp-server`): 20 read/write/navigate/export tools, stdio + Streamable HTTP + bearer auth, tsup-bundled package, text-level write engine, Claude Code skill bundle (closed 2026-07-01) |
 
 ---
 

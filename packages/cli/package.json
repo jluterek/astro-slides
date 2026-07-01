@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@astro-slides/core": "workspace:*",
+    "@astro-slides/mcp-server": "workspace:*",
     "@astro-slides/parser": "workspace:*",
     "@lillallol/outline-pdf": "catalog:prod",
     "citty": "catalog:prod",

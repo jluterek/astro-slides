@@ -5,5 +5,31 @@
   "type": "module",
   "description": "Model Context Protocol tool surface for reading, writing, presenting, and exporting decks.",
   "license": "MIT",
-  "author": "James Luterek"
+  "author": "James Luterek",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup"
+  },
+  "dependencies": {
+    "@astro-slides/parser": "workspace:*",
+    "@astro-slides/types": "workspace:*",
+    "@hono/mcp": "catalog:prod",
+    "@hono/node-server": "catalog:prod",
+    "@modelcontextprotocol/sdk": "catalog:prod",
+    "hono": "catalog:prod",
+    "yaml": "catalog:prod",
+    "zod": "catalog:prod"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:dev",
+    "tsup": "catalog:dev"
+  }
 }
