@@ -16,6 +16,7 @@ import RenderWhen from "@astro-slides/client/components/RenderWhen.astro";
 import Stack from "@astro-slides/client/components/Stack.astro";
 import Wrap from "@astro-slides/client/components/Wrap.astro";
 import { configs, features } from "@astro-slides/configs";
+import { drawings as persistedDrawings } from "@astro-slides/drawings";
 import { layouts } from "@astro-slides/layouts";
 import { slides } from "@astro-slides/slides";
 // KaTeX CSS as a URL asset — linked only when the deck uses math (conditional include).
@@ -29,6 +30,7 @@ import "@astro-slides/client/styles/click.css";
 import "@astro-slides/client/styles/transitions.css";
 import "@astro-slides/client/styles/code.css";
 import "@astro-slides/client/styles/diagrams.css";
+import "@astro-slides/client/styles/drawing.css";
 import "@shikijs/magic-move/style.css";
 
 /**
@@ -71,6 +73,12 @@ export function getStaticPaths() {
 
 const { current, deckSlides } = Astro.props;
 const config = configs[current.deck] ?? {};
+// Drawing overlay (Phase 11): enabled when the deck declares `drawings:`; `persist`
+// writes committed strokes to `.astro-slides/drawings/`. Any persisted annotations are
+// embedded so the runtime can seed them into the initial shared state.
+const drawingsCfg = (config.drawings ?? {}) as { persist?: boolean };
+const drawingsEnabled = config.drawings != null;
+const deckDrawings = persistedDrawings[current.deck] ?? {};
 // Conditional asset inclusion (Phase 09): only link KaTeX's stylesheet when the deck
 // actually uses math. Mermaid's runtime is code-split and fetched on demand.
 const deckFeatures = features[current.deck] ?? {};
@@ -129,6 +137,8 @@ const fallbackLayout = layouts.default ?? layouts["404"];
       data-transition={transitionName(deckTransition)}
       data-design-width={designWidth}
       data-design-height={designHeight}
+      data-drawings={drawingsEnabled ? "true" : undefined}
+      data-drawings-persist={drawingsCfg.persist ? "true" : undefined}
     >
       <div class="as-viewport">
         {
@@ -163,10 +173,25 @@ const fallbackLayout = layouts.default ?? layouts["404"];
         }
       </div>
       <div class="as-status" aria-live="polite" aria-atomic="true"></div>
+      {
+        drawingsEnabled && (
+          <script
+            type="application/json"
+            class="as-drawings-data"
+            set:html={JSON.stringify(deckDrawings)}
+          />
+        )
+      }
     </div>
 
     <script>
       import { initDeck } from "@astro-slides/client";
+      import { syncGateway } from "@astro-slides/runtime-config";
+      // In dev with --remote, advertise the WS gateway so the runtime also joins over
+      // WebSocket (cross-origin: phones + a second screen). Null in static builds.
+      if (syncGateway)
+        (window as unknown as { __ASTRO_SLIDES_SYNC__?: string }).__ASTRO_SLIDES_SYNC__ =
+          syncGateway;
       const root = document.querySelector<HTMLElement>(".as-deck");
       if (root) initDeck(root);
     </script>

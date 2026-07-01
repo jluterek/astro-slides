@@ -1,0 +1,87 @@
+/* Drawing overlay + laser pointer (Phase 11). */
+
+/* The drawing surface rides the viewport transform (design coordinates via viewBox),
+   so annotations scale with the slides. Inert until the pen is active. */
+.as-drawing-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 40;
+  pointer-events: none;
+  touch-action: none;
+}
+.as-deck.as-drawing-on .as-drawing-layer {
+  pointer-events: auto;
+  cursor: crosshair;
+}
+
+/* Floating toolbar — fixed to the window, not slide-scaled. */
+.as-drawing-toolbar {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.75rem;
+  background: rgba(17, 24, 39, 0.9);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font:
+    500 0.95rem / 1 system-ui,
+    sans-serif;
+}
+.as-drawing-toolbar[hidden] {
+  display: none;
+}
+.as-drawing-toolbar button {
+  min-width: 1.9rem;
+  height: 1.9rem;
+  padding: 0 0.35rem;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+.as-drawing-toolbar button:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+.as-drawing-toolbar button.is-active {
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.25);
+}
+.as-drawing-toolbar .as-tool-color {
+  width: 1.4rem;
+  min-width: 0;
+  height: 1.4rem;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+.as-drawing-toolbar .as-tool-color.is-active {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+/* Laser pointer dot — positioned in viewport percentage coordinates. */
+.as-laser {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border-radius: 50%;
+  z-index: 50;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(255, 60, 60, 0.95) 0%, rgba(255, 60, 60, 0) 70%);
+  box-shadow: 0 0 12px 4px rgba(255, 0, 0, 0.55);
+}
+.as-laser[hidden] {
+  display: none;
+}

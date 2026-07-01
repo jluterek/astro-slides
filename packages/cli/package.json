@@ -19,7 +19,8 @@
     "@astro-slides/core": "workspace:*",
     "@astro-slides/parser": "workspace:*",
     "citty": "catalog:prod",
-    "picocolors": "catalog:prod"
+    "picocolors": "catalog:prod",
+    "uqr": "catalog:prod"
   },
   "peerDependencies": {
     "astro": "^5.0.0"

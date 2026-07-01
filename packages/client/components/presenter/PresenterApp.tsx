@@ -5,6 +5,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { type NavState, nextState, prevState, type SlideMeta } from "../../src/navigation.js";
 import { createSyncStore, type SyncStore } from "../../src/sync/store.js";
 import { displayMs, initialState, type SharedState } from "../../src/sync/types.js";
+import RecordingControls from "../recording/RecordingControls.js";
 
 /**
  * Presenter view (Phase 10). A React island that drives the deck over BroadcastChannel:
@@ -26,6 +27,8 @@ export interface PresenterProps {
   slides: PresenterSlide[];
   start: number;
   durationMs: number | null;
+  /** Show the recording controls (deck `record:` is not `false`). */
+  record?: boolean;
 }
 
 function useNow(active: boolean): number {
@@ -38,7 +41,13 @@ function useNow(active: boolean): number {
   return now;
 }
 
-export default function PresenterApp({ deckId, slides, start, durationMs }: PresenterProps) {
+export default function PresenterApp({
+  deckId,
+  slides,
+  start,
+  durationMs,
+  record = false,
+}: PresenterProps) {
   const navSlides = useMemo<SlideMeta[]>(
     () => slides.map((s) => ({ no: s.no, steps: s.totalClicks, title: s.title })),
     [slides],
@@ -172,6 +181,7 @@ export default function PresenterApp({ deckId, slides, start, durationMs }: Pres
                   </button>
                 </div>
                 <Notes html={currentSlide?.notesHtml ?? ""} step={state.step} />
+                {record && <RecordingControls nameStem={deckId} />}
               </section>
             </Panel>
           </PanelGroup>

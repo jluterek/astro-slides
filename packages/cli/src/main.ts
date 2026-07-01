@@ -1,6 +1,9 @@
+import { createHash } from "node:crypto";
+import { networkInterfaces } from "node:os";
 import { emitKeypressEvents, type Key } from "node:readline";
 import { defineCommand } from "citty";
 import pc from "picocolors";
+import { renderUnicodeCompact } from "uqr";
 
 /**
  * The `astro-slides` CLI. Self-contained (no relative imports) so the `bin` can run it
@@ -79,22 +82,104 @@ export function attachShortcuts(
   };
 }
 
+// --- Mobile remote (Phase 11) ---------------------------------------------
+// Helpers for `dev --remote`. Kept in this self-contained file (no relative imports)
+// so the `bin` can run it directly under Node's type stripping. Pure parts are
+// unit-tested via the package's `index` re-export.
+
+/** Derive a short, URL-safe token from a password (stable, non-secret). */
+export function deriveToken(password: string): string {
+  return createHash("sha256").update(password).digest("hex").slice(0, 12);
+}
+
+/** First non-internal IPv4 address, or null when only loopback is available. */
+export function lanAddress(ifaces = networkInterfaces()): string | null {
+  for (const list of Object.values(ifaces)) {
+    for (const net of list ?? []) {
+      // Node 18+ reports `family` as the string "IPv4".
+      if (net.family === "IPv4" && !net.internal) return net.address;
+    }
+  }
+  return null;
+}
+
+export interface RemoteUrlOptions {
+  host: string;
+  port: number;
+  token?: string | undefined;
+}
+
+/** Build the `/entry` URL a phone opens. */
+export function buildRemoteUrl({ host, port, token }: RemoteUrlOptions): string {
+  const query = token ? `?token=${encodeURIComponent(token)}` : "";
+  return `http://${host}:${port}/entry${query}`;
+}
+
+/** Print the QR code + URL + a one-line security note to the terminal. */
+export function printRemote(url: string, hasPassword: boolean): void {
+  const lines = [
+    "",
+    pc.bold(pc.cyan("Mobile remote")),
+    renderUnicodeCompact(url),
+    `  ${pc.bold(url)}`,
+    pc.dim(
+      hasPassword
+        ? "  Password protected — the URL includes the access token."
+        : "  Open on your LAN — anyone with this URL can drive the deck.",
+    ),
+    "",
+  ];
+  console.log(lines.join("\n"));
+}
+
 // Minimal shape of Astro's programmatic API we rely on (avoids a hard type dep).
+interface AstroDevServer {
+  stop(): Promise<void>;
+  address?: { port: number; address: string };
+}
 interface AstroModule {
-  dev(config: { root: string }): Promise<{ stop(): Promise<void> }>;
+  dev(config: {
+    root: string;
+    server?: { host?: boolean | string; port?: number };
+  }): Promise<AstroDevServer>;
   build(config: { root: string }): Promise<unknown>;
 }
+
+const DEFAULT_PORT = 4321;
 
 const devCommand = defineCommand({
   meta: { name: "dev", description: "Start the dev server and watch the deck." },
   args: {
     root: { type: "positional", required: false, description: "Project directory (default: cwd)." },
+    remote: {
+      type: "string",
+      description: "Serve a phone remote on the LAN (optionally --remote=<password>).",
+    },
   },
   async run({ args }) {
     const astro = (await import("astro")) as unknown as AstroModule;
     const root = args.root ?? process.cwd();
-    const server = await astro.dev({ root });
+
+    // --remote (Phase 11): bind 0.0.0.0 and stand up the sync gateway. `--remote` alone
+    // is open on the LAN; `--remote=<password>` derives an access token. The integration
+    // reads these env vars from its dev-server hook.
+    const remote = args.remote !== undefined;
+    const password = typeof args.remote === "string" && args.remote.length > 0 ? args.remote : "";
+    const token = password ? deriveToken(password) : "";
+    if (remote) {
+      process.env.ASTRO_SLIDES_REMOTE = "1";
+      if (token) process.env.ASTRO_SLIDES_REMOTE_TOKEN = token;
+    }
+
+    const server = await astro.dev({ root, ...(remote ? { server: { host: true } } : {}) });
     console.log(shortcutHelp());
+
+    if (remote) {
+      const host = lanAddress() ?? "localhost";
+      const port = server.address?.port ?? DEFAULT_PORT;
+      printRemote(buildRemoteUrl({ host, port, token: token || undefined }), !!password);
+    }
+
     const quit = async (): Promise<void> => {
       await server.stop();
       process.exit(0);

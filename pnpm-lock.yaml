@@ -27,6 +27,9 @@ catalogs:
     '@types/react-dom':
       specifier: ^19.0.0
       version: 19.2.3
+    '@types/recordrtc':
+      specifier: ^5.6.15
+      version: 5.6.15
     '@vitest/coverage-v8':
       specifier: ^3.0.0
       version: 3.2.6
@@ -55,6 +58,9 @@ catalogs:
     '@astrojs/react':
       specifier: ^4.3.0
       version: 4.4.2
+    '@fix-webm-duration/fix':
+      specifier: ^1.0.1
+      version: 1.0.1
     '@iconify-json/carbon':
       specifier: ^1.2.0
       version: 1.2.23
@@ -79,6 +85,9 @@ catalogs:
     cmdk:
       specifier: ^1.1.0
       version: 1.1.1
+    drauu:
+      specifier: ^1.0.0
+      version: 1.0.0
     esbuild:
       specifier: ^0.25.0
       version: 0.25.12
@@ -112,6 +121,9 @@ catalogs:
     react-resizable-panels:
       specifier: ^2.1.9
       version: 2.1.9
+    recordrtc:
+      specifier: ^5.6.2
+      version: 5.6.2
     remark-math:
       specifier: ^6.0.0
       version: 6.0.0
@@ -125,9 +137,18 @@ catalogs:
       specifier: ^0.21.0
       version: 0.21.0
   prod:
+    '@hono/node-server':
+      specifier: ^1.19.14
+      version: 1.19.14
+    '@hono/node-ws':
+      specifier: ^1.3.0
+      version: 1.3.1
     citty:
       specifier: ^0.1.6
       version: 0.1.6
+    hono:
+      specifier: ^4.12.0
+      version: 4.12.27
     picocolors:
       specifier: ^1.1.0
       version: 1.1.1
@@ -149,6 +170,9 @@ catalogs:
     unist-util-visit:
       specifier: ^5.0.0
       version: 5.1.0
+    uqr:
+      specifier: ^0.1.2
+      version: 0.1.3
     yaml:
       specifier: ^2.0.0
       version: 2.9.0
@@ -226,6 +250,9 @@ importers:
       picocolors:
         specifier: catalog:prod
         version: 1.1.1
+      uqr:
+        specifier: catalog:prod
+        version: 0.1.3
     devDependencies:
       '@types/node':
         specifier: catalog:dev
@@ -239,12 +266,18 @@ importers:
       '@astro-slides/types':
         specifier: workspace:*
         version: link:../types
+      '@fix-webm-duration/fix':
+        specifier: catalog:frontend
+        version: 1.0.1
       '@shikijs/magic-move':
         specifier: catalog:frontend
         version: 4.3.0(react@19.2.7)(shiki@4.3.0)
       cmdk:
         specifier: catalog:frontend
         version: 1.1.1(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      drauu:
+        specifier: catalog:frontend
+        version: 1.0.0
       fitty:
         specifier: catalog:frontend
         version: 2.4.2
@@ -263,6 +296,9 @@ importers:
       react-resizable-panels:
         specifier: catalog:frontend
         version: 2.1.9(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      recordrtc:
+        specifier: catalog:frontend
+        version: 5.6.2
       shiki:
         specifier: catalog:frontend
         version: 4.3.0
@@ -276,6 +312,9 @@ importers:
       '@types/react-dom':
         specifier: catalog:dev
         version: 19.2.3(@types/react@19.2.17)
+      '@types/recordrtc':
+        specifier: catalog:dev
+        version: 5.6.15
       react:
         specifier: catalog:frontend
         version: 19.2.7
@@ -300,6 +339,12 @@ importers:
       '@astrojs/react':
         specifier: catalog:frontend
         version: 4.4.2(@types/node@24.13.2)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(yaml@2.9.0)
+      '@hono/node-server':
+        specifier: catalog:prod
+        version: 1.19.14(hono@4.12.27)
+      '@hono/node-ws':
+        specifier: catalog:prod
+        version: 1.3.1(@hono/node-server@1.19.14(hono@4.12.27))(hono@4.12.27)
       '@iconify-json/carbon':
         specifier: catalog:frontend
         version: 1.2.23
@@ -321,6 +366,9 @@ importers:
       esbuild:
         specifier: catalog:frontend
         version: 0.25.12
+      hono:
+        specifier: catalog:prod
+        version: 4.12.27
       katex:
         specifier: catalog:frontend
         version: 0.17.0
@@ -624,6 +672,9 @@ packages:
   '@csstools/css-tokenizer@3.0.4':
     resolution: {integrity: sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw==}
     engines: {node: '>=18'}
+
+  '@drauu/core@1.0.0':
+    resolution: {integrity: sha512-r1fPyuKaGuNHc8vxRFUT8LxqWjJ3nx+U+zsHcEOurmJoB7uN+zpFw5kTLInfdfvQZ+qF/ebQjw1AwbGcc1XKsQ==}
 
   '@emnapi/runtime@1.11.1':
     resolution: {integrity: sha512-vgj7R3y3Wgx24IQaGPA/R6YFXLHVMOZ0uVEyIQPaWs+rd1AzfEMXlAC22FYwO1XkKR6NPsq7mUandH8oIRdZFw==}
@@ -1095,6 +1146,25 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@fix-webm-duration/fix@1.0.1':
+    resolution: {integrity: sha512-rRN4CpWQaXRbCXYqKIxnsUq8OSWSGq/SVlnxxkx0HxMZZ1u0qnB24P766o8QS5YaMMqAOFAzmsMmfZ2OWucOLQ==}
+
+  '@fix-webm-duration/parser@1.0.1':
+    resolution: {integrity: sha512-Z6el7ohBBpym4iOmxDxumN715cHzLcAbtOtYfIbvoyToVtAuxvHt3ELXGff83iAXEU1Yj7g+obQBdiKJYVhbWw==}
+
+  '@hono/node-server@1.19.14':
+    resolution: {integrity: sha512-GwtvgtXxnWsucXvbQXkRgqksiH2Qed37H9xHZocE5sA3N8O8O8/8FA3uclQXxXVzc9XBZuEOMK7+r02FmSpHtw==}
+    engines: {node: '>=18.14.1'}
+    peerDependencies:
+      hono: ^4
+
+  '@hono/node-ws@1.3.1':
+    resolution: {integrity: sha512-vo/MwCnpJAVHBkGzWjCJ28wF45fYHAfbPZcH2rodZODHtch2GHA94KtMfusmVycTUtsLAsaNsHhtY6P8X3RQsA==}
+    engines: {node: '>=18.14.1'}
+    peerDependencies:
+      '@hono/node-server': ^1.19.11
+      hono: ^4.6.0
 
   '@iconify-json/carbon@1.2.23':
     resolution: {integrity: sha512-7apXetbRmEiWDXIQyikFJZyq7pCVBKHYRzmeLdtT7wWoHYdWHwnFcBAzpuLoSh+ZEAfXZapSWEe8iuS6dUqf+Q==}
@@ -1825,6 +1895,9 @@ packages:
   '@types/react@19.2.17':
     resolution: {integrity: sha512-MXfmqaVPEVgkBT/aY0aGCkRWWtByiYQXo3xdQ8r5RzuFrPiRn8Gar2tQdXSUQ2GKV3bkXckek89V8wQBY2Q/Aw==}
 
+  '@types/recordrtc@5.6.15':
+    resolution: {integrity: sha512-Hml5qLCDfnACr5pYsbt+PbHQSCY4ynN/s84hx9szZz6B6zaTnX1jCUFLtdYWdxDLUKC6YuCaudm+fSpfnJ06tA==}
+
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
 
@@ -2428,6 +2501,9 @@ packages:
   domutils@3.2.2:
     resolution: {integrity: sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==}
 
+  drauu@1.0.0:
+    resolution: {integrity: sha512-K3a1cbP2l4i0H/bmNM4nyGsY5/hiH5a10sEHlksqKue0+TPQCHrV9DwPad+St06CJwpkdzVJ/FyOYTIAm82rgg==}
+
   dset@3.1.4:
     resolution: {integrity: sha512-2QF/g9/zTaPDc3BjNcVTGoBbXBgYfMTTceLaYcFJ/W9kggFUkhxD/hMEeuLKbugyef9SqAx8cpgwlIP/jinUTA==}
     engines: {node: '>=4'}
@@ -2703,6 +2779,10 @@ packages:
 
   hastscript@9.0.1:
     resolution: {integrity: sha512-g7df9rMFX/SPi34tyGCyUBREQoKkapwdY/T04Qn9TDWfHhAYt4/I0gMVirzK5wEzeUqIjEB+LXC/ypb7Aqno5w==}
+
+  hono@4.12.27:
+    resolution: {integrity: sha512-1yrb/+w6HWQJrUCLkJ2IF5jNIPvvFkblV5RNOYl6bV+OA6p9GLcMpHFFGTosSvHvcAUibuUukRqhlYI4z32C7Q==}
+    engines: {node: '>=16.9.0'}
 
   html-encoding-sniffer@4.0.0:
     resolution: {integrity: sha512-Y22oTqIU4uuPgEemfz7NDJz6OeKf12Lsu+QC+s3BVpda64lTiMYCyGwg5ki4vFxkMwQdeZDl2adZoqUgdFuTgQ==}
@@ -3435,6 +3515,9 @@ packages:
   recma-stringify@1.0.0:
     resolution: {integrity: sha512-cjwII1MdIIVloKvC9ErQ+OgAtwHBmcZ0Bg4ciz78FtbT8In39aAYbaA7zvxQ61xVMSPE8WxhLwLbhif4Js2C+g==}
 
+  recordrtc@5.6.2:
+    resolution: {integrity: sha512-1QNKKNtl7+KcwD1lyOgP3ZlbiJ1d0HtXnypUy7yq49xEERxk31PHvE9RCciDrulPCY7WJ+oz0R9hpNxgsIurGQ==}
+
   regex-recursion@6.0.2:
     resolution: {integrity: sha512-0YCaSCq2VRIebiaUviZNs0cBz1kg5kVS2UKUfNIx8YVs1cN3AV7NTctO5FOKBA+UT2BPJIWZauYHPqJODG50cg==}
 
@@ -3894,6 +3977,9 @@ packages:
     hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
+
+  uqr@0.1.3:
+    resolution: {integrity: sha512-0rjE8iEJe4YmT9TOhwsZtqCMRLc5DXZUI2UEYUUg63ikBkqqE5EYWaI0etFe/5KUcmcYwLih2RND1kq+hrUJXA==}
 
   use-callback-ref@1.3.3:
     resolution: {integrity: sha512-jQL3lRnocaFtu3V00JToYz/4QkNWswxijDaCVNZRiRTO3HQDLsdu1ZtmIUvV4yPp+rvWm5j0y0TG/S61cuijTg==}
@@ -4466,6 +4552,8 @@ snapshots:
 
   '@csstools/css-tokenizer@3.0.4': {}
 
+  '@drauu/core@1.0.0': {}
+
   '@emnapi/runtime@1.11.1':
     dependencies:
       tslib: 2.8.1
@@ -4704,6 +4792,28 @@ snapshots:
 
   '@esbuild/win32-x64@0.28.1':
     optional: true
+
+  '@fix-webm-duration/fix@1.0.1':
+    dependencies:
+      '@fix-webm-duration/parser': 1.0.1
+      tslib: 2.8.1
+
+  '@fix-webm-duration/parser@1.0.1':
+    dependencies:
+      tslib: 2.8.1
+
+  '@hono/node-server@1.19.14(hono@4.12.27)':
+    dependencies:
+      hono: 4.12.27
+
+  '@hono/node-ws@1.3.1(@hono/node-server@1.19.14(hono@4.12.27))(hono@4.12.27)':
+    dependencies:
+      '@hono/node-server': 1.19.14(hono@4.12.27)
+      hono: 4.12.27
+      ws: 8.21.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   '@iconify-json/carbon@1.2.23':
     dependencies:
@@ -5412,6 +5522,8 @@ snapshots:
   '@types/react@19.2.17':
     dependencies:
       csstype: 3.2.3
+
+  '@types/recordrtc@5.6.15': {}
 
   '@types/trusted-types@2.0.7':
     optional: true
@@ -6122,6 +6234,10 @@ snapshots:
       domelementtype: 2.3.0
       domhandler: 5.0.3
 
+  drauu@1.0.0:
+    dependencies:
+      '@drauu/core': 1.0.0
+
   dset@3.1.4: {}
 
   dunder-proto@1.0.1:
@@ -6564,6 +6680,8 @@ snapshots:
       hast-util-parse-selector: 4.0.0
       property-information: 7.2.0
       space-separated-tokens: 2.0.2
+
+  hono@4.12.27: {}
 
   html-encoding-sniffer@4.0.0:
     dependencies:
@@ -7591,6 +7709,8 @@ snapshots:
       unified: 11.0.5
       vfile: 6.0.3
 
+  recordrtc@5.6.2: {}
+
   regex-recursion@6.0.2:
     dependencies:
       regex-utilities: 2.3.0
@@ -8110,6 +8230,8 @@ snapshots:
       browserslist: 4.28.4
       escalade: 3.2.0
       picocolors: 1.1.1
+
+  uqr@0.1.3: {}
 
   use-callback-ref@1.3.3(@types/react@19.2.17)(react@19.2.7):
     dependencies:

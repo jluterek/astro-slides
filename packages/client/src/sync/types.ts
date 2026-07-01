@@ -1,14 +1,29 @@
 /**
  * Shared presenter state and the reducer that evolves it (Phase 10, ADR-0010). This is
  * the small state synced across the audience window, the presenter view, and (Phase 11)
- * mobile remotes over `BroadcastChannel`. Last-write-wins; drawings/recording are
- * deferred to Phase 11. See `docs/architecture/sync-state.md`.
+ * mobile remotes — over `BroadcastChannel` (same-origin) and WebSocket (cross-origin).
+ * Last-write-wins. See `docs/architecture/sync-state.md`.
  *
  * Timer drift across windows is avoided by syncing `startedAt` (epoch ms) rather than a
  * computed elapsed value — every client recomputes elapsed locally from the shared start.
+ *
+ * Phase 11 adds drawing + laser state. `drawings` is keyed `"<no>:<step>"` so an
+ * annotation belongs to a specific slide + click step; the SVG payload is drauu's
+ * `dump()`. `laser` is a normalized (0..1) pointer position, or null when off.
  */
 
 export type TimerMode = "stopwatch" | "countdown" | "off";
+
+/** Normalized pointer position (0..1 of the slide box), resolution-independent. */
+export interface LaserPoint {
+  x: number;
+  y: number;
+}
+
+/** Key a drawing by slide number + click step: `"<no>:<step>"`. */
+export function drawingKey(no: number, step: number): string {
+  return `${no}:${step}`;
+}
 
 export interface TimerState {
   mode: TimerMode;
@@ -25,6 +40,10 @@ export interface SharedState {
   step: number;
   blackout: boolean;
   timer: TimerState;
+  /** Persisted annotations keyed `"<no>:<step>"` → drauu SVG dump. */
+  drawings: Record<string, string>;
+  /** Live laser-pointer position (normalized), or null when off. */
+  laser: LaserPoint | null;
 }
 
 export type SyncAction =
@@ -34,6 +53,10 @@ export type SyncAction =
   | { type: "timer/pause"; at: number }
   | { type: "timer/reset" }
   | { type: "timer/mode"; mode: TimerMode; durationMs: number | null }
+  // Drawing + laser (Phase 11). `draw` sets/replaces one slide-step's SVG.
+  | { type: "draw"; key: string; svg: string }
+  | { type: "draw/clear"; key: string }
+  | { type: "laser"; point: LaserPoint | null }
   // Full-snapshot exchange so a late-joining window catches up.
   | { type: "hello" }
   | { type: "state"; state: SharedState };
@@ -46,7 +69,7 @@ export function initialTimer(
 }
 
 export function initialState(no = 1, step = 0): SharedState {
-  return { no, step, blackout: false, timer: initialTimer() };
+  return { no, step, blackout: false, timer: initialTimer(), drawings: {}, laser: null };
 }
 
 /** Pure reducer: `(state, action) -> state`. Unknown / signalling actions are no-ops. */
@@ -76,8 +99,23 @@ export function reduce(state: SharedState, action: SyncAction): SharedState {
           durationMs: action.durationMs,
         },
       };
+    case "draw":
+      return { ...state, drawings: { ...state.drawings, [action.key]: action.svg } };
+    case "draw/clear": {
+      if (!(action.key in state.drawings)) return state;
+      const { [action.key]: _removed, ...rest } = state.drawings;
+      return { ...state, drawings: rest };
+    }
+    case "laser":
+      return { ...state, laser: action.point };
     case "state":
-      return action.state;
+      // Merge defensively: a snapshot arriving over the wire (WebSocket JSON) may
+      // predate the drawings/laser fields, so backfill them rather than leaving holes.
+      return {
+        ...action.state,
+        drawings: action.state.drawings ?? {},
+        laser: action.state.laser ?? null,
+      };
     default:
       return state;
   }

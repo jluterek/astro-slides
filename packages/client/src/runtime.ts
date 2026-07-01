@@ -2,12 +2,16 @@ import { createAnnouncer } from "./a11y.js";
 import { bindCopyButtons } from "./code/copy.js";
 import { initMagicMove } from "./code/magic-move.js";
 import { initMermaid } from "./diagrams/mermaid.js";
+import { initLaser } from "./drawing/laser.js";
+import { type DrawingHandle, initDrawing } from "./drawing/overlay.js";
 import { bindKeyboard, type NavActions } from "./keyboard.js";
 import { DeckController, type SlideMeta } from "./navigation.js";
 import { applyScale, type Size } from "./scaling.js";
 import { createDeckStore, type DeckStore } from "./store.js";
+import type { SyncChannel } from "./sync/channel.js";
 import { createSyncStore } from "./sync/store.js";
 import { initialState } from "./sync/types.js";
+import { createWebSocketTransport } from "./sync/websocket.js";
 import { bindTouch } from "./touch.js";
 import { createSlideTransition } from "./transitions/index.js";
 import { bindOverviewClicks, ensureHelpOverlay } from "./ui.js";
@@ -44,6 +48,18 @@ function ensureBlackout(root: HTMLElement): HTMLElement {
   el.hidden = true;
   root.append(el);
   return el;
+}
+
+/** Read the build-embedded persisted drawings (Phase 11), keyed `"<no>:<step>"`. */
+function readPersistedDrawings(root: HTMLElement): Record<string, string> {
+  const el = root.querySelector<HTMLElement>(".as-drawings-data");
+  if (!el?.textContent) return {};
+  try {
+    const parsed = JSON.parse(el.textContent) as Record<string, string>;
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
 }
 
 /** Highest click step referenced by a slide's DOM (point index or range end). */
@@ -147,9 +163,19 @@ export function initDeck(root: HTMLElement): DeckHandle {
   // channel and never publishes (it mirrors the *next* click, not this window).
   const preview = new URLSearchParams(location.search).has("as-preview");
   const deckId = root.dataset.deck ?? "";
-  const sync = createSyncStore(deckId, initialState(start.slide, start.step), {
+  // Cross-origin transport (Phase 11): when the dev server's sync gateway advertised
+  // itself (a global injected only in dev), also join over WebSocket so phones on the
+  // LAN and the audience screen on another host share the same room. Static builds
+  // never get the global, so they stay BroadcastChannel-only.
+  const gatewayPath = (window as { __ASTRO_SLIDES_SYNC__?: string }).__ASTRO_SLIDES_SYNC__;
+  const transports: SyncChannel[] =
+    gatewayPath && !preview ? [createWebSocketTransport(deckId, { path: gatewayPath })] : [];
+  const initial = initialState(start.slide, start.step);
+  initial.drawings = readPersistedDrawings(root);
+  const sync = createSyncStore(deckId, initial, {
     suffix: preview ? "preview" : "",
     publish: !preview,
+    transports,
   });
   const blackout = ensureBlackout(root);
   let applyingRemote = false;
@@ -164,6 +190,22 @@ export function initDeck(root: HTMLElement): DeckHandle {
     root.classList.toggle("as-blackout-on", s.blackout);
     blackout.hidden = !s.blackout;
   });
+
+  // --- Drawing overlay + laser pointer (Phase 11) ---------------------------
+  // The laser dot is always available (it only shows when someone emits). The drawing
+  // overlay is enabled when the deck opts in via `drawings:` (data-drawings). Neither
+  // runs in the follow-only preview iframe.
+  const laser = preview ? null : initLaser(root, sync);
+  let drawing: DrawingHandle | null = null;
+  if (!preview && root.dataset.drawings === "true") {
+    drawing = initDrawing(root, {
+      sync,
+      current: () => controller.current,
+      design,
+      deckId,
+      persist: root.dataset.drawingsPersist === "true",
+    });
+  }
 
   // Publish local navigation to peers (audience + presenter follow). The preview
   // window is follow-only. `applyingRemote` guards against echoing a remote change.
@@ -190,6 +232,8 @@ export function initDeck(root: HTMLElement): DeckHandle {
       unsyncState();
       unsyncSlide();
       unsyncStep();
+      laser?.destroy();
+      drawing?.destroy();
       sync.close();
       window.removeEventListener("resize", onResize);
       window.removeEventListener("popstate", onPopState);

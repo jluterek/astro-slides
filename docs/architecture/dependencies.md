@@ -82,16 +82,17 @@ Every entry includes the package, current version (June 2026 snapshot), why it w
 
 | Category | Library | Why | Caveat |
 | --- | --- | --- | --- |
-| Drawing overlay | `drauu` v1.0 | Framework-agnostic, vanilla TS. Used directly in client islands. | No official React wrapper — wire to a `ref`. |
-| Recording (camera + screen) | `recordrtc` v5.6+ | `MediaRecorder` wrapper used by Slidev. | Lazy-import only when recording starts. |
-| WebM duration fix | `@fix-webm-duration/fix` | Repairs `MediaRecorder` WebM duration metadata. | — |
+| Drawing overlay | `drauu` v1.0 (installed v1.0.0) | Framework-agnostic vanilla TS — created directly in the **vanilla deck runtime** (`packages/client/src/drawing/`), not a React island, so it layers over the existing deck without hydrating a per-page island. | No official React wrapper — created against a `<svg>` ref. |
+| Recording (camera + screen) | `recordrtc` v5.6 (installed v5.6.2) | `MediaRecorder` wrapper used by Slidev. | **Lazy-imported only when recording starts** (`packages/client/src/recording/recorder.ts`); MIME is negotiated at runtime (`mime.ts`). `@types/recordrtc` is a dev dep. |
+| WebM duration fix | `@fix-webm-duration/fix` (installed v1.0.1) | Repairs `MediaRecorder` WebM duration metadata (Chrome writes an unknown duration). | Also lazy-imported alongside recordrtc. |
 
 ## Mobile remote / sync (Phase 11)
 
 | Category | Library | Why | Caveat |
 | --- | --- | --- | --- |
-| QR code | `uqr` v0.1+ | UnJS, terminal-friendly. | — |
-| HTTP server (for MCP HTTP transport and mobile remote) | `Hono` v4.12+ | Modern, embeddable, runs anywhere. Pairs with `@hono/mcp` v0.3+ for MCP. | WebSocket on Hono/Node needs `@hono/node-ws` — not bundled. |
+| QR code | `uqr` v0.1 (installed v0.1.3) | UnJS, terminal-friendly. `renderANSI()` prints the LAN URL QR to the dev TTY under `--remote`. | — |
+| HTTP server (for MCP HTTP transport and mobile remote) | `Hono` v4.12 (installed v4.12.27) | Modern, embeddable, runs anywhere. Pairs with `@hono/mcp` v0.3+ for MCP. Serves `/entry` + the sync WebSocket as dev-server middleware. | WebSocket on Hono/Node needs `@hono/node-ws` (installed v1.3.1). |
+| Node WebSocket adapter | `@hono/node-ws` v1.3 (installed v1.3.1) | Attaches Hono `upgradeWebSocket` routes to the Vite dev server's Node `httpServer`. | **Peers on `@hono/node-server@^1.19`, not v2** — installed v1.19.14 (used only via `getRequestListener` to mount Hono as Connect middleware). |
 
 ## MCP server (Phase 14)
 

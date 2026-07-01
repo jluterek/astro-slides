@@ -13,9 +13,29 @@ export const VIRTUAL_IDS = {
   configs: "@astro-slides/configs",
   layouts: "@astro-slides/layouts",
   titles: "@astro-slides/titles",
+  drawings: "@astro-slides/drawings",
+  runtimeConfig: "@astro-slides/runtime-config",
 } as const;
 
 const json = (value: unknown): string => JSON.stringify(value);
+
+/**
+ * Emit runtime config the deck script reads at boot (Phase 11). `syncGateway` is the
+ * WebSocket path when the dev server is running with `--remote`, else null — so a static
+ * build never advertises a gateway and the runtime stays BroadcastChannel-only.
+ */
+export function runtimeConfigModuleSource(syncGateway: string | null): string {
+  return `export const syncGateway = ${json(syncGateway)};\nexport default { syncGateway };\n`;
+}
+
+/**
+ * Emit the persisted-drawings manifest (Phase 11): `{ <deck>: { "<no>:<step>": svg } }`.
+ * The deck route seeds these into the runtime's initial shared state so annotations
+ * survive a reload. Read fresh (not cached) so a persisted stroke shows after reload.
+ */
+export function drawingsModuleSource(map: Record<string, Record<string, string>>): string {
+  return `export const drawings = ${json(map)};\nexport default drawings;\n`;
+}
 
 /**
  * Generate the `@astro-slides/slides` module: static imports of each slide's slot

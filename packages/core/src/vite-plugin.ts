@@ -1,10 +1,15 @@
+import { getRequestListener } from "@hono/node-server";
 import type { Plugin, ViteDevServer } from "vite";
 import { discoverDeckFiles, loadAllDecks } from "./deck-loader.js";
+import { loadDrawings } from "./drawing/persistence.js";
 import { resolveLayouts, userLayoutsDir } from "./layout-resolver.js";
 import { emitSlideModules } from "./mdx-emit.js";
+import { createSyncGateway } from "./server/gateway.js";
 import {
   configsModuleSource,
+  drawingsModuleSource,
   layoutsModuleSource,
+  runtimeConfigModuleSource,
   slidesModuleSource,
   titlesModuleSource,
   VIRTUAL_IDS,
@@ -52,6 +57,44 @@ export function astroSlidesVitePlugin(options: VitePluginOptions): Plugin {
     return layouts;
   }
 
+  /**
+   * Stand up the Phase 11 sync gateway inside the dev server (only under --remote).
+   * Imported statically (not lazily) because a runtime `import()` from an integration
+   * hits Vite's already-closed module runner. The middleware is *prepended* onto the
+   * Connect stack so it runs before Astro's SSR router (a plain `.use()` appends after
+   * it, and Astro would 404 `/entry` first).
+   */
+  function mountGateway(server: ViteDevServer, root: string): void {
+    const gatewayPaths = ["/entry", "/__astro-slides/drawings", "/__astro-slides/sync"];
+    const isGatewayPath = (url: string | undefined): boolean => {
+      const path = (url ?? "").split("?")[0] ?? "";
+      return gatewayPaths.some((p) => path === p || path.startsWith(`${p}/`));
+    };
+
+    const decks = data().decks;
+    const deckTotals = Object.fromEntries(decks.map((d) => [d.name, d.deck.slides.length]));
+    const gateway = createSyncGateway({
+      root,
+      deckTotals,
+      defaultDeck: decks[0]?.name ?? "slides",
+      token: process.env.ASTRO_SLIDES_REMOTE_TOKEN || undefined,
+    });
+    if (server.httpServer) gateway.injectWebSocket(server.httpServer);
+    const handle = getRequestListener(gateway.app.fetch);
+
+    const layer = (req: { url?: string }, res: unknown, next: () => void): void => {
+      if (!isGatewayPath(req.url)) {
+        next();
+        return;
+      }
+      handle(req as never, res as never);
+    };
+    const connect = server.middlewares as unknown as {
+      stack: { route: string; handle: unknown }[];
+    };
+    connect.stack.unshift({ route: "", handle: layer });
+  }
+
   return {
     name: "astro-slides:virtual",
     resolveId(id) {
@@ -62,6 +105,19 @@ export function astroSlidesVitePlugin(options: VitePluginOptions): Plugin {
       if (id === resolvedId(VIRTUAL_IDS.configs)) return configsModuleSource(data().decks);
       if (id === resolvedId(VIRTUAL_IDS.titles)) return titlesModuleSource(data().metas);
       if (id === resolvedId(VIRTUAL_IDS.layouts)) return layoutsModuleSource(resolvedLayouts());
+      if (id === resolvedId(VIRTUAL_IDS.drawings)) {
+        // Read fresh so a persisted annotation shows after a reload (not cached).
+        const map = Object.fromEntries(
+          data().decks.map((d) => [d.name, loadDrawings(options.root, d.name)]),
+        );
+        return drawingsModuleSource(map);
+      }
+      if (id === resolvedId(VIRTUAL_IDS.runtimeConfig)) {
+        // Advertise the sync gateway only when the dev server runs with --remote
+        // (the CLI sets ASTRO_SLIDES_REMOTE); static builds get null.
+        const remote = process.env.ASTRO_SLIDES_REMOTE ? "/__astro-slides/sync" : null;
+        return runtimeConfigModuleSource(remote);
+      }
       return null;
     },
     configureServer(server) {
@@ -82,6 +138,11 @@ export function astroSlidesVitePlugin(options: VitePluginOptions): Plugin {
       };
       server.watcher.on("change", onChange);
       server.watcher.on("add", onChange);
+
+      // Sync gateway (Phase 11): only when the CLI passed --remote. Serves the mobile
+      // remote (/entry), drawing persistence, and the shared-state WebSocket. The WS is
+      // attached to the dev server's Node httpServer; the HTTP routes run as middleware.
+      if (process.env.ASTRO_SLIDES_REMOTE) mountGateway(server, options.root);
     },
   };
 }
