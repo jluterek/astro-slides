@@ -17,7 +17,8 @@ Every entry includes the package, current version (June 2026 snapshot), why it w
 | Git hooks | `Husky` v9 + `lint-staged` v15 | Familiar, deterministic. | `simple-git-hooks` is lighter; use only if install footprint becomes an issue. |
 | TS compiler | `typescript` (latest stable) | ADR-0003. | Pinned in catalog. |
 | Test runner | `Vitest` (latest) | First-class TS, fast, snapshot diffs out of the box (`@vitest/snapshot`). | Workspace mode for monorepo discovery. |
-| E2E / visual | `Playwright` (project plugin) | Drives exports + e2e. | Project-scoped via `.claude/settings.json` already. |
+| DOM test env | `jsdom` v25 | Per-file `@vitest-environment jsdom` for client runtime unit tests (state machine, DeckController). | Added Phase 04. Default env stays `node`. |
+| E2E / visual | `@playwright/test` v1 | Drives e2e (deck navigation) + exports. Root `playwright.config.ts`, tests in `e2e/`. | Added as a dev dep Phase 04 (beyond the `.claude/settings.json` project plugin). CI `e2e` job installs `--with-deps chromium`. |
 
 ## CLI / process
 
@@ -47,16 +48,16 @@ Every entry includes the package, current version (June 2026 snapshot), why it w
 | --- | --- | --- | --- |
 | View transitions | `<ClientRouter />` from `astro:transitions` | **Renamed from `<ViewTransitions />`** in Astro 5; latter removed in Astro 6. | Pair elements via `transition:name`. Astro handles `prefers-reduced-motion` natively. |
 | Content collections | Astro's native `getCollection` / Zod schemas | First-class. | Per-collection remark plugins are **not** supported; we register plugins globally and key behavior off the file path. |
-| Cross-island state | `nanostores` v1.4+ | Astro's documented recommendation. | — |
+| Cross-island state | `nanostores` (installed v0.11.4) | Astro's documented recommendation. | Locked-decision note said "v1.4+"; the current published line is 0.11.x. Each deck owns its own store. |
 | Integration hook for routes | `injectRoute` + `astro:routes:resolved` (new in v5) | Lets us inspect resolved routes and generate per-slide deep links. | — |
 
 ## Runtime UI primitives
 
 | Category | Library | Why | Caveat |
 | --- | --- | --- | --- |
-| Keyboard shortcuts (global) | `tinykeys` v4+ | Framework-agnostic, ~650 B, works in any island. | — |
+| Keyboard shortcuts (global) | `tinykeys` (installed v2.1.0) | Framework-agnostic, ~650 B, works in any island. Matches on `event.code`, so `Space`/letters bind reliably. | Ships no `types` condition in `exports` → local ambient decl in `packages/client`. |
 | Keyboard shortcuts (React UI) | `react-hotkeys-hook` v5+ | Component-scoped binding for the presenter / editor panels. | — |
-| Touch / swipe | `@use-gesture/core` (pmndrs) | Modern, framework-agnostic. | Last publish March 2024 — feature-complete but watch maintenance; `react-swipeable` is a fallback. |
+| Touch / swipe | Pointer Events (Phase 04); `@use-gesture/core` reserved for Phase 11 | Swipe-to-navigate is one horizontal gesture — raw Pointer Events are zero-dep and jsdom-testable. | `@use-gesture` earns its place with multi-touch (drawing/pinch-zoom) in Phase 11; `react-swipeable` is a fallback. |
 | Command palette | `cmdk` v1.1+ (paco) | Unstyled, composable, ships its own fuzzy scorer. | React-only — fine since interactive UI is React islands. |
 | Auto-fit text | `fitty` v2.4+ | What reveal.js uses; tiny. | RAF poll has constant CPU — opt-in per slide, not global. |
 | Fragment animation helper | `@formkit/auto-animate` v0.9 | Drop-in for list/grid mutation reveals. | Optional — most click animations are CSS-only; this is the "I added a list item" case. |

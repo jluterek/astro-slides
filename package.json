@@ -21,6 +21,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "gen:schemas": "node packages/types/scripts/gen-schemas.ts",
     "prepare": "husky"
   },
@@ -29,8 +31,10 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:dev",
+    "@playwright/test": "catalog:dev",
     "@vitest/coverage-v8": "catalog:dev",
     "husky": "catalog:dev",
+    "jsdom": "catalog:dev",
     "lint-staged": "catalog:dev",
     "typescript": "catalog:dev",
     "vitest": "catalog:dev"

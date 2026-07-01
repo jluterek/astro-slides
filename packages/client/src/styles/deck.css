@@ -1,0 +1,165 @@
+/*
+ * Base runtime styles for the deck. Themes (Phase 05) layer tokens on top of
+ * these; this file only handles structural concerns: the fixed-aspect scaled
+ * viewport, the past/present/future state machine, overview grid, and help
+ * overlay. Everything visual is expressed through CSS custom properties so a
+ * theme can override without touching layout.
+ */
+
+.as-deck {
+  --as-scale: 1;
+  --as-design-w: 1280px;
+  --as-design-h: 720px;
+  --as-bg: #0b0d12;
+  --as-fg: #f4f5f7;
+
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--as-bg);
+  color: var(--as-fg);
+  font-family: system-ui, sans-serif;
+}
+
+/* The design-space canvas, uniformly scaled to fit the window. */
+.as-viewport {
+  position: relative;
+  width: var(--as-design-w);
+  height: var(--as-design-h);
+  transform: scale(var(--as-scale));
+  transform-origin: center center;
+}
+
+/* Every slide fills the canvas and stacks; state classes control visibility. */
+.as-slide {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  padding: 4% 6%;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+.as-slide.present {
+  opacity: 1;
+  visibility: visible;
+  z-index: 2;
+  transform: none;
+}
+.as-slide.past {
+  transform: translateX(-4%);
+}
+.as-slide.future {
+  transform: translateX(4%);
+}
+
+/* Click-step reveals (generic contract; the <Click> component lands in Phase 06). */
+.as-slide [data-click] {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.as-slide [data-click].as-click-shown {
+  opacity: 1;
+}
+
+/* aria-live status region, visually hidden. */
+.as-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* --- Overview mode -------------------------------------------------------- */
+.as-deck.as-overview {
+  place-items: stretch;
+  overflow: auto;
+}
+.as-deck.as-overview .as-viewport {
+  width: 100%;
+  height: auto;
+  min-height: 100%;
+  transform: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+  align-content: start;
+}
+.as-deck.as-overview .as-slide {
+  position: relative;
+  inset: auto;
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  aspect-ratio: var(--as-design-w) / var(--as-design-h);
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--as-fg) 4%, transparent);
+  cursor: pointer;
+  /* Shrink authored content to thumbnail scale. */
+  font-size: 0.32em;
+  padding: 1.5% 2%;
+}
+.as-deck.as-overview .as-slide.present {
+  border-color: #5aa9ff;
+}
+.as-deck.as-overview .as-slide [data-click] {
+  opacity: 1;
+}
+
+/* --- Help overlay --------------------------------------------------------- */
+.as-help {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, #000 55%, transparent);
+}
+.as-help[hidden] {
+  display: none;
+}
+.as-help-panel {
+  background: var(--as-bg);
+  color: var(--as-fg);
+  border: 1px solid color-mix(in srgb, var(--as-fg) 20%, transparent);
+  border-radius: 10px;
+  padding: 1.5rem 2rem;
+  min-width: 20rem;
+  box-shadow: 0 10px 40px rgb(0 0 0 / 50%);
+}
+.as-help-panel h2 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+}
+.as-help-panel dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.4rem 1.5rem;
+  margin: 0;
+}
+.as-help-panel dt {
+  font-family: ui-monospace, monospace;
+  white-space: nowrap;
+  opacity: 0.9;
+}
+.as-help-panel dd {
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .as-slide {
+    transition: none;
+  }
+}
