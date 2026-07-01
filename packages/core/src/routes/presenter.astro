@@ -22,6 +22,8 @@ export function getStaticPaths() {
 const { deck, start } = Astro.props;
 const config = configs[deck] ?? {};
 const durationMs = parseTimeString(config.duration ?? null);
+// Recording (Phase 11) is on unless the deck opts out with `record: false`.
+const record = config.record !== false;
 
 const deckSlides = slides
   .filter((s) => s.deck === deck)
@@ -47,6 +49,7 @@ const deckSlides = slides
       slides={deckSlides}
       start={start}
       durationMs={durationMs}
+      record={record}
     />
   </body>
 </html>

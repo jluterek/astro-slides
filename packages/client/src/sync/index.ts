@@ -3,12 +3,20 @@ export { createSyncStore, type SyncStore, type SyncStoreOptions } from "./store.
 export { formatDuration, parseTimeString } from "./time.js";
 export {
   displayMs,
+  drawingKey,
   elapsedMs,
   initialState,
   initialTimer,
+  type LaserPoint,
   reduce,
   type SharedState,
   type SyncAction,
   type TimerMode,
   type TimerState,
 } from "./types.js";
+export {
+  createWebSocketTransport,
+  gatewayUrl,
+  type WebSocketLike,
+  type WebSocketTransportOptions,
+} from "./websocket.js";

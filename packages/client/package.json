@@ -22,14 +22,17 @@
   },
   "dependencies": {
     "@astro-slides/types": "workspace:*",
+    "@fix-webm-duration/fix": "catalog:frontend",
     "@shikijs/magic-move": "catalog:frontend",
     "cmdk": "catalog:frontend",
+    "drauu": "catalog:frontend",
     "fitty": "catalog:frontend",
     "lz-string": "catalog:frontend",
     "mermaid": "catalog:frontend",
     "nanostores": "catalog:frontend",
     "react-hotkeys-hook": "catalog:frontend",
     "react-resizable-panels": "catalog:frontend",
+    "recordrtc": "catalog:frontend",
     "shiki": "catalog:frontend",
     "tinykeys": "catalog:frontend"
   },
@@ -40,6 +43,7 @@
   "devDependencies": {
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
+    "@types/recordrtc": "catalog:dev",
     "react": "catalog:frontend",
     "react-dom": "catalog:frontend"
   }

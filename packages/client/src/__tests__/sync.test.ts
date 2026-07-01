@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { channelName } from "../sync/channel.js";
 import {
   displayMs,
+  drawingKey,
   elapsedMs,
   initialState,
   initialTimer,
@@ -80,6 +81,32 @@ describe("reduce", () => {
     const snap = { ...initialState(7, 1), blackout: true };
     expect(reduce(initialState(), { type: "state", state: snap })).toEqual(snap);
   });
+
+  it("backfills drawings/laser when a snapshot predates them", () => {
+    // A snapshot arriving over the wire may lack the Phase 11 fields.
+    const legacy = { no: 2, step: 0, blackout: false, timer: initialTimer() } as SharedState;
+    const s = reduce(initialState(), { type: "state", state: legacy });
+    expect(s.drawings).toEqual({});
+    expect(s.laser).toBeNull();
+  });
+
+  it("sets, replaces, and clears drawings by slide-step key", () => {
+    const key = drawingKey(3, 1);
+    expect(key).toBe("3:1");
+    let s = reduce(initialState(), { type: "draw", key, svg: "<path/>" });
+    expect(s.drawings[key]).toBe("<path/>");
+    s = reduce(s, { type: "draw", key, svg: "<path d='m'/>" }); // last-write-wins
+    expect(s.drawings[key]).toBe("<path d='m'/>");
+    s = reduce(s, { type: "draw/clear", key });
+    expect(key in s.drawings).toBe(false);
+  });
+
+  it("tracks the laser position and turning it off", () => {
+    let s = reduce(initialState(), { type: "laser", point: { x: 0.5, y: 0.25 } });
+    expect(s.laser).toEqual({ x: 0.5, y: 0.25 });
+    s = reduce(s, { type: "laser", point: null });
+    expect(s.laser).toBeNull();
+  });
 });
 
 describe("channelName", () => {
@@ -115,5 +142,21 @@ describe("createSyncStore", () => {
     expect(b.state.get()).toMatchObject({ no: 3, step: 1 }); // peer received it
     a.close();
     b.close();
+  });
+
+  it("fans a local dispatch out to every transport", () => {
+    const posted: SyncAction[] = [];
+    const extra: SyncChannel = {
+      post: (a) => posted.push(a),
+      subscribe: () => () => {},
+      close: () => {},
+    };
+    const make = fakeBus();
+    const store = createSyncStore("d", initialState(), { channel: make(), transports: [extra] });
+    store.dispatch({ type: "goto", no: 5, step: 0 });
+    // hello (join) + goto both reach the extra transport (e.g. the WebSocket).
+    expect(posted).toContainEqual({ type: "goto", no: 5, step: 0 });
+    expect(posted.some((a) => a.type === "hello")).toBe(true);
+    store.close();
   });
 });
