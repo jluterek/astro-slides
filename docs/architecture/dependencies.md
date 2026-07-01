@@ -35,8 +35,8 @@ Every entry includes the package, current version (June 2026 snapshot), why it w
 
 | Category | Library | Why | Caveat |
 | --- | --- | --- | --- |
-| MDX compiler | `@mdx-js/mdx` v3+ | Astro 5+'s peer. | — |
-| Markdown AST utilities | `unist-util-visit` v5, `mdast-util-*`, `hast-util-*` | The unified ecosystem; what `@astrojs/mdx` is built on. | — |
+| MDX integration | `@astrojs/mdx` v4 (Astro 5) + `@astrojs/react` v4 + `react`/`react-dom` v19 | Slides compile as Astro-native MDX; added by `astroSlides()` itself (integration-adds-integrations). Per-slot sources emitted to temp `.mdx` under `<root>/.astro-slides/`. | Added Phase 06. React components used in MDX SSR to static HTML (no client JS) unless a `client:*` directive is set. |
+| Markdown AST utilities | `unist-util-visit` v5 (installed), `mdast-util-*`, `hast-util-*` | The unified ecosystem; `remark-clicks` uses `visit`/`SKIP` to resolve click steps. | — |
 | Frontmatter (MDX) | `remark-frontmatter` v5 + `gray-matter` | `remark-frontmatter` for the MDX pipeline; `gray-matter` for ad-hoc reads. | — |
 | YAML | `yaml` v2+ | Pure JS, full spec. | — |
 | Source-preserving rewrites | `magic-string` | Standard for codemods/transforms. | — |

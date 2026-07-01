@@ -1,63 +1,11 @@
-import { slideTitle } from "@astro-slides/parser";
 import type { LoadedDeck } from "./deck-loader.js";
-import { renderMarkdown } from "./render.js";
+import type { SlideModuleMeta } from "./mdx-emit.js";
 
 /**
- * The per-slide record served through the `@astro-slides/slides` virtual module — the
- * render-ready manifest the runtime and routes consume.
+ * Virtual-module source generators. The slides module imports the per-slide emitted
+ * `.mdx` files (see `mdx-emit.ts`) into a manifest whose `slots` are Astro/MDX
+ * components and whose `totalClicks` is summed from each slot's compile-time export.
  */
-export interface SlideRecord {
-  deck: string;
-  no: number;
-  index: number;
-  layout: string;
-  title: string | null;
-  /** Rendered HTML of the default slot (kept for layouts that ignore slots). */
-  html: string;
-  /** Rendered HTML per named slot (`default` always present). Layouts consume these. */
-  slots: Record<string, string>;
-  /** Per-slide class from frontmatter `class`, applied to the slide section. */
-  class: string | null;
-  /** Per-slide background from frontmatter `background` (color / image URL). */
-  background: string | null;
-  notes: string | null;
-  totalClicks: number;
-  frontmatter: Record<string, unknown>;
-}
-
-function renderSlots(slots: Record<string, string>): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const [name, source] of Object.entries(slots)) {
-    out[name] = source.trim() === "" ? "" : renderMarkdown(source);
-  }
-  return out;
-}
-
-export function buildSlideRecords(decks: LoadedDeck[]): SlideRecord[] {
-  const records: SlideRecord[] = [];
-  for (const { name, deck } of decks) {
-    for (const slide of deck.slides) {
-      if (slide.frontmatter.hide) continue;
-      const fm = slide.frontmatter as Record<string, unknown>;
-      const slots = renderSlots(slide.slots);
-      records.push({
-        deck: name,
-        no: slide.no,
-        index: slide.index,
-        layout: slide.layout,
-        title: slideTitle(slide),
-        html: slots.default ?? renderMarkdown(slide.content),
-        slots,
-        class: typeof fm.class === "string" && fm.class ? fm.class : null,
-        background: typeof fm.background === "string" ? fm.background : null,
-        notes: slide.notes,
-        totalClicks: slide.totalClicks,
-        frontmatter: fm,
-      });
-    }
-  }
-  return records;
-}
 
 /** Public virtual-module specifiers. */
 export const VIRTUAL_IDS = {
@@ -69,8 +17,52 @@ export const VIRTUAL_IDS = {
 
 const json = (value: unknown): string => JSON.stringify(value);
 
-export function slidesModuleSource(records: SlideRecord[]): string {
-  return `export const slides = ${json(records)};\nexport default slides;\n`;
+/**
+ * Generate the `@astro-slides/slides` module: static imports of each slide's slot
+ * `.mdx` files + a manifest array. `slots` map slot name -> component; `totalClicks`
+ * sums the `totalClicks` export the remark-clicks plugin injects into each slot
+ * (namespace import so a missing export is simply 0, never an import error).
+ */
+export function slidesModuleSource(metas: SlideModuleMeta[]): string {
+  const imports: string[] = [];
+  const entries: string[] = [];
+
+  metas.forEach((m, i) => {
+    const slotPairs: string[] = [];
+    const clickTerms: string[] = [];
+    Object.entries(m.slotFiles).forEach(([slot, file], j) => {
+      const comp = `S_${i}_${j}`;
+      const ns = `N_${i}_${j}`;
+      imports.push(`import ${comp}, * as ${ns} from ${json(file)};`);
+      slotPairs.push(`${json(slot)}: ${comp}`);
+      clickTerms.push(`(${ns}.totalClicks || 0)`);
+    });
+    const meta = {
+      deck: m.deck,
+      no: m.no,
+      index: m.index,
+      layout: m.layout,
+      title: m.title,
+      notes: m.notes,
+      class: m.class,
+      background: m.background,
+      frontmatter: m.frontmatter,
+    };
+    // Frontmatter `clicks: N` is an authoritative override of the computed total
+    // (the compile-time AST plan is preserved regardless — ADR-0008).
+    const override = m.frontmatter.clicks;
+    const total =
+      typeof override === "number"
+        ? String(override)
+        : clickTerms.length > 0
+          ? clickTerms.join(" + ")
+          : "0";
+    entries.push(
+      `  { ...${json(meta)}, totalClicks: ${total}, slots: { ${slotPairs.join(", ")} } }`,
+    );
+  });
+
+  return `${imports.join("\n")}\nexport const slides = [\n${entries.join(",\n")}\n];\nexport default slides;\n`;
 }
 
 export function configsModuleSource(decks: LoadedDeck[]): string {
@@ -79,8 +71,8 @@ export function configsModuleSource(decks: LoadedDeck[]): string {
   return `export const configs = ${json(configs)};\nexport const deckConfig = ${json(first)};\nexport default configs;\n`;
 }
 
-export function titlesModuleSource(records: SlideRecord[]): string {
-  const titles = records.map((r) => ({ deck: r.deck, no: r.no, title: r.title }));
+export function titlesModuleSource(metas: SlideModuleMeta[]): string {
+  const titles = metas.map((m) => ({ deck: m.deck, no: m.no, title: m.title }));
   return `export const titles = ${json(titles)};\nexport default titles;\n`;
 }
 

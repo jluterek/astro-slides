@@ -25,5 +25,15 @@
     "fitty": "catalog:frontend",
     "nanostores": "catalog:frontend",
     "tinykeys": "catalog:frontend"
+  },
+  "peerDependencies": {
+    "react": "catalog:frontend",
+    "react-dom": "catalog:frontend"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "react": "catalog:frontend",
+    "react-dom": "catalog:frontend"
   }
 }

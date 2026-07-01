@@ -10,7 +10,12 @@
   },
   "dependencies": {
     "@astro-slides/cli": "workspace:*",
+    "@astro-slides/client": "workspace:*",
     "@astro-slides/core": "workspace:*",
-    "astro": "catalog:frontend"
+    "@astrojs/mdx": "catalog:frontend",
+    "@astrojs/react": "catalog:frontend",
+    "astro": "catalog:frontend",
+    "react": "catalog:frontend",
+    "react-dom": "catalog:frontend"
   }
 }

@@ -1,7 +1,6 @@
 ---
 import type { LayoutProps } from "../src/layout-types.ts";
 type Props = LayoutProps;
-const { html } = Astro.props;
 ---
 
-<div class="slide-layout layout-default"><Fragment set:html={html} /></div>
+<div class="slide-layout layout-default"><slot /></div>

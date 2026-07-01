@@ -69,6 +69,22 @@ layout: quote
 > The best way to predict the future is to invent it.
 
 ---
+
+## Click steps
+
+<Click>revealed on step one</Click>
+
+<Click>revealed on step two</Click>
+
+<Clicks>
+
+<div>grouped reveal A</div>
+
+<div>grouped reveal B</div>
+
+</Clicks>
+
+---
 layout: end
 
 class: themed-accent

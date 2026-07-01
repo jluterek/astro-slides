@@ -21,10 +21,21 @@ function readDesign(root: HTMLElement): Size {
   return { width, height };
 }
 
+/** Highest click step referenced by a slide's DOM (point index or range end). */
+function maxClickStep(section: HTMLElement): number {
+  let max = 0;
+  for (const el of section.querySelectorAll<HTMLElement>("[data-click]")) {
+    max = Math.max(max, Number(el.dataset.click) || 0, Number(el.dataset.clickTo) || 0);
+  }
+  return max;
+}
+
 function readSlides(sections: HTMLElement[]): SlideMeta[] {
   return sections.map((el) => ({
     no: Number(el.dataset.slideNo),
-    steps: Number(el.dataset.steps) || 0,
+    // The compile-time total (data-steps) is authoritative, but fall back to the DOM
+    // so clicks still step even if the metadata export is absent.
+    steps: Math.max(Number(el.dataset.steps) || 0, maxClickStep(el)),
     title: el.dataset.title || null,
   }));
 }

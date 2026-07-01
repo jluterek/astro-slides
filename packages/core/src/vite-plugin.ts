@@ -1,8 +1,8 @@
 import type { Plugin } from "vite";
 import { discoverDeckFiles, loadAllDecks } from "./deck-loader.js";
 import { resolveLayouts, userLayoutsDir } from "./layout-resolver.js";
+import { emitSlideModules } from "./mdx-emit.js";
 import {
-  buildSlideRecords,
   configsModuleSource,
   layoutsModuleSource,
   slidesModuleSource,
@@ -32,7 +32,10 @@ export function astroSlidesVitePlugin(options: VitePluginOptions): Plugin {
 
   function compute() {
     const decks = loadAllDecks(options.root, options.decks);
-    return { decks, records: buildSlideRecords(decks) };
+    // Emit the per-slide `.mdx` files now so the imports in the generated slides
+    // module resolve when Vite/Astro loads it.
+    const metas = emitSlideModules(options.root, decks);
+    return { decks, metas };
   }
   function data() {
     if (!cache) cache = compute();
@@ -51,9 +54,9 @@ export function astroSlidesVitePlugin(options: VitePluginOptions): Plugin {
       return ids.includes(id) ? resolvedId(id) : null;
     },
     load(id) {
-      if (id === resolvedId(VIRTUAL_IDS.slides)) return slidesModuleSource(data().records);
+      if (id === resolvedId(VIRTUAL_IDS.slides)) return slidesModuleSource(data().metas);
       if (id === resolvedId(VIRTUAL_IDS.configs)) return configsModuleSource(data().decks);
-      if (id === resolvedId(VIRTUAL_IDS.titles)) return titlesModuleSource(data().records);
+      if (id === resolvedId(VIRTUAL_IDS.titles)) return titlesModuleSource(data().metas);
       if (id === resolvedId(VIRTUAL_IDS.layouts)) return layoutsModuleSource(resolvedLayouts());
       return null;
     },

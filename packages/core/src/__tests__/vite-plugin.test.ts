@@ -24,7 +24,9 @@ describe("astroSlidesVitePlugin", () => {
 
     const src = load(`\0${VIRTUAL_IDS.slides}`);
     expect(src).toContain("export const slides");
-    expect(src).toContain("<h1>Hello</h1>");
+    // The slides module now imports emitted per-slot .mdx files (not inline HTML).
+    expect(src).toMatch(/import S_0_0.*\.mdx";/);
+    expect(src).toContain('"default": S_0_0');
   });
 
   it("resolves all four virtual modules", () => {

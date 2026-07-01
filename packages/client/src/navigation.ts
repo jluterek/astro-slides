@@ -134,7 +134,10 @@ export class DeckController {
       const isPresent = Number(section.dataset.slideNo) === state.slide;
       for (const el of section.querySelectorAll<HTMLElement>("[data-click]")) {
         const at = Number(el.dataset.click);
-        el.classList.toggle("as-click-shown", isPresent && at <= state.step);
+        // Ranges (`at="[start,end]"`) hide again after `to`; point clicks stay shown.
+        const toRaw = el.dataset.clickTo;
+        const to = toRaw != null && toRaw !== "" ? Number(toRaw) : Number.POSITIVE_INFINITY;
+        el.classList.toggle("as-click-shown", isPresent && state.step >= at && state.step <= to);
       }
     }
   }
