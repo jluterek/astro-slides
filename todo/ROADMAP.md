@@ -4,7 +4,7 @@ The phase index. Always current. Update when a phase starts or ends.
 
 ## Active
 
-- _None. Phase 04 closed; Phase 05 (themes-and-layouts) is next up._
+- _None. Phase 05 closed; Phase 06 (click-model) is next up — note the MDX-compilation prerequisite flagged in Phase 05's outcome._
 
 ## Planned
 
@@ -12,7 +12,6 @@ Phases are listed in dependency order. They can be re-sequenced if a later phase
 
 | # | Phase | One-liner |
 | --- | --- | --- |
-| 05 | [`05-themes-and-layouts`](./05-themes-and-layouts/README.md) | Filesystem-layered themes, built-in layouts, CSS-custom-property tokens |
 | 06 | [`06-click-model`](./06-click-model/README.md) | Parse-time click resolution, `<Click>` / `<Clicks>` / `<After>` components, click runtime |
 | 07 | [`07-transitions`](./07-transitions/README.md) | View Transitions API + FLIP fallback for slide morphs |
 | 08 | [`08-code-rendering`](./08-code-rendering/README.md) | Shiki, Magic Move, Twoslash, line-step reveals |
@@ -35,6 +34,7 @@ Phases are listed in dependency order. They can be re-sequenced if a later phase
 | 02 | `02-parser` | [`docs/built/02-parser.md`](../docs/built/02-parser.md) — MDX/MD → typed slide AST; Zod frontmatter; parser package (closed 2026-06-30) |
 | 03 | `03-astro-integration` | [`docs/built/03-astro-integration.md`](../docs/built/03-astro-integration.md) — Astro integration, virtual modules, per-slide routes, CLI, demo (closed 2026-06-30) |
 | 04 | `04-runtime-core` | [`docs/built/04-runtime-core.md`](../docs/built/04-runtime-core.md) — in-browser runtime: state machine, navigation, URL/keyboard/touch, scaling, overview, Playwright e2e (closed 2026-06-30) |
+| 05 | `05-themes-and-layouts` | [`docs/built/05-themes-and-layouts.md`](../docs/built/05-themes-and-layouts.md) — 21 layouts, 8 primitives, `--slide-*` tokens + starter theme, layered layout resolver, unplugin-icons (closed 2026-06-30) |
 
 ---
 

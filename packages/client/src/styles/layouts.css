@@ -1,0 +1,156 @@
+/*
+ * Built-in layout styling. Layouts themselves are thin `.astro` structural
+ * wrappers (`packages/client/layouts/*.astro`); all visual structure lives here so
+ * the 21 layouts stay consistent and token-driven. Every layout root carries
+ * `slide-layout layout-<name>`.
+ */
+
+.slide-layout {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: var(--slide-padding);
+  display: flex;
+  flex-direction: column;
+  gap: var(--slide-space-4);
+}
+
+/* Full-bleed layouts own their edges. */
+.layout-full,
+.layout-none,
+.layout-image.is-fullbleed,
+.layout-iframe.is-fullbleed {
+  padding: 0;
+}
+
+/* Content-first layouts fill from the top. */
+.layout-default,
+.layout-full,
+.layout-none {
+  justify-content: flex-start;
+}
+.layout-none {
+  gap: 0;
+}
+.layout-full {
+  gap: 0;
+}
+
+/* Centered families -------------------------------------------------------- */
+.layout-center,
+.layout-cover,
+.layout-section,
+.layout-quote,
+.layout-fact,
+.layout-statement,
+.layout-end,
+.layout-intro,
+.layout-404,
+.layout-error {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.layout-intro {
+  align-items: flex-start;
+  text-align: start;
+}
+
+.layout-cover :is(h1, h2) {
+  font-size: var(--slide-text-4xl);
+}
+.layout-section :is(h1, h2) {
+  font-size: var(--slide-text-3xl);
+  color: var(--slide-accent);
+}
+.layout-statement :is(h1, h2, p) {
+  font-size: var(--slide-text-3xl);
+  font-weight: var(--slide-heading-weight);
+  max-width: 22ch;
+}
+.layout-fact {
+  font-size: var(--slide-text-4xl);
+  font-weight: var(--slide-heading-weight);
+  color: var(--slide-accent);
+}
+.layout-fact :is(p, h1, h2) {
+  font-size: inherit;
+  margin: 0;
+}
+.layout-quote blockquote {
+  border: none;
+  font-size: var(--slide-text-2xl);
+  font-style: italic;
+  max-width: 24ch;
+  color: var(--slide-fg);
+}
+.layout-end :is(h1, h2) {
+  font-size: var(--slide-text-3xl);
+}
+
+/* System layouts */
+.layout-404 .layout-code,
+.layout-error .layout-code {
+  font-family: var(--slide-font-mono);
+  color: var(--slide-danger);
+  font-size: var(--slide-text-xl);
+}
+
+/* Two-column families ------------------------------------------------------ */
+.layout-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--slide-space-8);
+  align-items: center;
+  flex: 1;
+}
+.layout-two-cols-header .layout-header {
+  margin-bottom: var(--slide-space-4);
+}
+.layout-col {
+  min-width: 0;
+}
+
+/* Media split layouts ------------------------------------------------------ */
+.layout-split {
+  display: grid;
+  gap: var(--slide-space-8);
+  align-items: center;
+  flex: 1;
+  grid-template-columns: 1fr 1fr;
+}
+.layout-media {
+  height: 100%;
+  min-height: 0;
+  border-radius: var(--slide-block-radius);
+  overflow: hidden;
+  background: var(--slide-surface);
+  display: flex;
+}
+.layout-media > img,
+.layout-media > iframe {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 0;
+}
+.layout-image-right .layout-media,
+.layout-iframe-right .layout-media {
+  order: 2;
+}
+
+/* Full-bleed single media */
+.layout-image.is-fullbleed,
+.layout-iframe.is-fullbleed {
+  padding: 0;
+  gap: 0;
+}
+.layout-image .layout-media,
+.layout-iframe .layout-media {
+  flex: 1;
+}
+.layout-caption {
+  color: var(--slide-muted);
+  font-size: var(--slide-text-sm);
+  text-align: center;
+}

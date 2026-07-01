@@ -1,0 +1,14 @@
+---
+import { cssVars } from "../src/primitives.ts";
+// Vertical flexbox stack. `gap`/`align`/`justify` map to CSS via custom props.
+interface Props {
+  gap?: string;
+  align?: string;
+  justify?: string;
+  class?: string;
+}
+const { gap, align, justify, class: cls } = Astro.props;
+const style = cssVars({ gap, align, justify });
+---
+
+<div class:list={["p-stack", cls]} style={style || undefined}><slot /></div>

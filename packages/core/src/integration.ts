@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url";
 import type { AstroIntegration } from "astro";
+import Icons from "unplugin-icons/vite";
 import { astroSlidesVitePlugin, type VitePluginOptions } from "./vite-plugin.js";
 
 export interface AstroSlidesOptions {
@@ -24,7 +25,12 @@ export function astroSlides(options: AstroSlidesOptions = {}): AstroIntegration 
         if (options.decks) pluginOptions.decks = options.decks;
         updateConfig({
           vite: {
-            plugins: [astroSlidesVitePlugin(pluginOptions)],
+            plugins: [
+              astroSlidesVitePlugin(pluginOptions),
+              // `~icons/<collection>/<name>` imports compile to inline SVG Astro
+              // components. Collections are opt-in via `@iconify-json/*` deps.
+              Icons({ compiler: "astro" }),
+            ],
           },
         });
         injectRoute({

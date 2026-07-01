@@ -1,0 +1,14 @@
+---
+import { cssVars } from "../src/primitives.ts";
+// Horizontal flexbox stack.
+interface Props {
+  gap?: string;
+  align?: string;
+  justify?: string;
+  class?: string;
+}
+const { gap, align, justify, class: cls } = Astro.props;
+const style = cssVars({ gap, align, justify });
+---
+
+<div class:list={["p-hstack", cls]} style={style || undefined}><slot /></div>

@@ -1,0 +1,13 @@
+---
+import type { LayoutProps } from "../src/layout-types.ts";
+type Props = LayoutProps;
+const { html } = Astro.props;
+---
+
+<div class="slide-layout layout-404">
+  <div>
+    <h1>404</h1>
+    <p class="layout-code">Slide not found</p>
+    <Fragment set:html={html} />
+  </div>
+</div>

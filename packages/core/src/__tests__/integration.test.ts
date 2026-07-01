@@ -24,6 +24,7 @@ describe("astroSlides", () => {
     } as never);
 
     expect(injected[0]?.pattern).toBe("/[deck]/[slide]");
-    expect(updated?.vite?.plugins?.length).toBe(1);
+    // Slides virtual-module plugin + unplugin-icons.
+    expect(updated?.vite?.plugins?.length).toBe(2);
   });
 });

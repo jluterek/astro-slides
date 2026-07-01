@@ -1,0 +1,16 @@
+---
+import { cssVars, flexBlockClass } from "../src/primitives.ts";
+// Equal-height, auto-wrapping cells (WebSlides `.flexblock`). Variants restyle the
+// cells: features (cards), metrics (big number), clients (centered logos), steps
+// (numbered). Children are the cells.
+interface Props {
+  variant?: "features" | "metrics" | "clients" | "steps";
+  columns?: number;
+  gap?: string;
+  class?: string;
+}
+const { variant = "features", columns = 3, gap, class: cls } = Astro.props;
+const style = cssVars({ cols: columns, gap });
+---
+
+<div class:list={[flexBlockClass(variant), cls]} style={style || undefined}><slot /></div>

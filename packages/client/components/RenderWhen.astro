@@ -1,0 +1,12 @@
+---
+// Conditionally render by presentation mode (slide / presenter / print). The deck
+// root carries `data-mode`; CSS hides the wrapper when the mode doesn't match
+// (see primitives.css). Default `when` is "slide".
+interface Props {
+  when?: "slide" | "presenter" | "print";
+  class?: string;
+}
+const { when = "slide", class: cls } = Astro.props;
+---
+
+<div class:list={["p-renderwhen", cls]} data-when={when}><slot /></div>

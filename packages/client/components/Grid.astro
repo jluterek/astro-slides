@@ -1,0 +1,14 @@
+---
+import { cssVars } from "../src/primitives.ts";
+// CSS Grid wrapper. `cols` is a grid-template-columns value (e.g. "1fr 2fr" or
+// "repeat(3, 1fr)"); `gap` a length.
+interface Props {
+  cols?: string;
+  gap?: string;
+  class?: string;
+}
+const { cols, gap, class: cls } = Astro.props;
+const style = cssVars({ cols, gap });
+---
+
+<div class:list={["p-grid", cls]} style={style || undefined}><slot /></div>

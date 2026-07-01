@@ -1,5 +1,6 @@
 import type { Plugin } from "vite";
 import { discoverDeckFiles, loadAllDecks } from "./deck-loader.js";
+import { resolveLayouts, userLayoutsDir } from "./layout-resolver.js";
 import {
   buildSlideRecords,
   configsModuleSource,
@@ -12,6 +13,8 @@ import {
 export interface VitePluginOptions {
   root: string;
   decks?: string[];
+  /** Extra layout override folders (e.g. a theme's `layouts/`), low-to-high priority. */
+  layoutDirs?: string[];
 }
 
 const resolvedId = (id: string): string => `\0${id}`;
@@ -25,6 +28,7 @@ const resolvedId = (id: string): string => `\0${id}`;
 export function astroSlidesVitePlugin(options: VitePluginOptions): Plugin {
   const ids: string[] = Object.values(VIRTUAL_IDS);
   let cache: ReturnType<typeof compute> | null = null;
+  let layouts: Record<string, string> | null = null;
 
   function compute() {
     const decks = loadAllDecks(options.root, options.decks);
@@ -33,6 +37,12 @@ export function astroSlidesVitePlugin(options: VitePluginOptions): Plugin {
   function data() {
     if (!cache) cache = compute();
     return cache;
+  }
+  function resolvedLayouts() {
+    if (!layouts) {
+      layouts = resolveLayouts([...(options.layoutDirs ?? []), userLayoutsDir(options.root)]);
+    }
+    return layouts;
   }
 
   return {
@@ -44,7 +54,7 @@ export function astroSlidesVitePlugin(options: VitePluginOptions): Plugin {
       if (id === resolvedId(VIRTUAL_IDS.slides)) return slidesModuleSource(data().records);
       if (id === resolvedId(VIRTUAL_IDS.configs)) return configsModuleSource(data().decks);
       if (id === resolvedId(VIRTUAL_IDS.titles)) return titlesModuleSource(data().records);
-      if (id === resolvedId(VIRTUAL_IDS.layouts)) return layoutsModuleSource(data().records);
+      if (id === resolvedId(VIRTUAL_IDS.layouts)) return layoutsModuleSource(resolvedLayouts());
       return null;
     },
     configureServer(server) {

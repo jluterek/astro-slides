@@ -50,8 +50,18 @@ describe("virtual module sources", () => {
     expect(src).toContain('"title":"My"');
   });
 
-  it("titles and layouts modules export their arrays", () => {
+  it("titles module exports its array", () => {
     expect(titlesModuleSource(records)).toContain("export const titles");
-    expect(layoutsModuleSource(records)).toContain('["cover"]');
+  });
+
+  it("layouts module imports resolved components into a name->component map", () => {
+    const src = layoutsModuleSource({
+      cover: "/abs/cover.astro",
+      "two-cols": "/abs/two-cols.astro",
+    });
+    expect(src).toContain('import layout_0 from "/abs/cover.astro";');
+    expect(src).toContain('"cover": layout_0');
+    expect(src).toContain('"two-cols": layout_1');
+    expect(src).toContain("export default layouts");
   });
 });

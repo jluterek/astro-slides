@@ -3,9 +3,16 @@ import { expect, test } from "@playwright/test";
 test.describe("deck runtime", () => {
   test("renders every slide with the current one present", async ({ page }) => {
     await page.goto("/slides/1");
-    await expect(page.locator(".as-slide")).toHaveCount(3);
+    await expect(page.locator(".as-slide")).toHaveCount(9);
     await expect(page.locator('.as-slide[data-slide-no="1"]')).toHaveClass(/present/);
     await expect(page.locator('.as-slide[data-slide-no="2"]')).toHaveClass(/future/);
+  });
+
+  test("wraps each slide in its resolved layout", async ({ page }) => {
+    await page.goto("/slides/1");
+    // Cover slide uses the cover layout; the two-cols slide renders two columns.
+    await expect(page.locator('[data-slide-no="1"] .layout-cover')).toBeVisible();
+    await expect(page.locator('[data-slide-no="5"] .layout-two-cols .layout-col')).toHaveCount(2);
   });
 
   test("advances with ArrowRight and mirrors the slide into the URL", async ({ page }) => {
