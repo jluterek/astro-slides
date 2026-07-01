@@ -1,0 +1,35 @@
+---
+// Slidev-compat shim for `<LightOrDark>`: renders different content for the
+// light vs dark color scheme. In astro-slides the effective scheme is reflected
+// by `data-color-scheme` on `<html>` (see theme-tokens.md § Dark/light). Rather
+// than read the scheme at build time (it can be OS-driven and absent), we render
+// BOTH named slots and let CSS show the matching one, keyed on the root attribute.
+interface Props {
+  class?: string;
+}
+const { class: cls } = Astro.props;
+---
+
+<span class:list={["compat-lightordark", cls]}>
+  <span class="compat-light"><slot name="light" /></span>
+  <span class="compat-dark"><slot name="dark" /></span>
+</span>
+
+<style>
+  /* Default (attribute absent): defer to the OS preference, mirroring the theme
+     token pattern `html:not([data-color-scheme="light"])`. Light shows by default;
+     dark takes over under a dark OS preference. */
+  .compat-light { display: contents; }
+  .compat-dark { display: none; }
+
+  @media (prefers-color-scheme: dark) {
+    :global(html:not([data-color-scheme="light"])) .compat-light { display: none; }
+    :global(html:not([data-color-scheme="light"])) .compat-dark { display: contents; }
+  }
+
+  /* Forced schemes win regardless of OS. */
+  :global(html[data-color-scheme="light"]) .compat-light { display: contents; }
+  :global(html[data-color-scheme="light"]) .compat-dark { display: none; }
+  :global(html[data-color-scheme="dark"]) .compat-light { display: none; }
+  :global(html[data-color-scheme="dark"]) .compat-dark { display: contents; }
+</style>

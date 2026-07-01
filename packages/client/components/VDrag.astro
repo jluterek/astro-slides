@@ -1,0 +1,35 @@
+---
+// Slidev-compat shim for `<v-drag pos="x,y,w,h,rotate?">`.
+// SIMPLIFIED: renders a statically absolutely-positioned (optionally rotated) box.
+// The upstream `v-drag` supports live drag-to-reposition in the editor, which persists
+// the new `pos` back into the source. That round-trip needs an editor + source rewrite,
+// which this framework doesn't provide, so interactive dragging is a documented compat
+// limitation — the `pos` coordinates are honored statically instead. Coordinates are
+// design pixels (the deck's `--slide-canvas-*` space), positioned relative to the slide.
+interface Props {
+  /** Comma-separated `x,y,width,height` and optional `rotate` (degrees), in design px. */
+  pos?: string;
+  class?: string;
+}
+
+const { pos, class: cls } = Astro.props;
+
+// Parse defensively: a missing or short `pos` degrades to a no-op wrapper at 0,0.
+const parts = (pos ?? "")
+  .split(",")
+  .map((n) => Number.parseFloat(n.trim()))
+  .map((n) => (Number.isFinite(n) ? n : undefined));
+
+const [x, y, w, h, rotate] = parts;
+
+const style: string[] = ["position: absolute"];
+if (x !== undefined) style.push(`left: ${x}px`);
+if (y !== undefined) style.push(`top: ${y}px`);
+if (w !== undefined) style.push(`width: ${w}px`);
+if (h !== undefined) style.push(`height: ${h}px`);
+if (rotate !== undefined) style.push(`transform: rotate(${rotate}deg)`, "transform-origin: top left");
+---
+
+<div class:list={["p-vdrag", cls]} style={style.join("; ")} data-pos={pos}>
+  <slot />
+</div>

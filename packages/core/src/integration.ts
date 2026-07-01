@@ -8,6 +8,7 @@ import Icons from "unplugin-icons/vite";
 import type { ViteDevServer } from "vite";
 import { remarkCode } from "./code/remark-code.js";
 import { remarkSnippets } from "./code/snippets.js";
+import { remarkSlidev } from "./compat/remark-slidev.js";
 import { remarkDiagrams } from "./diagrams/remark-diagrams.js";
 import { remarkKatex } from "./math/remark-katex.js";
 import { remarkClicks } from "./remark-clicks.js";
@@ -67,6 +68,9 @@ export function astroSlides(options: AstroSlidesOptions = {}): AstroIntegration 
             mdx({
               remarkPlugins: [
                 [remarkSnippets, { root, onFile: onSnippetFile }],
+                // Slidev compat (Phase 15): rewrite `v-click`/`v-after`/`v-clicks` to our
+                // components BEFORE remark-clicks assigns their step indices.
+                remarkSlidev,
                 remarkClicks,
                 // remark-math tokenizes `$…$`/`$$…$$` (protects LaTeX braces under MDX);
                 // remark-katex then renders those nodes with KaTeX.

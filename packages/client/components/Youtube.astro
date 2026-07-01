@@ -1,0 +1,52 @@
+---
+// Slidev-compat shim: <Youtube id="…" width height start /> → embedded YouTube iframe.
+interface Props {
+  id: string;
+  width?: number | string;
+  height?: number | string;
+  start?: number;
+  class?: string;
+}
+const { id, width, height, start, class: cls } = Astro.props;
+
+const src = `https://www.youtube.com/embed/${id}${start ? `?start=${start}` : ""}`;
+const toDim = (v: number | string | undefined) => (typeof v === "number" ? `${v}px` : v);
+const hasSize = width !== undefined || height !== undefined;
+const style = hasSize
+  ? [width !== undefined && `width:${toDim(width)}`, height !== undefined && `height:${toDim(height)}`]
+      .filter(Boolean)
+      .join(";")
+  : undefined;
+---
+
+<div class:list={["slidev-youtube", { "is-responsive": !hasSize }, cls]} style={style}>
+  <iframe
+    src={src}
+    title="YouTube video player"
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    allowfullscreen></iframe>
+</div>
+
+<style>
+  .slidev-youtube {
+    background: var(--slide-surface);
+    border-radius: var(--slide-block-radius);
+    overflow: hidden;
+  }
+  .slidev-youtube.is-responsive {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+  }
+  .slidev-youtube iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .slidev-youtube.is-responsive iframe {
+    position: absolute;
+    inset: 0;
+  }
+</style>

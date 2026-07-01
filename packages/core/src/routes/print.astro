@@ -15,6 +15,13 @@ import Morph from "@astro-slides/client/components/Morph.astro";
 import RenderWhen from "@astro-slides/client/components/RenderWhen.astro";
 import Stack from "@astro-slides/client/components/Stack.astro";
 import Wrap from "@astro-slides/client/components/Wrap.astro";
+// Slidev-compat shims (Phase 15) — kept in sync with slide.astro's component set.
+import AutoFitText from "@astro-slides/client/components/AutoFitText.astro";
+import LightOrDark from "@astro-slides/client/components/LightOrDark.astro";
+import Toc from "@astro-slides/client/components/Toc.astro";
+import Tweet from "@astro-slides/client/components/Tweet.astro";
+import VDrag from "@astro-slides/client/components/VDrag.astro";
+import Youtube from "@astro-slides/client/components/Youtube.astro";
 import { configs, features } from "@astro-slides/configs";
 import { layouts } from "@astro-slides/layouts";
 import { slides } from "@astro-slides/slides";
@@ -53,6 +60,13 @@ const COMPONENTS = {
   FitText,
   Morph,
   RenderWhen,
+  // Slidev-compat shims.
+  Youtube,
+  Tweet,
+  Toc,
+  VDrag,
+  AutoFitText,
+  LightOrDark,
 };
 
 export function getStaticPaths() {
