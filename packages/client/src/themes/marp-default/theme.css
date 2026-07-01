@@ -12,7 +12,7 @@
  * here — the token contract is what a theme owns.
  */
 
-:root {
+[data-theme="marp-default"] {
   /* Color — semantic, not physical (github-markdown light) */
   --slide-bg: oklch(100% 0 0);
   --slide-fg: oklch(25% 0.008 250);
@@ -76,7 +76,7 @@
 /* Dark variant (github-markdown dark). Applies under OS dark preference unless a
    deck forces a scheme via data-color-scheme. */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-color-scheme="light"]) {
+  html:not([data-color-scheme="light"]) [data-theme="marp-default"] {
     --slide-bg: oklch(18% 0.01 250); /* #0d1117 */
     --slide-fg: oklch(85% 0.01 250); /* #c9d1d9 */
     --slide-accent: oklch(70% 0.14 250); /* #58a6ff */
@@ -90,7 +90,7 @@
 }
 
 /* Forced-dark decks (headmatter colorSchema: dark) regardless of OS. */
-:root[data-color-scheme="dark"] {
+html[data-color-scheme="dark"] [data-theme="marp-default"] {
   --slide-bg: oklch(18% 0.01 250);
   --slide-fg: oklch(85% 0.01 250);
   --slide-accent: oklch(70% 0.14 250);

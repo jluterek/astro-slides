@@ -26,7 +26,13 @@ import { configs, features } from "@astro-slides/configs";
 import { layouts } from "@astro-slides/layouts";
 import { slides } from "@astro-slides/slides";
 import katexHref from "katex/dist/katex.min.css?url";
+// Bundled themes (Phase 16) — same set as the deck route so print matches the theme.
+// Cosmic @imports its own self-hosted fonts from the client package.
 import "@astro-slides/client/themes/starter/theme.css";
+import "@astro-slides/client/themes/cosmic/theme.css";
+import "@astro-slides/client/themes/marp-default/theme.css";
+import "@astro-slides/client/themes/marp-gaia/theme.css";
+import "@astro-slides/client/themes/marp-uncover/theme.css";
 import "@astro-slides/client/styles/deck.css";
 import "@astro-slides/client/styles/base.css";
 import "@astro-slides/client/styles/layouts.css";
@@ -112,7 +118,7 @@ const fallbackLayout = layouts.default ?? layouts["404"];
     <style is:inline set:html={`@page { size: ${designWidth}px ${designHeight}px; margin: 0; }`}></style>
     {usesKatex && <link rel="stylesheet" href={katexHref} />}
   </head>
-  <body class="as-print" data-deck={deck} style={`--as-design-w:${designWidth}px;--as-design-h:${designHeight}px`}>
+  <body class="as-print" data-deck={deck} data-theme={config.theme ?? "starter"} style={`--as-design-w:${designWidth}px;--as-design-h:${designHeight}px`}>
     {
       deckSlides.map((s) => {
         const Layout = layouts[s.layout] ?? fallbackLayout;

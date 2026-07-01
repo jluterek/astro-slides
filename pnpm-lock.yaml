@@ -64,6 +64,12 @@ catalogs:
     '@fix-webm-duration/fix':
       specifier: ^1.0.1
       version: 1.0.1
+    '@fontsource-variable/inter':
+      specifier: ^5.2.0
+      version: 5.2.8
+    '@fontsource/space-grotesk':
+      specifier: ^5.2.0
+      version: 5.2.10
     '@iconify-json/carbon':
       specifier: ^1.2.0
       version: 1.2.23
@@ -314,6 +320,12 @@ importers:
       '@fix-webm-duration/fix':
         specifier: catalog:frontend
         version: 1.0.1
+      '@fontsource-variable/inter':
+        specifier: catalog:frontend
+        version: 5.2.8
+      '@fontsource/space-grotesk':
+        specifier: catalog:frontend
+        version: 5.2.10
       '@shikijs/magic-move':
         specifier: catalog:frontend
         version: 4.3.0(react@19.2.7)(shiki@4.3.0)
@@ -1229,6 +1241,12 @@ packages:
 
   '@fix-webm-duration/parser@1.0.1':
     resolution: {integrity: sha512-Z6el7ohBBpym4iOmxDxumN715cHzLcAbtOtYfIbvoyToVtAuxvHt3ELXGff83iAXEU1Yj7g+obQBdiKJYVhbWw==}
+
+  '@fontsource-variable/inter@5.2.8':
+    resolution: {integrity: sha512-kOfP2D+ykbcX/P3IFnokOhVRNoTozo5/JxhAIVYLpea/UBmCQ/YWPBfWIDuBImXX/15KH+eKh4xpEUyS2sQQGQ==}
+
+  '@fontsource/space-grotesk@5.2.10':
+    resolution: {integrity: sha512-XNXEbT74OIITPqw2H6HXwPDp85fy43uxfBwFR5PU+9sLnjuLj12KlhVM9nZVN6q6dlKjkuN8JisW/OBxwxgUew==}
 
   '@hono/mcp@0.3.0':
     resolution: {integrity: sha512-UhSWFbZwRxHBdptOn2r1HyB8Vt6gU+BL3AbTis2t8TBW69ZhG4soJQ09yEL/t/ymxszJnWp5Rq6tOXXOjuK1qg==}
@@ -5357,6 +5375,10 @@ snapshots:
   '@fix-webm-duration/parser@1.0.1':
     dependencies:
       tslib: 2.8.1
+
+  '@fontsource-variable/inter@5.2.8': {}
+
+  '@fontsource/space-grotesk@5.2.10': {}
 
   '@hono/mcp@0.3.0(@modelcontextprotocol/sdk@1.29.0(zod@4.4.3))(hono-rate-limiter@0.5.3(hono@4.12.27)(unstorage@1.17.5))(hono@4.12.27)(zod@4.4.3)':
     dependencies:

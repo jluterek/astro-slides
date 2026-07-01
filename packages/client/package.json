@@ -23,6 +23,8 @@
   "dependencies": {
     "@astro-slides/types": "workspace:*",
     "@fix-webm-duration/fix": "catalog:frontend",
+    "@fontsource-variable/inter": "catalog:frontend",
+    "@fontsource/space-grotesk": "catalog:frontend",
     "@shikijs/magic-move": "catalog:frontend",
     "cmdk": "catalog:frontend",
     "drauu": "catalog:frontend",

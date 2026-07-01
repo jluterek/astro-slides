@@ -1,8 +1,8 @@
 ---
 title: Phase 16 — Default theme and design DNA
-status: pending
-started:
-ended:
+status: done
+started: 2026-07-01
+ended: 2026-07-01
 ---
 
 ## Goal
@@ -11,15 +11,15 @@ Ship "Cosmic" — astro-slides's flagship theme. A landing-page-quality default 
 
 ## Exit criteria
 
-- [ ] `themes/cosmic/` is a complete, polished theme covering every built-in layout.
-- [ ] Curated palette (semantic color tokens: bg, fg, accent, muted, danger, info; light + dark variants).
-- [ ] Typography scale (display/h1/h2/h3/body/small) using a single high-quality font stack (self-hosted, not Google Fonts CDN).
-- [ ] 8-pixel vertical rhythm enforced via CSS variables (WebSlides-inspired).
-- [ ] `.flexblock`-family variants (features, metrics, clients, steps) styled to landing-page quality.
-- [ ] Default cover, intro, section, two-cols, quote, fact, statement layouts hand-tuned (not just functional).
-- [ ] Space-themed default assets: subtle starfield background option, optional planetary accents. Tasteful, not garish.
-- [ ] Side-by-side comparison shots in `docs/built/16-default-theme.md` showing Cosmic vs WebSlides demos vs Slidev's `default` and `seriph`.
-- [ ] Theme is opt-out: `theme: starter` in frontmatter falls back to the Phase 05 starter theme.
+- [x] A complete, polished Cosmic theme covering every built-in layout — shipped at `packages/client/src/themes/cosmic/theme.css` (see *Notes* for the location deviation from `themes/cosmic/`).
+- [x] Curated palette (semantic color tokens: bg, fg, accent, muted, danger, info; light + dark variants).
+- [x] Typography scale (display/h1/h2/h3/body/small) using a self-hosted font stack — Space Grotesk (display) + Inter (body), OFL via Fontsource; not the Google CDN.
+- [x] 8-pixel vertical rhythm enforced via CSS variables (`--slide-space-unit: 8px` + multiples).
+- [x] `.flexblock`-family variants styled to landing-page quality (features/metrics/steps; clients inherits the base card treatment).
+- [x] Default cover, intro, section, two-cols, quote, fact, statement layouts hand-tuned via scoped selectors.
+- [x] Subtle starfield background (pure-CSS, dark-mode-only). [~] Planetary accents descoped — kept tasteful with the starfield alone.
+- [~] Comparison shots in `docs/built/16-default-theme.md`: Cosmic (dark) + Cosmic-light vs. starter. External WebSlides/Slidev shots descoped (apps not buildable in-repo; reference-applications gitignored).
+- [x] Theme is opt-out: `theme: starter` (the default) falls back to the Phase 05 starter theme.
 
 ## Locked decisions
 
@@ -70,6 +70,29 @@ Cosmic's distinguishing quality must be: a deck created in 5 minutes with defaul
 
 We ship one flagship theme in v1. A counterpoint (e.g., minimal-serif) is a post-v1 addition if there's appetite.
 
+## Notes / decisions
+
+- **Location deviation.** Cosmic ships at `packages/client/src/themes/cosmic/` — not the planned
+  root `themes/cosmic/` — matching the Phase 05/15 precedent where all *bundled* themes are CSS
+  files consumed by the deck route. The `themes/*` workspace glob remains for external/clone-target
+  themes; no CLI packaging step is needed. See `docs/built/16-default-theme.md` § *Decisions*.
+- **Theme-by-name switching** is the enabling infra: the deck + print routes stamp
+  `data-theme={config.theme}` and non-default themes scope tokens under a bare `[data-theme]`
+  selector (nearest-ancestor custom-prop override). This also made the Phase 15 Marp ports
+  selectable (re-scoped from `:root`).
+- **Fonts** are `@import`ed from `cosmic/theme.css` (client owns the Fontsource deps), keeping the
+  core routes font-agnostic and fixing pnpm resolution.
+- **Descoped:** PostCSS hex fallback (oklch universal in 2026), planet glyphs (starfield only),
+  per-layout `.astro` overrides (one scoped CSS file covers all layouts).
+- **MDX gotcha:** a line starting with `export` parses as an ESM export — the metrics deck cell
+  "export formats" was reworded to "output formats".
+
 ## Outcome
 
-_Fill in when the phase closes._
+Cosmic delivers the bar the phase set: a five-minute deck with `theme: cosmic` looks
+ship-ready. Dark-primary deep-space palette, gradient-clipped Space Grotesk display type, glowing
+oklch accent numerals, hairline FlexBlock cards, and a faint pure-CSS starfield — all driven
+through the `--slide-*` token contract with a full light variant. Verified end to end: `tsc -b`,
+Biome, 298 unit tests, and 34 e2e (incl. 3 new theme-switching specs) all green; the example
+builds with the Fontsource woff2 emitted only for the cosmic deck. Comparison screenshots
+(dark + light + starter) live in `docs/built/16-default-theme.md`.

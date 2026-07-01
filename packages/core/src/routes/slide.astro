@@ -29,7 +29,15 @@ import { layouts } from "@astro-slides/layouts";
 import { slides } from "@astro-slides/slides";
 // KaTeX CSS as a URL asset — linked only when the deck uses math (conditional include).
 import katexHref from "katex/dist/katex.min.css?url";
+// Bundled themes (Phase 16). starter sets `:root` (the default); the others scope their
+// tokens under `[data-theme="<name>"]`, so a deck opts in via `theme:` headmatter
+// (nearest-ancestor wins for the inherited `--slide-*` custom properties). Cosmic @imports
+// its own self-hosted fonts, so the route stays font-agnostic.
 import "@astro-slides/client/themes/starter/theme.css";
+import "@astro-slides/client/themes/cosmic/theme.css";
+import "@astro-slides/client/themes/marp-default/theme.css";
+import "@astro-slides/client/themes/marp-gaia/theme.css";
+import "@astro-slides/client/themes/marp-uncover/theme.css";
 import "@astro-slides/client/styles/deck.css";
 import "@astro-slides/client/styles/base.css";
 import "@astro-slides/client/styles/layouts.css";
@@ -150,6 +158,7 @@ const fallbackLayout = layouts.default ?? layouts["404"];
     <div
       class="as-deck"
       data-deck={current.deck}
+      data-theme={config.theme ?? "starter"}
       data-current={current.no}
       data-total={deckSlides.length}
       data-transition={transitionName(deckTransition)}

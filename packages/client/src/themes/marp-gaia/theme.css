@@ -11,7 +11,7 @@
  * structure. Colors use oklch() as starter does.
  */
 
-:root {
+[data-theme="marp-gaia"] {
   /* Color — semantic, not physical (gaia: warm cream + pink accent) */
   --slide-bg: oklch(98% 0.014 95); /* warm cream (#fbfbf3-ish) */
   --slide-fg: oklch(37% 0.02 70); /* warm dark brown-gray */
@@ -75,7 +75,7 @@
 /* Dark variant (gaia's warm "invert" register). Applies under OS dark preference
    unless a deck forces a scheme via data-color-scheme. */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-color-scheme="light"]) {
+  html:not([data-color-scheme="light"]) [data-theme="marp-gaia"] {
     --slide-bg: oklch(28% 0.02 60); /* warm dark charcoal */
     --slide-fg: oklch(94% 0.015 90); /* warm off-white */
     --slide-accent: oklch(70% 0.17 14); /* brighter warm pink */
@@ -89,7 +89,7 @@
 }
 
 /* Forced-dark decks (headmatter colorSchema: dark) regardless of OS. */
-:root[data-color-scheme="dark"] {
+html[data-color-scheme="dark"] [data-theme="marp-gaia"] {
   --slide-bg: oklch(28% 0.02 60);
   --slide-fg: oklch(94% 0.015 90);
   --slide-accent: oklch(70% 0.17 14);
