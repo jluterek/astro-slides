@@ -1,0 +1,26 @@
+---
+// Magic Move island (Phase 08, ADR-0011). The build embeds the lz-string-compressed
+// keyed-token steps in `data-mm-steps`; the client runtime decompresses them, mounts
+// a framework-agnostic MagicMoveRenderer, and advances the visible step off the deck
+// click model. N steps consume N-1 clicks starting after `base`; the container carries
+// `data-click` = the last consumed click so the runtime's step-total accounts for it.
+interface Props {
+  steps: string;
+  count: string | number;
+  base: string | number;
+  lang?: string;
+}
+const { steps, count, base, lang } = Astro.props;
+const n = Number(count) || 1;
+const b = Number(base) || 0;
+const lastClick = b + Math.max(0, n - 1);
+---
+
+<div
+  class="as-magic-move shiki"
+  data-mm-steps={steps}
+  data-mm-count={String(n)}
+  data-mm-base={String(b)}
+  data-lang={lang}
+  data-click={lastClick > b ? String(lastClick) : undefined}
+></div>

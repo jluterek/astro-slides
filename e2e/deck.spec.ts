@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe("deck runtime", () => {
   test("renders every slide with the current one present", async ({ page }) => {
     await page.goto("/slides/1");
-    await expect(page.locator(".as-slide")).toHaveCount(13);
+    await expect(page.locator(".as-slide")).toHaveCount(17);
     await expect(page.locator('.as-slide[data-slide-no="1"]')).toHaveClass(/present/);
     await expect(page.locator('.as-slide[data-slide-no="2"]')).toHaveClass(/future/);
   });
@@ -88,6 +88,42 @@ test.describe("deck runtime", () => {
         hero.evaluate((el) => getComputedStyle(el).getPropertyValue("view-transition-name")),
       )
       .toMatch(/^(none|)$/);
+  });
+
+  test("renders a Shiki-highlighted code block with the highlighted lines", async ({ page }) => {
+    await page.goto("/slides/13");
+    const block = page.locator('.as-slide[data-slide-no="13"] .as-code .shiki');
+    await expect(block).toBeVisible();
+    // Tokenized into colored spans (not a plain <pre>).
+    await expect(block.locator("span").first()).toBeVisible();
+    // `{2,4}` highlighted two lines.
+    await expect(page.locator('.as-slide[data-slide-no="13"] .line.highlighted')).toHaveCount(2);
+  });
+
+  test("reveals click-stepped code lines as the step advances", async ({ page }) => {
+    await page.goto("/slides/14");
+    const shown = () =>
+      page.locator('.as-slide[data-slide-no="14"] .as-code-line.as-click-shown').count();
+    expect(await shown()).toBe(0);
+    await page.keyboard.press("ArrowRight");
+    await expect(page).toHaveURL(/\/slides\/14\?step=1/);
+    expect(await shown()).toBe(1);
+    await page.keyboard.press("ArrowRight");
+    expect(await shown()).toBe(2);
+  });
+
+  test("animates a Magic Move block through its steps", async ({ page }) => {
+    await page.goto("/slides/16");
+    const mm = page.locator('.as-slide[data-slide-no="16"] .as-magic-move');
+    await expect(mm).toBeVisible();
+    // Hydrated: the renderer injected token elements into the empty container.
+    await expect(mm.locator("span").first()).toBeVisible();
+    const initial = (await mm.textContent()) ?? "";
+    expect(initial).toContain("reduce");
+    await page.keyboard.press("ArrowRight");
+    await expect(page).toHaveURL(/\/slides\/16\?step=1/);
+    // Advancing changed the rendered code (step 2 introduces `item.price`).
+    await expect(mm).toContainText("price");
   });
 
   test("scales the viewport to fit the window", async ({ page }) => {

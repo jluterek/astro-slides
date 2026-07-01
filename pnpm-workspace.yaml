@@ -38,6 +38,16 @@ catalogs:
     '@astrojs/react': ^4.3.0
     react: ^19.0.0
     react-dom: ^19.0.0
+    # Code rendering (Phase 08): Shiki + Magic Move + Twoslash.
+    shiki: ^4.3.0
+    '@shikijs/rehype': ^4.3.0
+    '@shikijs/transformers': ^4.3.0
+    '@shikijs/twoslash': ^4.3.0
+    '@shikijs/magic-move': ^4.3.0
+    lz-string: ^1.5.0
+    chokidar: ^5.0.0
+    # Loads the author's `setup/shiki.ts` (TS config) at build time.
+    esbuild: ^0.25.0
 
   # Non-UI runtime libraries used by parser / MCP / CLI (Phase 02+).
   prod:

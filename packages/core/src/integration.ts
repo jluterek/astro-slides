@@ -3,6 +3,9 @@ import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
 import type { AstroIntegration } from "astro";
 import Icons from "unplugin-icons/vite";
+import type { ViteDevServer } from "vite";
+import { remarkCode } from "./code/remark-code.js";
+import { remarkSnippets } from "./code/snippets.js";
 import { remarkClicks } from "./remark-clicks.js";
 import { astroSlidesVitePlugin, type VitePluginOptions } from "./vite-plugin.js";
 
@@ -24,12 +27,43 @@ export function astroSlides(options: AstroSlidesOptions = {}): AstroIntegration 
     hooks: {
       "astro:config:setup": ({ config, updateConfig, injectRoute, logger }) => {
         const root = fileURLToPath(config.root);
-        const pluginOptions: VitePluginOptions = { root };
+
+        // Code rendering (Phase 08). remark-code lazily loads `setup/shiki.ts` and
+        // boots the highlighter on first render (not here — the config-load module
+        // runner is gone by render time). Snippet imports are registered live so the
+        // dev server watches them for HMR.
+        const snippetFiles = new Set<string>();
+        let devServer: ViteDevServer | null = null;
+        const onSnippetFile = (file: string): void => {
+          snippetFiles.add(file);
+          devServer?.watcher.add(file);
+        };
+
+        const pluginOptions: VitePluginOptions = {
+          root,
+          snippetFiles,
+          onServer: (server) => {
+            devServer = server;
+          },
+        };
         if (options.decks) pluginOptions.decks = options.decks;
         updateConfig({
-          // Slides compile as MDX (components in scope) with React islands. The
-          // remark-clicks plugin resolves click steps at compile time (ADR-0008).
-          integrations: [react(), mdx({ remarkPlugins: [remarkClicks] })],
+          // Our own Shiki pipeline highlights code (dual themes, click lines, Magic
+          // Move); disable Astro's built-in highlighter so it doesn't also run.
+          markdown: { syntaxHighlight: false },
+          // Slides compile as MDX (components in scope) with React islands. Plugin
+          // order: snippets -> clicks (numbers prose clicks + totalClicks) -> code
+          // (highlights fences, appends code-line clicks after the prose ones).
+          integrations: [
+            react(),
+            mdx({
+              remarkPlugins: [
+                [remarkSnippets, { root, onFile: onSnippetFile }],
+                remarkClicks,
+                [remarkCode, { root, twoslash: true }],
+              ],
+            }),
+          ],
           vite: {
             plugins: [
               astroSlidesVitePlugin(pluginOptions),

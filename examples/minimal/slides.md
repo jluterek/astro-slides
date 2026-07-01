@@ -108,6 +108,53 @@ The `<Morph>` element above continues from the previous slide — same-document 
 Transition where supported, FLIP animation as the fallback.
 
 ---
+
+## Syntax highlighting
+
+```ts {2,4} title="fib.ts"
+function fib(n: number): number {
+  if (n < 2) return n;
+  let [a, b] = [0, 1];
+  for (let i = 2; i <= n; i++) [a, b] = [b, a + b];
+  return b;
+}
+```
+
+---
+
+## Click-stepped lines
+
+```ts {1|2|3}
+const parse = compile(source);
+const plan = resolve(parse);
+render(plan);
+```
+
+---
+
+## Snippet import
+
+<<< @/snippets/greet.ts#greet {ts} {1}
+
+---
+
+## Magic Move
+
+````md magic-move
+```ts
+const total = items.reduce((a, x) => a + x, 0)
+```
+```ts
+const total = items.reduce((sum, item) => sum + item.price, 0)
+```
+```ts
+const total = items
+  .filter((item) => item.inStock)
+  .reduce((sum, item) => sum + item.price, 0)
+```
+````
+
+---
 layout: end
 
 class: themed-accent

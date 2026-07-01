@@ -1,8 +1,8 @@
 ---
 title: Phase 08 — Code rendering
-status: pending
-started:
-ended:
+status: done
+started: 2026-07-01
+ended: 2026-07-01
 ---
 
 ## Goal
@@ -13,14 +13,19 @@ Implement Shiki + Magic Move + Twoslash code support per ADR-0011. Build-time to
 
 ## Exit criteria
 
-- [ ] Shiki-powered syntax highlighting on every fenced code block. Default theme matches VS Code's "Dark+" and a light counterpart.
-- [ ] Authors configure highlighting via `setup/shiki.ts` (custom themes, languages, transformers).
-- [ ] Line highlighting via `{1,3-5}` and per-click `{1|2-3|all}` syntax. Click steps register against the Phase 06 click model.
-- [ ] `<<< @/snippets/file.ts#region` external snippet imports work, with region detection across common comment syntaxes. Files are watched (chokidar) for HMR.
-- [ ] `twoslash` flag on a fence enables Twoslash hover popovers with inferred TypeScript types.
-- [ ] Magic Move via a fenced block with info `md magic-move` — inner code fences become animation steps. Tokenization at build time; `lz-string`-compressed step data embedded in the output.
-- [ ] `<CodeBlockWrapper>` component handles line numbers, max-height, copy button.
-- [ ] Tests cover: highlighting correctness, click-step line highlighting, snippet imports with regions, Magic Move step count and tokenization stability.
+- [x] Shiki-powered syntax highlighting on every fenced code block. Default theme is VS Code's Dark+ / Light+ (dual, CSS-var switched).
+- [x] Authors configure highlighting via `setup/shiki.{ts,js,mjs}` (custom themes, languages, transformers) — esbuild-loaded.
+- [x] Line highlighting via `{1,3-5}` and per-click `{1|2-3|all}` syntax. Click steps register against the Phase 06 click model (numbered after prose clicks; `totalClicks` bumped).
+- [x] `<<< @/snippets/file.ts#region` external snippet imports work, with region detection across common comment syntaxes. Referenced files are added to the dev watcher for HMR.
+- [x] `twoslash` flag on a fence enables the Twoslash transformer (lazily imported; needs a TS project context — documented).
+- [x] Magic Move via a ` ````md magic-move ` fence — inner code fences become animation steps. Build-time keyed-token tokenization; `lz-string`-compressed payload; hydrated `MagicMoveRenderer` driven by the click model.
+- [x] `CodeBlock` component handles line numbers, max-height scroll, copy button, title.
+- [x] Tests cover highlighting correctness, click-step line highlighting, snippet imports with regions, and Magic Move step count + tokenization stability.
+
+> **Deviation from plan:** highlighting runs as a **remark** plugin emitting a `<CodeBlock>`
+> component (not a rehype plugin) — remark-rehype drops the fence `meta`, and a component
+> sidesteps MDX raw-HTML parsing. The highlighter is booted lazily at first render, not
+> `config:setup` (the config-load module runner is gone by render time).
 
 ## Locked decisions
 
@@ -72,4 +77,10 @@ The previous draft of this phase said "port the Vue wrapper to React" — resear
 
 ## Outcome
 
-_Fill in when the phase closes._
+Shipped. Build-time Shiki highlighting (dual Dark+/Light+, CSS-var switched) via a
+remark plugin that emits `<CodeBlock html=…>`; static `{1,3-5}` + click-stepped
+`{1|2-3|all}` line highlighting wired into the Phase-06 click model; `<<<` snippet imports
+with region extraction + dev-watch HMR; opt-in Twoslash; and Magic Move (build-time keyed
+tokenization, lz-string payload, hydrated `MagicMoveRenderer` driven by the click store).
+`setup/shiki.ts` author hook loaded via esbuild. 163 unit + 13 e2e green; demo grew to 17
+slides. Distilled → `docs/built/08-code-rendering.md`.

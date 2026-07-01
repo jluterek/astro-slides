@@ -1,0 +1,27 @@
+---
+// Renders a pre-highlighted Shiki code block (Phase 08). The `html` prop is the
+// full `<pre class="shiki">…</pre>` produced at build time by remark-code; this
+// component only supplies the chrome: optional title, line numbers, max-height
+// scroll, and a copy button (wired by the client runtime via `data-copy`).
+interface Props {
+  html: string;
+  lang?: string;
+  title?: string;
+  lineNumbers?: string | boolean;
+  maxHeight?: string;
+}
+const { html, lang, title, lineNumbers, maxHeight } = Astro.props;
+const numbered = lineNumbers === true || lineNumbers === "true";
+---
+
+<figure class="as-code" data-lang={lang}>
+  {title && <figcaption class="as-code-title">{title}</figcaption>}
+  <div
+    class="as-code-body"
+    data-line-numbers={numbered ? "" : undefined}
+    style={maxHeight ? `max-height:${maxHeight};overflow:auto` : undefined}
+  >
+    <button type="button" class="as-code-copy" data-copy aria-label="Copy code">Copy</button>
+    <Fragment set:html={html} />
+  </div>
+</figure>
