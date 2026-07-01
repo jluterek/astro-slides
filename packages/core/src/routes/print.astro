@@ -1,0 +1,126 @@
+---
+import Click from "@astro-slides/client/components/Click.tsx";
+import After from "@astro-slides/client/components/After.tsx";
+import Clicks from "@astro-slides/client/components/Clicks.tsx";
+import CodeBlock from "@astro-slides/client/components/CodeBlock.astro";
+import ShikiMagicMove from "@astro-slides/client/components/ShikiMagicMove.astro";
+import KaTeX from "@astro-slides/client/components/KaTeX.astro";
+import Mermaid from "@astro-slides/client/components/Mermaid.astro";
+import PlantUml from "@astro-slides/client/components/PlantUml.astro";
+import FlexBlock from "@astro-slides/client/components/FlexBlock.astro";
+import FitText from "@astro-slides/client/components/FitText.astro";
+import Grid from "@astro-slides/client/components/Grid.astro";
+import HStack from "@astro-slides/client/components/HStack.astro";
+import Morph from "@astro-slides/client/components/Morph.astro";
+import RenderWhen from "@astro-slides/client/components/RenderWhen.astro";
+import Stack from "@astro-slides/client/components/Stack.astro";
+import Wrap from "@astro-slides/client/components/Wrap.astro";
+import { configs, features } from "@astro-slides/configs";
+import { layouts } from "@astro-slides/layouts";
+import { slides } from "@astro-slides/slides";
+import katexHref from "katex/dist/katex.min.css?url";
+import "@astro-slides/client/themes/starter/theme.css";
+import "@astro-slides/client/styles/deck.css";
+import "@astro-slides/client/styles/base.css";
+import "@astro-slides/client/styles/layouts.css";
+import "@astro-slides/client/styles/primitives.css";
+import "@astro-slides/client/styles/click.css";
+import "@astro-slides/client/styles/code.css";
+import "@astro-slides/client/styles/diagrams.css";
+import "@astro-slides/client/styles/print.css";
+import "@shikijs/magic-move/style.css";
+
+/**
+ * Print route (Phase 12). Renders every slide of a deck as a page-sized block, one per
+ * `@page`, with all click steps revealed — the source of truth for `window.print()` and
+ * the Playwright PDF export. Reuses the same layouts + components as the deck route so
+ * output matches the live deck. Prerendered; no client runtime.
+ */
+const COMPONENTS = {
+  Click,
+  After,
+  Clicks,
+  CodeBlock,
+  ShikiMagicMove,
+  KaTeX,
+  Mermaid,
+  PlantUml,
+  Stack,
+  HStack,
+  Grid,
+  Wrap,
+  FlexBlock,
+  FitText,
+  Morph,
+  RenderWhen,
+};
+
+export function getStaticPaths() {
+  const decks = new Map<string, typeof slides>();
+  for (const s of slides) {
+    const list = decks.get(s.deck) ?? [];
+    list.push(s);
+    decks.set(s.deck, list);
+  }
+  return [...decks.entries()].map(([deck, deckSlides]) => ({
+    params: { deck },
+    props: { deck, deckSlides: [...deckSlides].sort((a, b) => a.no - b.no) },
+  }));
+}
+
+const { deck, deckSlides } = Astro.props;
+const config = configs[deck] ?? {};
+const deckFeatures = features[deck] ?? {};
+const usesKatex = deckFeatures.katex === true;
+
+const [aw, ah] = String(config.aspectRatio ?? "16:9").split(":").map(Number);
+const designWidth = Number(config.canvasWidth ?? 1920);
+const designHeight = Math.round(designWidth * (aw && ah ? ah / aw : 9 / 16));
+
+const scheme =
+  config.colorSchema === "light" || config.colorSchema === "dark" ? config.colorSchema : undefined;
+
+const isImageRef = (v: string): boolean =>
+  /^(https?:|\/|\.|data:)/.test(v) || /\.(png|jpe?g|gif|webp|avif|svg)$/i.test(v);
+const backgroundStyle = (v: string | null): string | undefined => {
+  if (!v) return undefined;
+  return isImageRef(v) ? `background-image:url('${v}')` : `background:${v}`;
+};
+
+const fallbackLayout = layouts.default ?? layouts["404"];
+---
+
+<html lang="en" data-color-scheme={scheme}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{deck} — print</title>
+    <style is:inline set:html={`@page { size: ${designWidth}px ${designHeight}px; margin: 0; }`}></style>
+    {usesKatex && <link rel="stylesheet" href={katexHref} />}
+  </head>
+  <body class="as-print" data-deck={deck} style={`--as-design-w:${designWidth}px;--as-design-h:${designHeight}px`}>
+    {
+      deckSlides.map((s) => {
+        const Layout = layouts[s.layout] ?? fallbackLayout;
+        const Default = s.slots.default;
+        const Left = s.slots.left;
+        const Right = s.slots.right;
+        const style = backgroundStyle(s.background);
+        return (
+          <section
+            class:list={["as-print-slide", "as-slide", "present", s.class]}
+            data-slide-no={s.no}
+            data-layout={s.layout}
+            style={style || undefined}
+          >
+            <Layout no={s.no} title={s.title} layout={s.layout} frontmatter={s.frontmatter}>
+              {Default && <Default components={COMPONENTS} />}
+              {Left && <Left slot="left" components={COMPONENTS} />}
+              {Right && <Right slot="right" components={COMPONENTS} />}
+            </Layout>
+          </section>
+        );
+      })
+    }
+  </body>
+</html>

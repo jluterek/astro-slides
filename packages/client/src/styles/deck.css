@@ -184,3 +184,13 @@
     transition: none;
   }
 }
+
+/* Embed mode (Phase 12): `?embed=1` hides on-screen chrome for iframe embedding. */
+.as-deck.as-embed .as-help,
+.as-deck.as-embed .as-status,
+.as-deck.as-embed .as-drawing-toolbar {
+  display: none;
+}
+.as-deck.as-embed {
+  background: transparent;
+}

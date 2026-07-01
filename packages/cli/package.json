@@ -18,12 +18,22 @@
   "dependencies": {
     "@astro-slides/core": "workspace:*",
     "@astro-slides/parser": "workspace:*",
+    "@lillallol/outline-pdf": "catalog:prod",
     "citty": "catalog:prod",
+    "jszip": "catalog:prod",
+    "listr2": "catalog:prod",
+    "pdf-lib": "catalog:prod",
     "picocolors": "catalog:prod",
     "uqr": "catalog:prod"
   },
   "peerDependencies": {
-    "astro": "^5.0.0"
+    "astro": "^5.0.0",
+    "@playwright/test": "^1.48.0"
+  },
+  "peerDependenciesMeta": {
+    "@playwright/test": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/node": "catalog:dev",
