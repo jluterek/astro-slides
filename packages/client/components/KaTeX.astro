@@ -1,0 +1,17 @@
+---
+// Renders build-time KaTeX HTML (Phase 09). `html` is the pre-rendered KaTeX markup
+// from remark-katex; this component only chooses inline vs block wrapping and applies
+// `set:html`. Stepped block math arrives as `<div class="as-math-steps">` with
+// per-row `data-click` — the runtime reveals rows off the click model.
+interface Props {
+  html: string;
+  inline?: string | boolean;
+}
+const { html, inline } = Astro.props;
+const isInline = inline === true || inline === "true";
+const Tag = isInline ? "span" : "div";
+---
+
+<Tag class:list={["as-katex", { "as-katex-inline": isInline, "as-katex-block": !isInline }]}>
+  <Fragment set:html={html} />
+</Tag>

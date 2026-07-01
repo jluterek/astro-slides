@@ -1,0 +1,15 @@
+---
+// Mermaid island (Phase 09, ADR-0011). The diagram source lives in `data-mermaid`;
+// the client runtime lazily imports mermaid (only when such an element exists —
+// conditional bundle), renders to SVG, and mounts it in a Shadow DOM for CSS
+// isolation. Fence-info options (`theme: neutral, scale: 0.8`) pass through.
+interface Props {
+  code: string;
+  options?: string;
+}
+const { code, options } = Astro.props;
+---
+
+<div class="as-mermaid" data-mermaid={code} data-mermaid-options={options}>
+  <div class="as-mermaid-fallback" aria-hidden="true">Rendering diagram…</div>
+</div>

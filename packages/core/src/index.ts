@@ -9,7 +9,9 @@ export {
   loadAllDecks,
   loadDeck,
 } from "./deck-loader.js";
+export * from "./diagrams/index.js";
 export { type AstroSlidesOptions, astroSlides, astroSlides as default } from "./integration.js";
+export * from "./math/index.js";
 export { emitSlideModules, type SlideModuleMeta, slideModulesDir } from "./mdx-emit.js";
 export { remarkClicks } from "./remark-clicks.js";
 export { renderMarkdown } from "./render.js";

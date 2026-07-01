@@ -1,0 +1,56 @@
+/*
+ * Math + diagram styles (Phase 09, ADR-0011). KaTeX's own stylesheet is linked
+ * conditionally by the route; these are the wrappers and the client-rendered diagram
+ * containers.
+ */
+
+/* --- KaTeX --------------------------------------------------------------- */
+.as-katex-block {
+  margin: 0.4em 0;
+  text-align: center;
+  overflow-x: auto;
+}
+.as-katex-inline {
+  display: inline;
+}
+
+/* Stepped block math: rows dim until their click step is reached. */
+.as-math-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+  align-items: center;
+}
+.as-math-row {
+  opacity: 0.32;
+  transition: opacity 0.3s ease;
+}
+.as-math-row.as-math-static,
+.as-math-row.as-click-shown {
+  opacity: 1;
+}
+
+/* --- Mermaid ------------------------------------------------------------- */
+.as-mermaid {
+  display: flex;
+  justify-content: center;
+}
+.as-mermaid-fallback {
+  opacity: 0.5;
+  font-size: 0.8em;
+}
+/* Attaching a shadow root hides the light-DOM fallback automatically (no <slot>). */
+
+/* --- PlantUML ------------------------------------------------------------ */
+.as-plantuml {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  max-height: 70vh;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .as-math-row {
+    transition: none;
+  }
+}

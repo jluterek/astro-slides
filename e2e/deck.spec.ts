@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe("deck runtime", () => {
   test("renders every slide with the current one present", async ({ page }) => {
     await page.goto("/slides/1");
-    await expect(page.locator(".as-slide")).toHaveCount(17);
+    await expect(page.locator(".as-slide")).toHaveCount(21);
     await expect(page.locator('.as-slide[data-slide-no="1"]')).toHaveClass(/present/);
     await expect(page.locator('.as-slide[data-slide-no="2"]')).toHaveClass(/future/);
   });
@@ -124,6 +124,47 @@ test.describe("deck runtime", () => {
     await expect(page).toHaveURL(/\/slides\/16\?step=1/);
     // Advancing changed the rendered code (step 2 introduces `item.price`).
     await expect(mm).toContainText("price");
+  });
+
+  test("renders KaTeX math and links its stylesheet only when the deck uses math", async ({
+    page,
+  }) => {
+    await page.goto("/slides/17");
+    // Inline + block math both rendered by KaTeX at build time.
+    await expect(page.locator('.as-slide[data-slide-no="17"] .katex').first()).toBeVisible();
+    await expect(
+      page.locator('.as-slide[data-slide-no="17"] .katex-display').first(),
+    ).toBeVisible();
+    // The deck has math, so its stylesheet is linked.
+    await expect(page.locator('link[href*="katex"]')).toHaveCount(1);
+  });
+
+  test("reveals stepped math rows as the step advances", async ({ page }) => {
+    await page.goto("/slides/18");
+    const shown = () =>
+      page.locator('.as-slide[data-slide-no="18"] .as-math-row.as-click-shown').count();
+    expect(await shown()).toBe(0);
+    await page.keyboard.press("ArrowRight");
+    await expect(page).toHaveURL(/\/slides\/18\?step=1/);
+    expect(await shown()).toBe(1);
+    await page.keyboard.press("ArrowRight");
+    expect(await shown()).toBe(2);
+  });
+
+  test("renders a Mermaid diagram as SVG inside a Shadow DOM", async ({ page }) => {
+    await page.goto("/slides/19");
+    const host = page.locator('.as-slide[data-slide-no="19"] .as-mermaid');
+    await expect(host).toBeVisible();
+    // The SVG lives in the shadow root (CSS isolation) — assert via the host's shadow.
+    await expect
+      .poll(async () => host.evaluate((el) => el.shadowRoot?.querySelector("svg") != null))
+      .toBe(true);
+  });
+
+  test("renders a PlantUML diagram as a server image", async ({ page }) => {
+    await page.goto("/slides/20");
+    const img = page.locator('.as-slide[data-slide-no="20"] img.as-plantuml');
+    await expect(img).toHaveAttribute("src", /plantuml\.com\/plantuml\/svg\//);
   });
 
   test("scales the viewport to fit the window", async ({ page }) => {

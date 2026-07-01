@@ -4,6 +4,9 @@ import After from "@astro-slides/client/components/After.tsx";
 import Clicks from "@astro-slides/client/components/Clicks.tsx";
 import CodeBlock from "@astro-slides/client/components/CodeBlock.astro";
 import ShikiMagicMove from "@astro-slides/client/components/ShikiMagicMove.astro";
+import KaTeX from "@astro-slides/client/components/KaTeX.astro";
+import Mermaid from "@astro-slides/client/components/Mermaid.astro";
+import PlantUml from "@astro-slides/client/components/PlantUml.astro";
 import FlexBlock from "@astro-slides/client/components/FlexBlock.astro";
 import FitText from "@astro-slides/client/components/FitText.astro";
 import Grid from "@astro-slides/client/components/Grid.astro";
@@ -12,9 +15,11 @@ import Morph from "@astro-slides/client/components/Morph.astro";
 import RenderWhen from "@astro-slides/client/components/RenderWhen.astro";
 import Stack from "@astro-slides/client/components/Stack.astro";
 import Wrap from "@astro-slides/client/components/Wrap.astro";
-import { configs } from "@astro-slides/configs";
+import { configs, features } from "@astro-slides/configs";
 import { layouts } from "@astro-slides/layouts";
 import { slides } from "@astro-slides/slides";
+// KaTeX CSS as a URL asset — linked only when the deck uses math (conditional include).
+import katexHref from "katex/dist/katex.min.css?url";
 import "@astro-slides/client/themes/starter/theme.css";
 import "@astro-slides/client/styles/deck.css";
 import "@astro-slides/client/styles/base.css";
@@ -23,6 +28,7 @@ import "@astro-slides/client/styles/primitives.css";
 import "@astro-slides/client/styles/click.css";
 import "@astro-slides/client/styles/transitions.css";
 import "@astro-slides/client/styles/code.css";
+import "@astro-slides/client/styles/diagrams.css";
 import "@shikijs/magic-move/style.css";
 
 /**
@@ -37,6 +43,9 @@ const COMPONENTS = {
   Clicks,
   CodeBlock,
   ShikiMagicMove,
+  KaTeX,
+  Mermaid,
+  PlantUml,
   Stack,
   HStack,
   Grid,
@@ -62,6 +71,10 @@ export function getStaticPaths() {
 
 const { current, deckSlides } = Astro.props;
 const config = configs[current.deck] ?? {};
+// Conditional asset inclusion (Phase 09): only link KaTeX's stylesheet when the deck
+// actually uses math. Mermaid's runtime is code-split and fetched on demand.
+const deckFeatures = features[current.deck] ?? {};
+const usesKatex = deckFeatures.katex === true;
 
 const [aw, ah] = String(config.aspectRatio ?? "16:9").split(":").map(Number);
 const designWidth = Number(config.canvasWidth ?? 1920);
@@ -105,6 +118,7 @@ const fallbackLayout = layouts.default ?? layouts["404"];
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{current.title ?? `${current.deck} — ${current.no}`}</title>
+    {usesKatex && <link rel="stylesheet" href={katexHref} />}
   </head>
   <body>
     <div

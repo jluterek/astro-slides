@@ -68,7 +68,15 @@ export function slidesModuleSource(metas: SlideModuleMeta[]): string {
 export function configsModuleSource(decks: LoadedDeck[]): string {
   const configs = Object.fromEntries(decks.map((d) => [d.name, d.deck.headmatter]));
   const first = decks[0]?.deck.headmatter ?? {};
-  return `export const configs = ${json(configs)};\nexport const deckConfig = ${json(first)};\nexport default configs;\n`;
+  // Per-deck detected-feature union (Phase 09) — the route uses this to conditionally
+  // include KaTeX CSS / mark diagram usage, so unused feature assets stay out.
+  const features = Object.fromEntries(decks.map((d) => [d.name, d.deck.features]));
+  return (
+    `export const configs = ${json(configs)};\n` +
+    `export const deckConfig = ${json(first)};\n` +
+    `export const features = ${json(features)};\n` +
+    `export default configs;\n`
+  );
 }
 
 export function titlesModuleSource(metas: SlideModuleMeta[]): string {

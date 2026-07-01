@@ -25,8 +25,11 @@
     "@shikijs/twoslash": "catalog:frontend",
     "chokidar": "catalog:frontend",
     "esbuild": "catalog:frontend",
+    "katex": "catalog:frontend",
     "lz-string": "catalog:frontend",
     "picocolors": "catalog:prod",
+    "plantuml-encoder": "catalog:frontend",
+    "remark-math": "catalog:frontend",
     "shiki": "catalog:frontend",
     "unist-util-visit": "catalog:prod",
     "unplugin-icons": "catalog:frontend",
@@ -40,7 +43,9 @@
     "astro": "^5.0.0"
   },
   "devDependencies": {
+    "@types/katex": "catalog:dev",
     "@types/node": "catalog:dev",
+    "@types/plantuml-encoder": "catalog:dev",
     "astro": "catalog:frontend",
     "vite": "catalog:dev"
   }

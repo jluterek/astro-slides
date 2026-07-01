@@ -155,6 +155,46 @@ const total = items
 ````
 
 ---
+
+## Math
+
+Euler's identity — $e^{i\pi} + 1 = 0$ — inline, and the Gaussian integral in a block:
+
+$$
+\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
+$$
+
+---
+
+## Stepped derivation
+
+$$ {1|2|3}
+a^2 + b^2 = c^2 \\
+c = \sqrt{a^2 + b^2} \\
+c^2 - a^2 = b^2
+$$
+
+---
+
+## Mermaid diagram
+
+```mermaid
+graph LR
+  A[Author MDX] --> B[Parse]
+  B --> C[Render]
+  C --> D[Present]
+```
+
+---
+
+## PlantUML diagram
+
+```plantuml
+Alice -> Bob: Authentication Request
+Bob --> Alice: Authentication Response
+```
+
+---
 layout: end
 
 class: themed-accent

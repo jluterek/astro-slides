@@ -25,6 +25,8 @@ catalogs:
     '@playwright/test': ^1.48.0
     '@types/react': ^19.0.0
     '@types/react-dom': ^19.0.0
+    '@types/katex': ^0.16.7
+    '@types/plantuml-encoder': ^1.4.2
 
   # Browser / Astro-facing runtime dependencies (Phase 03+).
   frontend:
@@ -48,6 +50,11 @@ catalogs:
     chokidar: ^5.0.0
     # Loads the author's `setup/shiki.ts` (TS config) at build time.
     esbuild: ^0.25.0
+    # Math + diagrams (Phase 09).
+    katex: ^0.17.0
+    remark-math: ^6.0.0
+    mermaid: ^11.16.0
+    plantuml-encoder: ^1.4.0
 
   # Non-UI runtime libraries used by parser / MCP / CLI (Phase 02+).
   prod:
