@@ -1,0 +1,212 @@
+/*
+ * Cosmic — astro-slides's flagship theme (Phase 16).
+ *
+ * A landing-page-quality default with a space-theme nod (the project's namesake). Dark is the
+ * primary mode; a light variant tunes contrast for projectors. Tokens are scoped under
+ * `[data-theme="cosmic"]` so the theme applies only to decks that opt in via `theme: cosmic`
+ * headmatter — the nearest-ancestor rule for inherited custom properties overrides starter's
+ * `:root` defaults for that subtree. `data-color-scheme` (light|dark) rides on `<html>`.
+ *
+ * Fonts are self-hosted (OFL) via Fontsource — @import'd here (not from the deck route) so the
+ * client package, which declares the Fontsource deps, owns their resolution. Space Grotesk for
+ * headings (geometric, techy) and Inter for body. The @font-face declarations are cheap; the
+ * woff2 payloads only download when a rendered deck actually uses these families (i.e. cosmic).
+ * All values flow through `--slide-*` tokens (docs/architecture/theme-tokens.md) — no magic
+ * values leak into layouts.
+ */
+@import "@fontsource-variable/inter/wght.css";
+@import "@fontsource/space-grotesk/500.css";
+@import "@fontsource/space-grotesk/700.css";
+
+[data-theme="cosmic"] {
+  /* Color — dark primary (deep-space indigo). */
+  --slide-bg: oklch(17% 0.035 275);
+  --slide-fg: oklch(95% 0.01 265);
+  --slide-accent: oklch(72% 0.17 285);
+  --slide-accent-fg: oklch(16% 0.03 275);
+  --slide-accent-2: oklch(78% 0.15 210); /* cyan companion for gradients/glows */
+  --slide-muted: oklch(70% 0.03 270);
+  --slide-border: oklch(38% 0.04 275);
+  --slide-surface: oklch(23% 0.04 275);
+  --slide-link: oklch(80% 0.13 250);
+  --slide-code-bg: oklch(21% 0.035 275);
+  --slide-code-fg: oklch(92% 0.03 265);
+  --slide-danger: oklch(66% 0.2 20);
+  --slide-info: oklch(74% 0.13 230);
+
+  /* Block family (FlexBlock cells, cards). */
+  --slide-block-bg: oklch(24% 0.04 275);
+  --slide-block-border: oklch(42% 0.05 280);
+  --slide-block-radius: 16px;
+
+  /* Typography — Space Grotesk display, Inter body. */
+  --slide-font-body:
+    "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --slide-font-heading: "Space Grotesk", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --slide-font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --slide-font-size-base: 25px;
+  --slide-font-size-scale: 1.28;
+  --slide-line-height: 1.55;
+  --slide-heading-line-height: 1.05;
+  --slide-heading-weight: 700;
+
+  /* Type scale (modular, base * scale^n). */
+  --slide-text-sm: calc(var(--slide-font-size-base) / var(--slide-font-size-scale));
+  --slide-text-md: var(--slide-font-size-base);
+  --slide-text-lg: calc(var(--slide-font-size-base) * var(--slide-font-size-scale));
+  --slide-text-xl: calc(var(--slide-text-lg) * var(--slide-font-size-scale));
+  --slide-text-2xl: calc(var(--slide-text-xl) * var(--slide-font-size-scale));
+  --slide-text-3xl: calc(var(--slide-text-2xl) * var(--slide-font-size-scale));
+  --slide-text-4xl: calc(var(--slide-text-3xl) * var(--slide-font-size-scale));
+
+  /* Spacing — 8px rhythm. */
+  --slide-space-unit: 8px;
+  --slide-space-1: calc(var(--slide-space-unit) * 1);
+  --slide-space-2: calc(var(--slide-space-unit) * 2);
+  --slide-space-3: calc(var(--slide-space-unit) * 3);
+  --slide-space-4: calc(var(--slide-space-unit) * 4);
+  --slide-space-6: calc(var(--slide-space-unit) * 6);
+  --slide-space-8: calc(var(--slide-space-unit) * 8);
+  --slide-space-12: calc(var(--slide-space-unit) * 12);
+
+  /* Layout. */
+  --slide-canvas-width: 1920px;
+  --slide-canvas-height: 1080px;
+  --slide-padding: var(--slide-space-8);
+  --slide-content-max: 1440px;
+
+  /* Transitions. */
+  --slide-transition-duration: 460ms;
+  --slide-transition-easing: cubic-bezier(0.22, 0.8, 0.36, 1);
+}
+
+/* Light variant — OS-light (unless a deck forces dark) and forced-light decks. */
+@media (prefers-color-scheme: light) {
+  html:not([data-color-scheme="dark"]) [data-theme="cosmic"] {
+    --slide-bg: oklch(98% 0.008 270);
+    --slide-fg: oklch(22% 0.03 275);
+    --slide-accent: oklch(52% 0.19 285);
+    --slide-accent-fg: oklch(99% 0 0);
+    --slide-accent-2: oklch(58% 0.14 220);
+    --slide-muted: oklch(48% 0.03 275);
+    --slide-border: oklch(88% 0.02 275);
+    --slide-surface: oklch(96% 0.012 275);
+    --slide-link: oklch(52% 0.17 270);
+    --slide-code-bg: oklch(95% 0.012 275);
+    --slide-code-fg: oklch(34% 0.05 280);
+    --slide-block-bg: oklch(97% 0.01 275);
+    --slide-block-border: oklch(89% 0.02 278);
+  }
+}
+html[data-color-scheme="light"] [data-theme="cosmic"] {
+  --slide-bg: oklch(98% 0.008 270);
+  --slide-fg: oklch(22% 0.03 275);
+  --slide-accent: oklch(52% 0.19 285);
+  --slide-accent-fg: oklch(99% 0 0);
+  --slide-accent-2: oklch(58% 0.14 220);
+  --slide-muted: oklch(48% 0.03 275);
+  --slide-border: oklch(88% 0.02 275);
+  --slide-surface: oklch(96% 0.012 275);
+  --slide-link: oklch(52% 0.17 270);
+  --slide-code-bg: oklch(95% 0.012 275);
+  --slide-code-fg: oklch(34% 0.05 280);
+  --slide-block-bg: oklch(97% 0.01 275);
+  --slide-block-border: oklch(89% 0.02 278);
+}
+
+/* --- Visual pass -------------------------------------------------------------------- */
+
+/* Headings: display face, tight leading, a hint of negative tracking on the big ones. */
+[data-theme="cosmic"] :is(h1, h2, h3) {
+  font-family: var(--slide-font-heading);
+  letter-spacing: -0.02em;
+}
+[data-theme="cosmic"] h1 {
+  background: linear-gradient(100deg, var(--slide-fg) 30%, var(--slide-accent) 130%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Subtle starfield: two faint radial-dot layers, dark mode only, behind slide content. */
+[data-theme="cosmic"] .as-viewport::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, oklch(92% 0.03 265 / 0.5) 50%, transparent 51%),
+    radial-gradient(1px 1px at 75% 20%, oklch(88% 0.05 250 / 0.4) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 60% 70%, oklch(90% 0.05 285 / 0.35) 50%, transparent 51%),
+    radial-gradient(1px 1px at 35% 85%, oklch(90% 0.04 230 / 0.4) 50%, transparent 51%);
+  background-size:
+    520px 520px,
+    360px 360px,
+    640px 640px,
+    440px 440px;
+  opacity: 0.9;
+}
+html[data-color-scheme="light"] [data-theme="cosmic"] .as-viewport::before {
+  opacity: 0;
+}
+[data-theme="cosmic"] .as-slide > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Links pick up the accent with a soft underline. */
+[data-theme="cosmic"] a {
+  color: var(--slide-link);
+  text-decoration-color: color-mix(in oklch, var(--slide-link) 45%, transparent);
+  text-underline-offset: 3px;
+}
+
+/* Cover / section / statement: a soft accent aura + gradient wash. */
+[data-theme="cosmic"] .as-slide[data-layout="cover"],
+[data-theme="cosmic"] .as-slide[data-layout="section"],
+[data-theme="cosmic"] .as-slide[data-layout="intro"] {
+  background-image: radial-gradient(
+    120% 90% at 15% 0%,
+    color-mix(in oklch, var(--slide-accent) 22%, transparent) 0%,
+    transparent 55%
+  );
+}
+[data-theme="cosmic"] .as-slide[data-layout="cover"] h1 {
+  font-size: var(--slide-text-4xl);
+  font-weight: 700;
+}
+
+/* Quote / fact: oversized accent numerals + a leading accent bar for quotes. */
+[data-theme="cosmic"] .as-slide[data-layout="fact"] :is(strong, b) {
+  color: var(--slide-accent);
+  text-shadow: 0 0 28px color-mix(in oklch, var(--slide-accent) 55%, transparent);
+}
+[data-theme="cosmic"] .as-slide[data-layout="quote"] blockquote {
+  border-left: 3px solid var(--slide-accent);
+  padding-left: var(--slide-space-4);
+  font-style: italic;
+}
+
+/* FlexBlock cards: raised surfaces with a hairline and a hover-less accent edge. */
+[data-theme="cosmic"] .p-flexblock > * {
+  background: var(--slide-block-bg);
+  border: 1px solid var(--slide-block-border);
+  border-radius: var(--slide-block-radius);
+  padding: var(--slide-space-3);
+  box-shadow: 0 1px 0 color-mix(in oklch, var(--slide-fg) 6%, transparent) inset;
+}
+[data-theme="cosmic"] .p-flexblock.variant-metrics :is(strong, b, .metric) {
+  color: var(--slide-accent);
+  font-family: var(--slide-font-heading);
+  text-shadow: 0 0 22px color-mix(in oklch, var(--slide-accent) 40%, transparent);
+}
+[data-theme="cosmic"] .p-flexblock.variant-steps > *::before {
+  color: var(--slide-accent-2);
+}
+
+/* Code blocks: inset panel that reads as part of the surface system. */
+[data-theme="cosmic"] :is(pre, .as-code) {
+  border: 1px solid var(--slide-border);
+  border-radius: var(--slide-block-radius);
+}

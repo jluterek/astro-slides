@@ -128,6 +128,18 @@ Every entry includes the package, current version (June 2026 snapshot), why it w
 | Image processing | Astro's `astro:assets` | Native, handles modern formats. | — |
 | (If we need raw sharp ops) | `sharp` | Standard. | Only pull if `astro:assets` doesn't cover the use case. |
 
+## Fonts / theming (Phase 16)
+
+| Category | Library | Why | Caveat |
+| --- | --- | --- | --- |
+| Body font | `@fontsource-variable/inter` v5 | Self-hosted OFL (no Google CDN). Variable weight axis. Used by the Cosmic theme's body text. | `@import`ed from `cosmic/theme.css` (client owns the dep), not the deck route — pnpm can't resolve it from `@astro-slides/core`. woff2 downloads only when the family is rendered. |
+| Display font | `@fontsource/space-grotesk` v5 | Self-hosted OFL geometric display face for Cosmic headings (500 + 700). | Same `@import`-from-theme resolution as Inter. |
+| Color space | `oklch()` (native CSS) | Perceptually uniform palette across starter + Cosmic. | No PostCSS hex fallback — oklch is universal in 2026 (Chrome 111+/Safari 16.4+/Firefox 113+). |
+
+Themes are folders of CSS (ADR-0005). Bundled themes (starter, cosmic, marp-*) live in
+`packages/client/src/themes/` and are imported by the deck + print routes; a deck opts in via
+`theme:` headmatter, which stamps `data-theme` and scopes non-default tokens under `[data-theme]`.
+
 ## Things we are NOT pulling in
 
 Recording these so we don't accidentally regress:
@@ -145,3 +157,4 @@ Recording these so we don't accidentally regress:
 ## Change history
 
 - 2026-06-30 — initial spec, three research agents grounded the picks (MCP SDK, Astro ecosystem, NPM library landscape).
+- 2026-07-01 — Phase 16: added Fontsource `@fontsource-variable/inter` + `@fontsource/space-grotesk` (self-hosted OFL) for the Cosmic theme; recorded the oklch-no-fallback and `@import`-from-theme decisions.

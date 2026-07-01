@@ -16,7 +16,7 @@
  * here; the token contract is what a theme owns.
  */
 
-:root {
+[data-theme="marp-uncover"] {
   /* Color — semantic, not physical (uncover: near-black, high contrast, cyan) */
   --slide-bg: oklch(20% 0.02 260);
   --slide-fg: oklch(97% 0.005 260);
@@ -80,7 +80,7 @@
 /* Light variant. uncover is dark by default, so the *light* set is the override:
    it applies under OS light preference unless a deck forces dark. */
 @media (prefers-color-scheme: light) {
-  :root:not([data-color-scheme="dark"]) {
+  html:not([data-color-scheme="dark"]) [data-theme="marp-uncover"] {
     --slide-bg: oklch(99% 0.003 260); /* near-white (#fdfcff-ish) */
     --slide-fg: oklch(24% 0.02 260);
     --slide-accent: oklch(56% 0.16 205); /* deeper cyan for light bg contrast */
@@ -94,7 +94,7 @@
 }
 
 /* Forced-light decks (headmatter colorSchema: light) regardless of OS. */
-:root[data-color-scheme="light"] {
+html[data-color-scheme="light"] [data-theme="marp-uncover"] {
   --slide-bg: oklch(99% 0.003 260);
   --slide-fg: oklch(24% 0.02 260);
   --slide-accent: oklch(56% 0.16 205);

@@ -4,7 +4,7 @@ The phase index. Always current. Update when a phase starts or ends.
 
 ## Active
 
-- _None. Phase 15 closed (Marp/Slidev compatibility: v-click aliases, Marp images, Slidev shims); Phase 16 (default theme) is next up._
+- _None. Phase 16 closed (Cosmic flagship theme + theme-by-name switching); Phase 17 (docs and examples) is next up._
 
 ## Planned
 
@@ -12,7 +12,6 @@ Phases are listed in dependency order. They can be re-sequenced if a later phase
 
 | # | Phase | One-liner |
 | --- | --- | --- |
-| 16 | [`16-default-theme`](./16-default-theme/README.md) | "Cosmic" flagship theme: WebSlides-quality design DNA, dark/light variants |
 | 17 | [`17-docs-and-examples`](./17-docs-and-examples/README.md) | Starlight docs site, sample decks, CLI in-TTY shortcuts |
 | 18 | [`18-v1-release`](./18-v1-release/README.md) | Changesets release tooling, npm publish, GitHub release |
 
@@ -35,6 +34,7 @@ Phases are listed in dependency order. They can be re-sequenced if a later phase
 | 13 | `13-export-pptx` | [`docs/built/13-export-pptx.md`](../docs/built/13-export-pptx.md) — editable PPTX via PptxGenJS from rendered-DOM extraction (text/lists/tables/images/notes), code + `exportAs:image`/`--rasterize` fallback (closed 2026-07-01) |
 | 14 | `14-mcp-server` | [`docs/built/14-mcp-server.md`](../docs/built/14-mcp-server.md) — first-class MCP server (`astro-slides mcp-server`): 20 read/write/navigate/export tools, stdio + Streamable HTTP + bearer auth, tsup-bundled package, text-level write engine, Claude Code skill bundle (closed 2026-07-01) |
 | 15 | `15-marp-slidev-compatibility` | [`docs/built/15-marp-slidev-compatibility.md`](../docs/built/15-marp-slidev-compatibility.md) — `v-click` remark aliases, Marp image shorthand (`![bg]`/`![w:N]`), 6 Slidev component shims, 3 Marp theme ports; documented gaps (closed 2026-07-01) |
+| 16 | `16-default-theme` | [`docs/built/16-default-theme.md`](../docs/built/16-default-theme.md) — "Cosmic" flagship theme (oklch dark/light palette, self-hosted Space Grotesk + Inter, 8px rhythm, FlexBlock cards, CSS starfield) + theme-by-name switching via `[data-theme]` scoping (closed 2026-07-01) |
 
 ---
 
