@@ -13,6 +13,7 @@
     }
   },
   "dependencies": {
+    "@astro-slides/client": "workspace:*",
     "@astro-slides/parser": "workspace:*",
     "@astro-slides/types": "workspace:*",
     "picocolors": "catalog:prod",

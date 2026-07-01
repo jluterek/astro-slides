@@ -1,31 +1,74 @@
 ---
-import { ClientRouter } from "astro:transitions";
+import { configs } from "@astro-slides/configs";
 import { slides } from "@astro-slides/slides";
+import "@astro-slides/client/styles/deck.css";
 
+/**
+ * Deck route. Every `/{deck}/{slide}` URL renders the whole deck as a stack of
+ * `<section>` elements — the current slide gets `present`, the rest `past`/`future`
+ * — so the in-browser runtime can navigate client-side without a full reload while
+ * each slide URL stays a real, deep-linkable static page.
+ */
 export function getStaticPaths() {
+  const byDeck = new Map<string, typeof slides>();
+  for (const s of slides) {
+    const list = byDeck.get(s.deck) ?? [];
+    list.push(s);
+    byDeck.set(s.deck, list);
+  }
   return slides.map((slide) => ({
     params: { deck: slide.deck, slide: String(slide.no) },
-    props: slide,
+    props: { current: slide, deckSlides: byDeck.get(slide.deck) ?? [slide] },
   }));
 }
 
-const slide = Astro.props;
+const { current, deckSlides } = Astro.props;
+const config = configs[current.deck] ?? {};
+
+const [aw, ah] = String(config.aspectRatio ?? "16:9").split(":").map(Number);
+const designWidth = Number(config.canvasWidth ?? 1920);
+const designHeight = Math.round(designWidth * (aw && ah ? ah / aw : 9 / 16));
+
+const stateClass = (no: number): string =>
+  no < current.no ? "past" : no > current.no ? "future" : "present";
 ---
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{slide.title ?? `${slide.deck} — ${slide.no}`}</title>
-    <ClientRouter />
+    <title>{current.title ?? `${current.deck} — ${current.no}`}</title>
   </head>
   <body>
-    <main
-      class="astro-slide"
-      data-deck={slide.deck}
-      data-slide-no={slide.no}
-      data-layout={slide.layout}
-      set:html={slide.html}
-    />
+    <div
+      class="as-deck"
+      data-deck={current.deck}
+      data-current={current.no}
+      data-total={deckSlides.length}
+      data-design-width={designWidth}
+      data-design-height={designHeight}
+    >
+      <div class="as-viewport">
+        {
+          deckSlides.map((s) => (
+            <section
+              class:list={["as-slide", stateClass(s.no)]}
+              data-slide-no={s.no}
+              data-steps={s.totalClicks}
+              data-layout={s.layout}
+              data-title={s.title ?? ""}
+              set:html={s.html}
+            />
+          ))
+        }
+      </div>
+      <div class="as-status" aria-live="polite" aria-atomic="true"></div>
+    </div>
+
+    <script>
+      import { initDeck } from "@astro-slides/client";
+      const root = document.querySelector<HTMLElement>(".as-deck");
+      if (root) initDeck(root);
+    </script>
   </body>
 </html>
