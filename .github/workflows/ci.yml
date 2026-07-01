@@ -87,3 +87,18 @@ jobs:
           path: playwright-report/
           if-no-files-found: ignore
           retention-days: 14
+
+  apps:
+    name: Build apps (docs + examples)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Every example deck and the docs site must build — catches broken decks and doc pages.
+      - run: pnpm --filter "@astro-slides/example-*" build
+      - run: pnpm --filter @astro-slides/docs-site build

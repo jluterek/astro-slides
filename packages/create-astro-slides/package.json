@@ -1,0 +1,29 @@
+{
+  "name": "create-astro-slides",
+  "version": "0.0.0",
+  "private": false,
+  "type": "module",
+  "description": "Scaffold a new astro-slides deck project — pnpm create astro-slides <target>.",
+  "license": "MIT",
+  "author": "James Luterek",
+  "bin": {
+    "create-astro-slides": "./bin/create-astro-slides.mjs"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    }
+  },
+  "files": [
+    "bin",
+    "src"
+  ],
+  "dependencies": {
+    "@clack/prompts": "catalog:prod",
+    "picocolors": "catalog:prod"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:dev"
+  }
+}

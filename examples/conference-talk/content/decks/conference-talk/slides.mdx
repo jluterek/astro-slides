@@ -1,0 +1,202 @@
+---
+title: Shipping the Web-Native Web
+theme: cosmic
+duration: 30min
+---
+
+# Shipping the Web-Native Web
+
+How the browser became the fastest way to build, present, and deploy — and why the platform wins in the end.
+
+<!--
+Welcome everyone. This talk is about betting on the web platform instead of fighting it.
+Set the tone: we're going to move fast, show real numbers, and end with a call to action.
+-->
+
+---
+layout: section
+---
+
+## Where we've been
+
+---
+
+## The framework treadmill
+
+- Every year a new build tool promised to be **faster**
+- Every year the bundle got **bigger** anyway
+- We shipped megabytes of JavaScript to render a paragraph
+- Meanwhile the platform quietly grew up around us
+
+The browser you're presenting on right now can do things we used to reach for a framework to do.
+
+---
+
+## What the platform grew
+
+- **View Transitions** — animated route changes with no library
+- **Container queries** — components that respond to their box, not the viewport
+- `oklch()` color — perceptually uniform palettes, native
+- **Import maps** and ES modules — real modules, no bundler required
+- Streaming HTML — first paint before the data lands
+
+<!--
+Emphasize: none of these needed a build step ten years ago and now they ship in every evergreen browser.
+The point isn't "no tools" — it's "tools that get out of the way."
+-->
+
+---
+layout: section
+---
+
+## The cost of doing nothing
+
+---
+
+## Ship less, arrive sooner
+
+<Click>Median mobile page ships **~500 KB** of JavaScript</Click>
+
+<Click>Every 100 KB parsed is real main-thread time on a mid-range phone</Click>
+
+<Click>The fastest script is the one you **never send**</Click>
+
+<Clicks>
+
+<div>So the web-native move is subtraction, not addition:</div>
+
+<div>server-render the HTML, hydrate only the islands that need it</div>
+
+<div>and let the platform handle the animation, the routing, the color</div>
+
+</Clicks>
+
+<!--
+Walk the numbers slowly. [click] the median. [click] parse cost. [click] the punchline.
+Then [click] set up the three-part principle, [click] islands, [click] platform-first.
+-->
+
+---
+layout: fact
+---
+
+**90%**
+
+less JavaScript when you hydrate islands instead of the whole page
+
+---
+layout: two-cols
+---
+
+### The old default
+
+- Ship the whole app as JS
+- Framework boots, then renders
+- Time-to-interactive waits on the bundle
+- Every feature is a dependency
+
+::right::
+
+### The web-native default
+
+- Ship HTML first, JS only where needed
+- Renders before it hydrates
+- Interactive islands boot independently
+- Every feature is a platform primitive
+
+---
+
+## What an island looks like
+
+Only the interactive parts pay the JavaScript cost. Everything else is static HTML.
+
+```ts {2,4-5}
+// The counter is an island; the surrounding page is not.
+const prerender = true;                // static HTML, zero client JS
+
+import Counter from "./Counter.tsx";   // hydrated on demand
+<Counter client:visible />;            // boots only when scrolled into view
+```
+
+The `client:visible` directive is the whole trick — defer hydration until the element actually matters.
+
+---
+layout: section
+---
+
+## Presenting the web-native way
+
+---
+
+## This slide is a web page
+
+- These slides are authored in **Markdown / MDX**
+- Rendered by **Astro**, styled by plain CSS custom properties
+- Slide changes use the **View Transitions API** — no animation library
+- The whole deck exports to **PDF, PNG, and editable PPTX**
+
+You're looking at the argument, not just hearing it.
+
+<!--
+Meta moment: point out that the deck itself is the demo.
+Let it land that there's no reveal.js, no PowerPoint, no lock-in.
+-->
+
+---
+
+## Author once, target everywhere
+
+<FlexBlock variant="features" columns={3}>
+
+<div>
+
+### Web-native
+
+Runs in any browser. No runtime lock-in, no plugin to install.
+
+</div>
+
+<div>
+
+### Composable
+
+Layout primitives and content components you snap together in MDX.
+
+</div>
+
+<div>
+
+### Portable
+
+One source of truth outputs slides, PDF, and PPTX.
+
+</div>
+
+</FlexBlock>
+
+---
+layout: quote
+---
+
+> The best way to predict the future is to invent it.
+
+— Alan Kay
+
+---
+layout: statement
+---
+
+Bet on the platform. It outlives every framework.
+
+---
+layout: end
+---
+
+## Thank you
+
+Ship less. Arrive sooner. `theme: cosmic`
+
+<!--
+Wrap up: restate the three ideas — subtract JavaScript, hydrate islands, trust the platform.
+Invite questions and point people at the repo.
+-->

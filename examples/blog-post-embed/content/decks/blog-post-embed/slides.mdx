@@ -1,0 +1,55 @@
+---
+title: What is a View Transition?
+theme: cosmic
+---
+
+# View Transitions
+
+Smooth, animated changes between two page states — built into the browser, no library required.
+
+---
+
+## The old way
+
+- Swap the DOM and the change is instant and jarring
+- Cross-fades and morphs meant hand-rolled JS or an animation library
+- State that lived across the change was hard to animate
+
+---
+
+## The new way
+
+The View Transitions API captures a before and an after, then animates between them for you.
+
+<Click>The browser snapshots the current page.</Click>
+
+<Click>You update the DOM inside a callback.</Click>
+
+<Click>The browser cross-fades old to new automatically.</Click>
+
+---
+
+## One call to start
+
+```ts
+// Wrap the DOM update — the browser animates the rest.
+document.startViewTransition(() => {
+  updateTheDOM();
+});
+```
+
+That is the whole API surface. Everything else is CSS.
+
+---
+
+## Shared elements morph
+
+- Give two elements the same `view-transition-name`
+- The browser tweens position, size, and shape between them
+- Perfect for a thumbnail growing into a hero image
+
+---
+layout: statement
+---
+
+Want the full walkthrough? Read the complete post for demos and fallbacks.
