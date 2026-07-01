@@ -1,7 +1,7 @@
 ---
 title: Phase 03 — Astro integration
-status: pending
-started:
+status: active
+started: 2026-06-30
 ended:
 ---
 
