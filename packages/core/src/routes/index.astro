@@ -1,0 +1,24 @@
+---
+import { slides } from "@astro-slides/slides";
+
+/**
+ * SPA entry (Phase 12). Redirects `/` to the first deck's first slide. Rendered as a
+ * static page (meta-refresh + JS) so it works on any static host, and copied to
+ * `404.html` by the `astro:build:done` hook so refreshed deep links resolve too.
+ */
+const first = [...slides].sort((a, b) => a.no - b.no)[0];
+const target = first ? `/${encodeURIComponent(first.deck)}/${first.no}` : "/";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content={`0; url=${target}`} />
+    <link rel="canonical" href={target} />
+    <title>Redirecting…</title>
+    <script is:inline set:html={`location.replace(${JSON.stringify(target)})`}></script>
+  </head>
+  <body>
+    <p>Redirecting to <a href={target}>the deck</a>…</p>
+  </body>
+</html>

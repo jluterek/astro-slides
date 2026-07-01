@@ -1,0 +1,53 @@
+/* Print route (Phase 12). Each slide is a page-sized block with every click revealed. */
+
+.as-print {
+  margin: 0;
+  background: #fff;
+}
+
+/* One slide per page. Fixed to the design size so it maps 1:1 onto `@page size`. */
+.as-print-slide {
+  position: relative;
+  inset: auto;
+  width: var(--as-design-w);
+  height: var(--as-design-h);
+  overflow: hidden;
+  /* Override the deck's stacked-overlay visibility — every slide paints in flow. */
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: none;
+  break-after: page;
+  page-break-after: always;
+}
+.as-print-slide:last-child {
+  break-after: auto;
+  page-break-after: auto;
+}
+
+/* Reveal all click-stepped content in print/export (no runtime to step through it).
+   `.as-print .as-print-slide …` (0,3,0) outranks the `.as-slide [data-click]` reveal
+   rules, so no `!important` is needed. */
+.as-print .as-print-slide [data-click],
+.as-print .as-print-slide .as-click,
+.as-print .as-print-slide .as-code-line,
+.as-print .as-print-slide .as-math-row {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  filter: none;
+}
+
+/* Chrome that only makes sense on-screen never prints. */
+.as-print .as-help,
+.as-print .as-status,
+.as-print .as-drawing-toolbar {
+  display: none;
+}
+
+@media print {
+  .as-print-slide {
+    break-after: page;
+    page-break-after: always;
+  }
+}

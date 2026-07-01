@@ -38,18 +38,21 @@ The complete `astro-slides` command surface. Each subcommand maps to one or more
 - `--out <dir>` (default `dist`)
 - `--base <path>` (default `/`)
 
-### `export`
+### `export` (Phase 12 shipped: `pdf`, `png`, `html`; `pptx` is Phase 13)
 
-- `--format pdf | png | pptx | md` (required)
-- `--output <path>` (default `<cwd>/exports/<deck>.<ext>`)
+Builds the deck, previews it, and drives headless Chromium against the prerendered
+`/print/<deck>` page (PDF) or per-slide embed pages (PNG).
+
+- `--format pdf | png | html` (default `pdf`) — `html` zips the built `dist/` into an offline bundle
+- `--output <path>` — file (one-piece pdf / html zip) or directory (png / `--per-slide` pdf)
 - `--range "1,3-5,8"` — subset of slides
-- `--with-clicks` — emit per-click-step frames
-- `--with-toc` — include outline in PDF
-- `--per-slide` — Playwright-driven per-slide pipeline (PDF only)
-- `--scale <n>` — output scale (PNG/PDF)
+- `--with-clicks` — emit per-click-step frames (PNG)
+- `--with-toc` — add a PDF outline from slide titles
+- `--per-slide` — one PDF file per slide (split from the one-piece render via pdf-lib)
+- `--scale <n>` — PDF scale / PNG device-pixel-ratio (default PNG DPR 2)
 - `--dark` — force dark color scheme
-- `--omit-background` — transparent background where supported
-- `--executable-path <path>` — Playwright Chromium override
+- `--omit-background` — transparent PNG background
+- `--executable-path <path>` — bring-your-own Chromium binary
 
 ### `mcp-server`
 

@@ -1,3 +1,4 @@
+import { copyFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
@@ -96,7 +97,29 @@ export function astroSlides(options: AstroSlidesOptions = {}): AstroIntegration 
           entrypoint: fileURLToPath(new URL("./routes/presenter.astro", import.meta.url)),
           prerender: true,
         });
-        logger.info("Registered virtual modules and the deck + presenter routes.");
+        // Print route (Phase 12) — all slides stacked for `window.print()` / PDF export.
+        injectRoute({
+          pattern: "/print/[deck]",
+          entrypoint: fileURLToPath(new URL("./routes/print.astro", import.meta.url)),
+          prerender: true,
+        });
+        // SPA entry (Phase 12) — `/` redirects to the first deck's first slide.
+        injectRoute({
+          pattern: "/",
+          entrypoint: fileURLToPath(new URL("./routes/index.astro", import.meta.url)),
+          prerender: true,
+        });
+        logger.info("Registered virtual modules and the deck + presenter + print routes.");
+      },
+      // GitHub Pages fallback (Phase 12): copy the SPA entry to 404.html so deep links
+      // (e.g. /slides/7 refreshed on a static host) resolve to the app instead of a 404.
+      "astro:build:done": ({ dir, logger }) => {
+        const out = fileURLToPath(dir);
+        const index = `${out}/index.html`;
+        if (existsSync(index)) {
+          copyFileSync(index, `${out}/404.html`);
+          logger.info("Copied index.html → 404.html for static-host deep links.");
+        }
       },
     },
   };

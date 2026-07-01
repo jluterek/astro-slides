@@ -93,6 +93,10 @@ export function initDeck(root: HTMLElement): DeckHandle {
   const design = readDesign(root);
   const start = parseLocation(location.pathname, location.search);
 
+  // Embed mode (Phase 12): `?embed=1` strips presenter chrome for `<iframe>` embedding —
+  // the slide still navigates, but help/status/toolbars stay hidden (see deck.css).
+  if (new URLSearchParams(location.search).get("embed")) root.classList.add("as-embed");
+
   const store = createDeckStore({
     deck: root.dataset.deck ?? "",
     total: slides.length,
