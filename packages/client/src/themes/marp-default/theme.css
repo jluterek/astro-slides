@@ -1,0 +1,103 @@
+/*
+ * marp-default — a port of Marp Core's "default" theme onto our --slide-* contract.
+ *
+ * Marp's "default" is based on github-markdown-css: a clean, light, neutral-gray
+ * look with a system sans-serif face, left-aligned headings, and a single subtle
+ * blue link/accent. These values approximate that visual identity semantically —
+ * they map Marp's palette/typography onto our token contract, not pixel-for-pixel.
+ *
+ * Mirrors starter/theme.css: same token set, same light-default + dark-override
+ * structure. Colors use oklch() as starter does. Alignment (Marp defaults to
+ * left-aligned headings) is a layout/class concern, not a token, so it is not set
+ * here — the token contract is what a theme owns.
+ */
+
+:root {
+  /* Color — semantic, not physical (github-markdown light) */
+  --slide-bg: oklch(100% 0 0);
+  --slide-fg: oklch(25% 0.008 250);
+  --slide-accent: oklch(52% 0.19 255); /* github link blue (#0366d6) */
+  --slide-accent-fg: oklch(100% 0 0);
+  --slide-muted: oklch(52% 0.015 250); /* #586069 */
+  --slide-border: oklch(91% 0.005 250); /* #e1e4e8 hairline */
+  --slide-surface: oklch(97% 0.003 250); /* #f6f8fa */
+  --slide-link: var(--slide-accent);
+  --slide-code-bg: oklch(96% 0.003 250);
+  --slide-code-fg: oklch(30% 0.02 250);
+  --slide-danger: oklch(55% 0.2 27); /* #d73a49 */
+  --slide-info: oklch(58% 0.14 250);
+
+  /* Block family (FlexBlock cells, cards) */
+  --slide-block-bg: var(--slide-surface);
+  --slide-block-border: var(--slide-border);
+  --slide-block-radius: 6px; /* github's tighter corner */
+
+  /* Typography — Marp default: Helvetica Neue / system sans */
+  --slide-font-body:
+    "Helvetica Neue", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --slide-font-heading: var(--slide-font-body);
+  --slide-font-mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  --slide-font-size-base: 24px;
+  --slide-font-size-scale: 1.25;
+  --slide-line-height: 1.5;
+  --slide-heading-line-height: 1.25;
+  --slide-heading-weight: 600; /* github headings are semibold */
+
+  /* Type scale (modular, base * scale^n) */
+  --slide-text-sm: calc(var(--slide-font-size-base) / var(--slide-font-size-scale));
+  --slide-text-md: var(--slide-font-size-base);
+  --slide-text-lg: calc(var(--slide-font-size-base) * var(--slide-font-size-scale));
+  --slide-text-xl: calc(var(--slide-text-lg) * var(--slide-font-size-scale));
+  --slide-text-2xl: calc(var(--slide-text-xl) * var(--slide-font-size-scale));
+  --slide-text-3xl: calc(var(--slide-text-2xl) * var(--slide-font-size-scale));
+  --slide-text-4xl: calc(var(--slide-text-3xl) * var(--slide-font-size-scale));
+
+  /* Spacing — 8px rhythm */
+  --slide-space-unit: 8px;
+  --slide-space-1: calc(var(--slide-space-unit) * 1);
+  --slide-space-2: calc(var(--slide-space-unit) * 2);
+  --slide-space-3: calc(var(--slide-space-unit) * 3);
+  --slide-space-4: calc(var(--slide-space-unit) * 4);
+  --slide-space-6: calc(var(--slide-space-unit) * 6);
+  --slide-space-8: calc(var(--slide-space-unit) * 8);
+  --slide-space-12: calc(var(--slide-space-unit) * 12);
+
+  /* Layout */
+  --slide-canvas-width: 1920px;
+  --slide-canvas-height: 1080px;
+  --slide-padding: var(--slide-space-8);
+  --slide-content-max: 1400px;
+
+  /* Transitions */
+  --slide-transition-duration: 400ms;
+  --slide-transition-easing: cubic-bezier(0.26, 0.86, 0.44, 0.985);
+}
+
+/* Dark variant (github-markdown dark). Applies under OS dark preference unless a
+   deck forces a scheme via data-color-scheme. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-color-scheme="light"]) {
+    --slide-bg: oklch(18% 0.01 250); /* #0d1117 */
+    --slide-fg: oklch(85% 0.01 250); /* #c9d1d9 */
+    --slide-accent: oklch(70% 0.14 250); /* #58a6ff */
+    --slide-accent-fg: oklch(18% 0.01 250);
+    --slide-muted: oklch(68% 0.015 250); /* #8b949e */
+    --slide-border: oklch(35% 0.01 250); /* #30363d */
+    --slide-surface: oklch(24% 0.012 250); /* #161b22 */
+    --slide-code-bg: oklch(26% 0.012 250);
+    --slide-code-fg: oklch(85% 0.02 250);
+  }
+}
+
+/* Forced-dark decks (headmatter colorSchema: dark) regardless of OS. */
+:root[data-color-scheme="dark"] {
+  --slide-bg: oklch(18% 0.01 250);
+  --slide-fg: oklch(85% 0.01 250);
+  --slide-accent: oklch(70% 0.14 250);
+  --slide-accent-fg: oklch(18% 0.01 250);
+  --slide-muted: oklch(68% 0.015 250);
+  --slide-border: oklch(35% 0.01 250);
+  --slide-surface: oklch(24% 0.012 250);
+  --slide-code-bg: oklch(26% 0.012 250);
+  --slide-code-fg: oklch(85% 0.02 250);
+}

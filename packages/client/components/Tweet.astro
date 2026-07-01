@@ -1,0 +1,53 @@
+---
+// Slidev-compat shim for `<Tweet id="…" scale="…" />`.
+//
+// COMPAT LIMITATION: this is a link-card FALLBACK, not a live embed. Slidev uses
+// `react-tweet` to render the actual tweet; we deliberately do not ship that
+// dependency (see docs/architecture/dependencies.md). Instead we render a styled
+// blockquote card that links out to the tweet on twitter.com / x.com.
+interface Props {
+  id: string;
+  scale?: number | string;
+  class?: string;
+}
+const { id, scale, class: cls } = Astro.props;
+const twitterUrl = `https://twitter.com/i/status/${id}`;
+const xUrl = `https://x.com/i/status/${id}`;
+const style = scale != null ? `transform:scale(${scale});transform-origin:top left` : undefined;
+---
+
+<blockquote class:list={["compat-tweet", cls]} style={style}>
+  <p class="compat-tweet-note">Tweet embed (link-card fallback)</p>
+  <p class="compat-tweet-id">Status {id}</p>
+  <p class="compat-tweet-links">
+    <a href={twitterUrl} target="_blank" rel="noopener noreferrer">View on twitter.com</a>
+    <span aria-hidden="true"> · </span>
+    <a href={xUrl} target="_blank" rel="noopener noreferrer">View on x.com</a>
+  </p>
+</blockquote>
+
+<style>
+  .compat-tweet {
+    display: inline-block;
+    margin: 0;
+    padding: var(--slide-space-3, 1.5rem);
+    max-width: 32rem;
+    background: var(--slide-surface, var(--slide-block-bg));
+    color: var(--slide-fg);
+    border: 1px solid var(--slide-border);
+    border-radius: var(--slide-block-radius, 0.5rem);
+    font-family: var(--slide-font-body);
+    text-align: left;
+  }
+  .compat-tweet p { margin: 0 0 var(--slide-space-1, 0.5rem); }
+  .compat-tweet-note {
+    color: var(--slide-muted);
+    font-size: var(--slide-text-sm, 0.875em);
+  }
+  .compat-tweet-id {
+    font-family: var(--slide-font-mono);
+    color: var(--slide-muted);
+  }
+  .compat-tweet-links { margin-bottom: 0; }
+  .compat-tweet-links a { color: var(--slide-link, var(--slide-accent)); }
+</style>

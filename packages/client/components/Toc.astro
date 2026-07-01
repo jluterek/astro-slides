@@ -1,0 +1,72 @@
+---
+// Slidev-compat shim for `<Toc columns=… maxDepth=… />` — a table of contents.
+// SIMPLIFIED: Slidev derives its TOC from the deck's slide tree (with heading-depth
+// nesting via `maxDepth`). The canonical deck slide list here lives in the virtual
+// module `@astro-slides/slides`, but that module is generated for and resolved from
+// core *routes* (`packages/core/src/routes`) — there is no ambient type declaration
+// reachable from this client package, so importing it here is not clearly supported
+// or typecheck-safe. Instead this shim renders from an optional `slides` prop that a
+// route/layout can pass down. `maxDepth` is accepted for API compatibility but has no
+// effect (we only have per-slide titles, not a heading tree). Links target the deck
+// route `/<deck>/<no>` when `deck` is known, else the in-page anchor `#<no>`.
+interface TocSlide {
+  no: number;
+  title?: string;
+  deck?: string;
+}
+
+interface Props {
+  /** Deck slides to list. Optional: falls back to an empty TOC if not provided. */
+  slides?: TocSlide[];
+  /** Number of CSS columns to lay the list out in. */
+  columns?: number | string;
+  /** Accepted for Slidev API parity; no effect (titles-only, no heading tree). */
+  maxDepth?: number | string;
+  class?: string;
+}
+
+const { slides, columns, maxDepth: _maxDepth, class: cls } = Astro.props;
+
+const cols = Number.parseInt(String(columns ?? ""), 10);
+const columnCount = Number.isFinite(cols) && cols > 0 ? cols : 1;
+
+const items = [...(slides ?? [])].sort((a, b) => a.no - b.no);
+
+const href = (s: TocSlide): string =>
+  s.deck ? `/${encodeURIComponent(s.deck)}/${s.no}` : `#${s.no}`;
+---
+
+<nav class:list={["p-toc", cls]} style={`--p-toc-columns: ${columnCount}`} aria-label="Table of contents">
+  <ol class="p-toc-list">
+    {
+      items.map((s) => (
+        <li class="p-toc-item">
+          <a href={href(s)}>{s.title ?? `Slide ${s.no}`}</a>
+        </li>
+      ))
+    }
+  </ol>
+</nav>
+
+<style>
+  .p-toc-list {
+    column-count: var(--p-toc-columns, 1);
+    column-gap: var(--slide-space-6, 3rem);
+    margin: 0;
+    padding-left: var(--slide-space-4, 2rem);
+    color: var(--slide-fg);
+    font-family: var(--slide-font-body);
+    line-height: var(--slide-line-height);
+  }
+  .p-toc-item {
+    break-inside: avoid;
+    margin-block: var(--slide-space-1, 0.25rem);
+  }
+  .p-toc-item a {
+    color: var(--slide-link, var(--slide-accent));
+    text-decoration: none;
+  }
+  .p-toc-item a:hover {
+    text-decoration: underline;
+  }
+</style>

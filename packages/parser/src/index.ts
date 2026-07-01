@@ -27,7 +27,7 @@ export {
 } from "./frontmatter.js";
 export { revisionHash } from "./hash.js";
 export { expandImports, expandImportsAsync, type ResolvedRawSlide } from "./imports.js";
-export { extractMarpDirectives } from "./marp.js";
+export { extractMarpDirectives, extractMarpImages, type MarpImageResult } from "./marp.js";
 export { extractNotes } from "./notes.js";
 export type {
   AsyncFileSystem,

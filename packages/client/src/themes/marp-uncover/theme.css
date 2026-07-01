@@ -1,0 +1,107 @@
+/*
+ * marp-uncover — a port of Marp Core's "uncover" theme onto our --slide-* contract.
+ *
+ * Marp's "uncover" is the bold, minimal one: centered content, high contrast,
+ * larger type, heavy headings. This port takes its dark-leaning register as the
+ * primary look — a near-black background with near-white text and a single bright
+ * cyan accent — because that's uncover's most recognizable face. Values approximate
+ * that identity semantically (uncover's palette/typography onto our token contract),
+ * not pixel-for-pixel.
+ *
+ * Mirrors starter/theme.css: same token set. Because uncover is dark by default,
+ * the light/dark structure is *inverted* relative to starter — :root holds the
+ * dark set, and a light override applies under OS light preference (and forced
+ * light) — but the token set and forcing mechanism are identical. Centering (a
+ * defining uncover trait) is a layout/class concern, not a token, so it is not set
+ * here; the token contract is what a theme owns.
+ */
+
+:root {
+  /* Color — semantic, not physical (uncover: near-black, high contrast, cyan) */
+  --slide-bg: oklch(20% 0.02 260);
+  --slide-fg: oklch(97% 0.005 260);
+  --slide-accent: oklch(74% 0.15 205); /* bright cyan highlight (#009dd5-ish) */
+  --slide-accent-fg: oklch(20% 0.02 260);
+  --slide-muted: oklch(72% 0.02 260);
+  --slide-border: oklch(40% 0.02 260);
+  --slide-surface: oklch(26% 0.02 260);
+  --slide-link: var(--slide-accent);
+  --slide-code-bg: oklch(28% 0.02 260);
+  --slide-code-fg: oklch(90% 0.03 205);
+  --slide-danger: oklch(66% 0.2 27);
+  --slide-info: oklch(72% 0.14 235);
+
+  /* Block family (FlexBlock cells, cards) */
+  --slide-block-bg: var(--slide-surface);
+  --slide-block-border: var(--slide-border);
+  --slide-block-radius: 14px;
+
+  /* Typography — uncover: bold, geometric sans; larger, tighter headings */
+  --slide-font-body:
+    "Roboto", "Ubuntu", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --slide-font-heading: var(--slide-font-body);
+  --slide-font-mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  --slide-font-size-base: 28px; /* larger, presentational */
+  --slide-font-size-scale: 1.3;
+  --slide-line-height: 1.45;
+  --slide-heading-line-height: 1.05;
+  --slide-heading-weight: 800; /* bold, minimal */
+
+  /* Type scale (modular, base * scale^n) */
+  --slide-text-sm: calc(var(--slide-font-size-base) / var(--slide-font-size-scale));
+  --slide-text-md: var(--slide-font-size-base);
+  --slide-text-lg: calc(var(--slide-font-size-base) * var(--slide-font-size-scale));
+  --slide-text-xl: calc(var(--slide-text-lg) * var(--slide-font-size-scale));
+  --slide-text-2xl: calc(var(--slide-text-xl) * var(--slide-font-size-scale));
+  --slide-text-3xl: calc(var(--slide-text-2xl) * var(--slide-font-size-scale));
+  --slide-text-4xl: calc(var(--slide-text-3xl) * var(--slide-font-size-scale));
+
+  /* Spacing — 8px rhythm */
+  --slide-space-unit: 8px;
+  --slide-space-1: calc(var(--slide-space-unit) * 1);
+  --slide-space-2: calc(var(--slide-space-unit) * 2);
+  --slide-space-3: calc(var(--slide-space-unit) * 3);
+  --slide-space-4: calc(var(--slide-space-unit) * 4);
+  --slide-space-6: calc(var(--slide-space-unit) * 6);
+  --slide-space-8: calc(var(--slide-space-unit) * 8);
+  --slide-space-12: calc(var(--slide-space-unit) * 12);
+
+  /* Layout */
+  --slide-canvas-width: 1920px;
+  --slide-canvas-height: 1080px;
+  --slide-padding: var(--slide-space-12); /* roomy, centered stage */
+  --slide-content-max: 1400px;
+
+  /* Transitions */
+  --slide-transition-duration: 400ms;
+  --slide-transition-easing: cubic-bezier(0.26, 0.86, 0.44, 0.985);
+}
+
+/* Light variant. uncover is dark by default, so the *light* set is the override:
+   it applies under OS light preference unless a deck forces dark. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-color-scheme="dark"]) {
+    --slide-bg: oklch(99% 0.003 260); /* near-white (#fdfcff-ish) */
+    --slide-fg: oklch(24% 0.02 260);
+    --slide-accent: oklch(56% 0.16 205); /* deeper cyan for light bg contrast */
+    --slide-accent-fg: oklch(99% 0.003 260);
+    --slide-muted: oklch(50% 0.02 260);
+    --slide-border: oklch(90% 0.008 260);
+    --slide-surface: oklch(96% 0.006 260);
+    --slide-code-bg: oklch(95% 0.006 260);
+    --slide-code-fg: oklch(30% 0.03 205);
+  }
+}
+
+/* Forced-light decks (headmatter colorSchema: light) regardless of OS. */
+:root[data-color-scheme="light"] {
+  --slide-bg: oklch(99% 0.003 260);
+  --slide-fg: oklch(24% 0.02 260);
+  --slide-accent: oklch(56% 0.16 205);
+  --slide-accent-fg: oklch(99% 0.003 260);
+  --slide-muted: oklch(50% 0.02 260);
+  --slide-border: oklch(90% 0.008 260);
+  --slide-surface: oklch(96% 0.006 260);
+  --slide-code-bg: oklch(95% 0.006 260);
+  --slide-code-fg: oklch(30% 0.03 205);
+}

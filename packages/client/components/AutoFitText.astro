@@ -1,0 +1,18 @@
+---
+// Slidev-compat shim: <AutoFitText :max :min> → thin alias over our FitText (fitty) behavior.
+interface Props {
+  max?: number;
+  min?: number;
+  class?: string;
+}
+const { max, min, class: cls } = Astro.props;
+---
+
+<span class:list={["p-fittext", cls]} data-min={min} data-max={max}><slot /></span>
+
+<script>
+  import { initFitText } from "@astro-slides/client/fit-text";
+  const run = () => initFitText();
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run);
+  else run();
+</script>

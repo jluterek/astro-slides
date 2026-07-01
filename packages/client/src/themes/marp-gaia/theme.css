@@ -1,0 +1,102 @@
+/*
+ * marp-gaia — a port of Marp Core's "gaia" theme onto our --slide-* contract.
+ *
+ * Marp's "gaia" is the warm one: a cream / off-white background, soft warm-gray
+ * body text, a distinctive warm red/pink accent, and slightly larger, more
+ * editorial type than the default theme. These values approximate that identity
+ * semantically (mapping gaia's palette/typography onto our token contract), not
+ * pixel-for-pixel. Headings lean serif-ish to carry the warmer, print feel.
+ *
+ * Mirrors starter/theme.css: same token set, same light-default + dark-override
+ * structure. Colors use oklch() as starter does.
+ */
+
+:root {
+  /* Color — semantic, not physical (gaia: warm cream + pink accent) */
+  --slide-bg: oklch(98% 0.014 95); /* warm cream (#fbfbf3-ish) */
+  --slide-fg: oklch(37% 0.02 70); /* warm dark brown-gray */
+  --slide-accent: oklch(58% 0.2 12); /* gaia's warm red/pink highlight */
+  --slide-accent-fg: oklch(98% 0.014 95);
+  --slide-muted: oklch(56% 0.025 70);
+  --slide-border: oklch(88% 0.02 90);
+  --slide-surface: oklch(95% 0.02 95);
+  --slide-link: var(--slide-accent);
+  --slide-code-bg: oklch(94% 0.02 90);
+  --slide-code-fg: oklch(40% 0.04 45);
+  --slide-danger: oklch(56% 0.21 22);
+  --slide-info: oklch(58% 0.13 235);
+
+  /* Block family (FlexBlock cells, cards) */
+  --slide-block-bg: var(--slide-surface);
+  --slide-block-border: var(--slide-border);
+  --slide-block-radius: 10px;
+
+  /* Typography — gaia: warm humanist body, serif-ish editorial headings */
+  --slide-font-body: "Ubuntu", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --slide-font-heading:
+    "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --slide-font-mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  --slide-font-size-base: 26px; /* slightly larger than default */
+  --slide-font-size-scale: 1.28;
+  --slide-line-height: 1.55;
+  --slide-heading-line-height: 1.15;
+  --slide-heading-weight: 700;
+
+  /* Type scale (modular, base * scale^n) */
+  --slide-text-sm: calc(var(--slide-font-size-base) / var(--slide-font-size-scale));
+  --slide-text-md: var(--slide-font-size-base);
+  --slide-text-lg: calc(var(--slide-font-size-base) * var(--slide-font-size-scale));
+  --slide-text-xl: calc(var(--slide-text-lg) * var(--slide-font-size-scale));
+  --slide-text-2xl: calc(var(--slide-text-xl) * var(--slide-font-size-scale));
+  --slide-text-3xl: calc(var(--slide-text-2xl) * var(--slide-font-size-scale));
+  --slide-text-4xl: calc(var(--slide-text-3xl) * var(--slide-font-size-scale));
+
+  /* Spacing — 8px rhythm */
+  --slide-space-unit: 8px;
+  --slide-space-1: calc(var(--slide-space-unit) * 1);
+  --slide-space-2: calc(var(--slide-space-unit) * 2);
+  --slide-space-3: calc(var(--slide-space-unit) * 3);
+  --slide-space-4: calc(var(--slide-space-unit) * 4);
+  --slide-space-6: calc(var(--slide-space-unit) * 6);
+  --slide-space-8: calc(var(--slide-space-unit) * 8);
+  --slide-space-12: calc(var(--slide-space-unit) * 12);
+
+  /* Layout */
+  --slide-canvas-width: 1920px;
+  --slide-canvas-height: 1080px;
+  --slide-padding: var(--slide-space-12); /* gaia's generous margins */
+  --slide-content-max: 1400px;
+
+  /* Transitions */
+  --slide-transition-duration: 400ms;
+  --slide-transition-easing: cubic-bezier(0.26, 0.86, 0.44, 0.985);
+}
+
+/* Dark variant (gaia's warm "invert" register). Applies under OS dark preference
+   unless a deck forces a scheme via data-color-scheme. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-color-scheme="light"]) {
+    --slide-bg: oklch(28% 0.02 60); /* warm dark charcoal */
+    --slide-fg: oklch(94% 0.015 90); /* warm off-white */
+    --slide-accent: oklch(70% 0.17 14); /* brighter warm pink */
+    --slide-accent-fg: oklch(28% 0.02 60);
+    --slide-muted: oklch(74% 0.02 70);
+    --slide-border: oklch(42% 0.02 60);
+    --slide-surface: oklch(33% 0.02 60);
+    --slide-code-bg: oklch(35% 0.025 55);
+    --slide-code-fg: oklch(90% 0.03 60);
+  }
+}
+
+/* Forced-dark decks (headmatter colorSchema: dark) regardless of OS. */
+:root[data-color-scheme="dark"] {
+  --slide-bg: oklch(28% 0.02 60);
+  --slide-fg: oklch(94% 0.015 90);
+  --slide-accent: oklch(70% 0.17 14);
+  --slide-accent-fg: oklch(28% 0.02 60);
+  --slide-muted: oklch(74% 0.02 70);
+  --slide-border: oklch(42% 0.02 60);
+  --slide-surface: oklch(33% 0.02 60);
+  --slide-code-bg: oklch(35% 0.025 55);
+  --slide-code-fg: oklch(90% 0.03 60);
+}
