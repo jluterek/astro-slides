@@ -41,4 +41,23 @@ test.describe("web export", () => {
     // PNG magic: 89 50 4E 47.
     expect([...png.subarray(0, 4)]).toEqual([0x89, 0x50, 0x4e, 0x47]);
   });
+
+  // PPTX export (Phase 13) reads speaker notes + design dimensions from the rendered
+  // DOM (no parser AST at runtime). Assert that surface exists and is well-formed.
+  test("exposes the DOM surface the PPTX exporter reads", async ({ page }) => {
+    await page.goto("/slides/1", { waitUntil: "networkidle" });
+
+    // Design dimensions drive the px→inches mapping.
+    const deck = page.locator(".as-deck");
+    expect(Number(await deck.getAttribute("data-design-width"))).toBeGreaterThan(0);
+    expect(Number(await deck.getAttribute("data-design-height"))).toBeGreaterThan(0);
+
+    // Notes are embedded as a JSON map keyed by slide number.
+    const notes = await page.evaluate(() => {
+      const el = document.querySelector(".as-notes-data");
+      return el ? (JSON.parse(el.textContent ?? "{}") as Record<string, string>) : null;
+    });
+    expect(notes).not.toBeNull();
+    expect(Object.keys(notes ?? {}).length).toBeGreaterThan(0);
+  });
 });

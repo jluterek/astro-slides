@@ -1,9 +1,11 @@
 {
   "extends": "../../tsconfig.base.json",
+  "//": "DOM lib is included for the PPTX export's in-browser DOM walker (page.evaluate); the CLI itself runs in Node.",
   "compilerOptions": {
     "composite": true,
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "dist",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
   },
   "include": ["src"],
   "references": [{ "path": "../core" }, { "path": "../parser" }]

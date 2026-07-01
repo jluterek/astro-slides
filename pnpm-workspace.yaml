@@ -92,3 +92,5 @@ catalogs:
     '@lillallol/outline-pdf': ^4.0.0
     jszip: ^3.10.1
     listr2: ^10.0.0
+    # PPTX export (Phase 13, ADR-0007) — editable OOXML via PptxGenJS.
+    pptxgenjs: ^4.0.0

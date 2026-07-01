@@ -38,17 +38,18 @@ The complete `astro-slides` command surface. Each subcommand maps to one or more
 - `--out <dir>` (default `dist`)
 - `--base <path>` (default `/`)
 
-### `export` (Phase 12 shipped: `pdf`, `png`, `html`; `pptx` is Phase 13)
+### `export` (Phase 12: `pdf`, `png`, `html`; Phase 13: `pptx`)
 
 Builds the deck, previews it, and drives headless Chromium against the prerendered
-`/print/<deck>` page (PDF) or per-slide embed pages (PNG).
+`/print/<deck>` page (PDF) or per-slide embed pages (PNG / PPTX extraction).
 
-- `--format pdf | png | html` (default `pdf`) — `html` zips the built `dist/` into an offline bundle
-- `--output <path>` — file (one-piece pdf / html zip) or directory (png / `--per-slide` pdf)
+- `--format pdf | png | pptx | html` (default `pdf`) — `html` zips the built `dist/` into an offline bundle; `pptx` extracts each slide's rendered DOM into editable OOXML shapes via PptxGenJS
+- `--output <path>` — file (one-piece pdf / html zip / pptx) or directory (png / `--per-slide` pdf)
 - `--range "1,3-5,8"` — subset of slides
 - `--with-clicks` — emit per-click-step frames (PNG)
 - `--with-toc` — add a PDF outline from slide titles
 - `--per-slide` — one PDF file per slide (split from the one-piece render via pdf-lib)
+- `--rasterize` — PPTX: rasterize every slide to a full-slide image (also per-slide via `exportAs: image` frontmatter)
 - `--scale <n>` — PDF scale / PNG device-pixel-ratio (default PNG DPR 2)
 - `--dark` — force dark color scheme
 - `--omit-background` — transparent PNG background
