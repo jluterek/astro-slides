@@ -1,13 +1,16 @@
 ---
 title: Minimal Deck
 theme: starter
+duration: 20min
 ---
 
 # Hello, astro-slides
 
 A web-native presentation framework — this deck exercises the built-in layouts.
 
-<!-- Speaker note: this is the cover slide. -->
+<!--
+Welcome the audience. [click] Mention the web-native angle. [click:2] Then move on.
+-->
 
 ---
 layout: section
@@ -193,6 +196,21 @@ graph LR
 Alice -> Bob: Authentication Request
 Bob --> Alice: Authentication Response
 ```
+
+---
+
+## Speaker notes demo
+
+This slide has stepped notes — open the presenter view to see them highlight.
+
+<Click>first reveal</Click>
+
+<Click>second reveal</Click>
+
+<!--
+Reveal the **first** point [click], then the **second** [click], then wrap up.
+Notes support _markdown_.
+-->
 
 ---
 layout: end

@@ -1,0 +1,171 @@
+/*
+ * Presenter view (Phase 10). Dark, dense speaker chrome around iframe slide previews.
+ */
+.as-presenter {
+  position: fixed;
+  inset: 0;
+  background: #111;
+  color: #eee;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.as-pane {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  padding: 0.4rem;
+  box-sizing: border-box;
+}
+.as-pane-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.6;
+  padding: 0.2rem 0.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.as-pane-frame {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  border: 1px solid #333;
+  border-radius: 4px;
+  background: #000;
+}
+
+.as-resize {
+  flex: 0 0 6px;
+  background: #222;
+  transition: background 0.15s;
+}
+.as-resize:hover,
+.as-resize[data-resize-handle-state="drag"] {
+  background: #4a9eff;
+}
+.as-resize[data-panel-group-direction="vertical"] {
+  height: 6px;
+}
+
+/* --- Notes + controls ----------------------------------------------------- */
+.as-pane-notes {
+  overflow: hidden;
+}
+.as-presenter-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.1rem;
+  flex-wrap: wrap;
+}
+.as-presenter-bar button {
+  background: #2a2a2a;
+  color: #eee;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 0.25rem 0.6rem;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.as-presenter-bar button:hover {
+  background: #383838;
+}
+.as-presenter-bar button.is-active {
+  background: #4a9eff;
+  border-color: #4a9eff;
+  color: #fff;
+}
+.as-timer {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 0 0.3rem;
+  margin-left: auto;
+}
+.as-timer.is-running {
+  color: #6fdc8c;
+}
+
+.as-notes {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 0.5rem 0.2rem;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.as-notes .as-note-click {
+  display: inline-block;
+  font-size: 0.75em;
+  padding: 0 0.35em;
+  margin: 0 0.15em;
+  border-radius: 3px;
+  background: #333;
+  color: #aaa;
+  vertical-align: middle;
+}
+.as-notes .as-note-click.is-current {
+  background: #4a9eff;
+  color: #fff;
+}
+
+/* --- Command palette ------------------------------------------------------ */
+.as-palette-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 12vh;
+}
+.as-palette {
+  width: min(560px, 90vw);
+  background: #1c1c1c;
+  border: 1px solid #444;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+.as-palette [cmdk-input] {
+  width: 100%;
+  box-sizing: border-box;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #333;
+  color: #eee;
+  font: inherit;
+  font-size: 1rem;
+  padding: 0.8rem 1rem;
+  outline: none;
+}
+.as-palette [cmdk-list] {
+  max-height: 45vh;
+  overflow-y: auto;
+  padding: 0.3rem;
+}
+.as-palette [cmdk-item] {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+.as-palette [cmdk-item][data-selected="true"] {
+  background: #4a9eff;
+  color: #fff;
+}
+.as-palette [cmdk-empty] {
+  padding: 0.8rem 1rem;
+  opacity: 0.6;
+}
+.as-palette-no {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.6;
+  min-width: 1.5em;
+}

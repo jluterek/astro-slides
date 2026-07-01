@@ -171,6 +171,14 @@
   margin: 0;
 }
 
+/* Blackout overlay (Phase 10) — synced across windows via shared state. */
+.as-blackout {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: #000;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .as-slide {
     transition: none;

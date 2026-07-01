@@ -19,6 +19,24 @@ export { type DeckHandle, initAllDecks, initDeck } from "./runtime.js";
 export { applyScale, computeScale, type Size } from "./scaling.js";
 export { applySlideStates, type SlideState, slideState } from "./state-machine.js";
 export { createDeckStore, type DeckStore, type DeckStoreInit } from "./store.js";
+export {
+  channelName,
+  createSyncChannel,
+  createSyncStore,
+  displayMs,
+  elapsedMs,
+  formatDuration,
+  initialState,
+  initialTimer,
+  parseTimeString,
+  reduce,
+  type SharedState,
+  type SyncAction,
+  type SyncChannel,
+  type SyncStore,
+  type TimerMode,
+  type TimerState,
+} from "./sync/index.js";
 export { bindTouch, type TouchOptions } from "./touch.js";
 export {
   createSlideTransition,

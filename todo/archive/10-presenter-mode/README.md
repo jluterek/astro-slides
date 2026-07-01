@@ -1,8 +1,8 @@
 ---
 title: Phase 10 — Presenter mode
-status: pending
-started:
-ended:
+status: done
+started: 2026-07-01
+ended: 2026-07-01
 ---
 
 ## Goal
@@ -11,17 +11,21 @@ Ship a presenter view that gives a speaker everything they need: current slide, 
 
 ## Exit criteria
 
-- [ ] Route `/presenter/:deck/:n` renders the speaker view.
-- [ ] Three-pane grid: current slide, next slide, notes + controls. Pane sizes persist in `localStorage`.
-- [ ] Next-slide preview uses a *separate* click context so it shows the result of the next click, not the current click.
-- [ ] Speaker notes rendered from the slide AST (the trailing HTML comment per Phase 02), with markdown formatting.
-- [ ] Notes contain inline click markers (`[click]`, `[click:3]`) — the current click's marker is highlighted.
-- [ ] Timer: stopwatch and countdown modes; respects `duration: "30min"` frontmatter from the deck headmatter.
-- [ ] BroadcastChannel sync: opening `/presenter` and `/` in two tabs of the same origin syncs current slide, current step, timer state, and any drawing state (Phase 11).
-- [ ] `docs/architecture/sync-state.md` finalized.
-- [ ] Keyboard shortcuts for the speaker (via `react-hotkeys-hook`): `S` toggle pane layout, `B` blackout, `F` fullscreen, plus the standard navigation keys.
-- [ ] Optional command palette (`cmdk`) for fast navigation across slides.
-- [ ] Tests: Playwright e2e test that opens both tabs, asserts sync of slide changes from each side.
+- [x] Route `/presenter/[deck]/[slide]` renders the speaker view.
+- [x] Three-pane grid: current slide, next slide, notes + controls. Pane sizes persist in `localStorage` (`react-resizable-panels` `autoSaveId`).
+- [x] Next-slide preview uses a *separate* click context (the `preview` channel) so it shows the next click's result.
+- [x] Speaker notes rendered from the slide AST trailing comment, with markdown formatting.
+- [x] Notes inline click markers (`[click]`, `[click:3]`) — the current step's marker is highlighted.
+- [x] Timer: stopwatch and countdown modes; countdown respects `duration:` headmatter.
+- [x] BroadcastChannel sync: two same-origin windows sync current slide + step + timer + blackout. (Drawings deferred to Phase 11.)
+- [x] `docs/architecture/sync-state.md` finalized.
+- [x] Keyboard shortcuts (`react-hotkeys-hook`): nav keys + `B` blackout, `F` fullscreen, `K`/`/` palette. (`S` layout-toggle deferred — see loose ends.)
+- [x] Command palette (`cmdk`) for jump-to-slide.
+- [x] Playwright e2e: two windows sync slide changes both ways, presenter drives audience, blackout, notes.
+
+> **Deviation:** `react-resizable-panels` pinned to **v2** (documented `PanelGroup`/`autoSaveId`
+> API) — v4 renamed everything and dropped auto-persistence. `S` (toggle pane layout) is a
+> deferred loose end; pane sizes are drag-resizable + persisted.
 
 ## Locked decisions
 
@@ -76,4 +80,12 @@ Cross-device control (phone-as-clicker) is Phase 11.
 
 ## Outcome
 
-_Fill in when the phase closes._
+Shipped. Presenter view at `/presenter/[deck]/[slide]`: three resizable panes (current +
+next iframes, notes + controls), timer (stopwatch/countdown from `duration:`), blackout,
+`react-hotkeys-hook` shortcuts, `cmdk` jump-to-slide palette. Cross-window sync over
+`BroadcastChannel` — a pure-reducer `SharedState` (slide/step/blackout/timer) with a
+hello/state handshake and a separate `preview` channel for the next-click context; the deck
+runtime publishes/follows `goto` and toggles a blackout overlay. Notes rendered at build time
+with highlightable `[click]` markers. `react-resizable-panels` pinned to v2 (v4 renamed the
+API). 198 unit + 21 e2e green; demo grew to 22 slides. `sync-state.md` finalized. Distilled →
+`docs/built/10-presenter-mode.md`.

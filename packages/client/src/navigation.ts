@@ -105,6 +105,14 @@ export class DeckController {
     this.apply(gotoState(slide, this.opts.slides, step), "push");
   }
 
+  /**
+   * Apply state pushed from another window (BroadcastChannel sync, Phase 10). Mirrors
+   * the URL without adding a history entry so a follower doesn't accrue history noise.
+   */
+  applyRemote(slide: number, step = 0): void {
+    this.apply(gotoState(slide, this.opts.slides, step), "replace");
+  }
+
   /** Re-derive state from the current URL (browser back/forward). */
   syncFromUrl(): void {
     const loc = parseLocation(location.pathname, location.search);

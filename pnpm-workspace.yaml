@@ -55,6 +55,11 @@ catalogs:
     remark-math: ^6.0.0
     mermaid: ^11.16.0
     plantuml-encoder: ^1.4.0
+    # Presenter mode (Phase 10).
+    react-hotkeys-hook: ^5.3.0
+    cmdk: ^1.1.0
+    # v2 line: the documented PanelGroup/autoSaveId API (v4 renamed to Group/Separator).
+    react-resizable-panels: ^2.1.9
 
   # Non-UI runtime libraries used by parser / MCP / CLI (Phase 02+).
   prod:

@@ -56,9 +56,10 @@ Every entry includes the package, current version (June 2026 snapshot), why it w
 | Category | Library | Why | Caveat |
 | --- | --- | --- | --- |
 | Keyboard shortcuts (global) | `tinykeys` (installed v2.1.0) | Framework-agnostic, ~650 B, works in any island. Matches on `event.code`, so `Space`/letters bind reliably. | Ships no `types` condition in `exports` → local ambient decl in `packages/client`. |
-| Keyboard shortcuts (React UI) | `react-hotkeys-hook` v5+ | Component-scoped binding for the presenter / editor panels. | — |
+| Keyboard shortcuts (React UI) | `react-hotkeys-hook` v5 (installed v5.3) | Component-scoped binding for the presenter view (`S`/`B`/`F` + nav). | — |
+| Presenter pane resizing | `react-resizable-panels` **v2.1** | Resizable three-pane grid with `autoSaveId` localStorage persistence. | **Pinned to v2, not v4** — v4 renamed the API to `Group`/`Separator` and dropped `autoSaveId` auto-persistence. |
 | Touch / swipe | Pointer Events (Phase 04); `@use-gesture/core` reserved for Phase 11 | Swipe-to-navigate is one horizontal gesture — raw Pointer Events are zero-dep and jsdom-testable. | `@use-gesture` earns its place with multi-touch (drawing/pinch-zoom) in Phase 11; `react-swipeable` is a fallback. |
-| Command palette | `cmdk` v1.1+ (paco) | Unstyled, composable, ships its own fuzzy scorer. | React-only — fine since interactive UI is React islands. |
+| Command palette | `cmdk` v1.1 (installed v1.1.1) | Unstyled, composable, ships its own fuzzy scorer. Powers the presenter jump-to-slide palette. | React-only — fine since interactive UI is React islands. |
 | Auto-fit text | `fitty` (installed v2.4.2) | What reveal.js uses; tiny. Wraps `<FitText>`. | RAF poll has constant CPU — opt-in per element, not global. Default export; top-level `types`. |
 | Fragment animation helper | `@formkit/auto-animate` v0.9 | Drop-in for list/grid mutation reveals. | Optional — most click animations are CSS-only; this is the "I added a list item" case. |
 | Icons | `unplugin-icons` (installed v0.21.0) + `@iconify-json/carbon` v1.2 | Tree-shakes per-icon; wired via the integration as `Icons({ compiler: "astro" })` → `~icons/carbon/*`. | astro-icon is Astro-only and stale; skip it. Author-facing use in slides waits on the MDX gap (Phase 05 note); usable in layouts now. |

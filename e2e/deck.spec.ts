@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe("deck runtime", () => {
   test("renders every slide with the current one present", async ({ page }) => {
     await page.goto("/slides/1");
-    await expect(page.locator(".as-slide")).toHaveCount(21);
+    await expect(page.locator(".as-slide")).toHaveCount(22);
     await expect(page.locator('.as-slide[data-slide-no="1"]')).toHaveClass(/present/);
     await expect(page.locator('.as-slide[data-slide-no="2"]')).toHaveClass(/future/);
   });
