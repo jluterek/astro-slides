@@ -4,7 +4,7 @@ The phase index. Always current. Update when a phase starts or ends.
 
 ## Active
 
-- _None. Phase 07 closed (slide transitions + `<Morph>` object continuity); Phase 08 (code rendering) is next up._
+- _None. Phase 08 closed (Shiki highlighting + Magic Move + snippets + Twoslash); Phase 09 (math and diagrams) is next up._
 
 ## Planned
 
@@ -12,7 +12,6 @@ Phases are listed in dependency order. They can be re-sequenced if a later phase
 
 | # | Phase | One-liner |
 | --- | --- | --- |
-| 08 | [`08-code-rendering`](./08-code-rendering/README.md) | Shiki, Magic Move, Twoslash, line-step reveals |
 | 09 | [`09-math-and-diagrams`](./09-math-and-diagrams/README.md) | KaTeX, Mermaid, PlantUML with click-step reveals |
 | 10 | [`10-presenter-mode`](./10-presenter-mode/README.md) | Speaker view, BroadcastChannel sync, timer, notes, next-slide preview |
 | 11 | [`11-drawing-and-recording`](./11-drawing-and-recording/README.md) | Drauu drawing overlay, RecordRTC capture, mobile remote (QR + WebSocket) |
@@ -35,6 +34,7 @@ Phases are listed in dependency order. They can be re-sequenced if a later phase
 | 05 | `05-themes-and-layouts` | [`docs/built/05-themes-and-layouts.md`](../docs/built/05-themes-and-layouts.md) — 21 layouts, 8 primitives, `--slide-*` tokens + starter theme, layered layout resolver, unplugin-icons (closed 2026-06-30) |
 | 06 | `06-click-model` | [`docs/built/06-click-model.md`](../docs/built/06-click-model.md) — MDX+React foundation (slides compile as MDX); parse-time `<Click>`/`<After>`/`<Clicks>` resolution; runtime stepping (closed 2026-06-30) |
 | 07 | `07-transitions` | [`docs/built/07-transitions.md`](../docs/built/07-transitions.md) — CSS slide transitions + `<Morph>` object continuity; same-document VTA (single-page runtime) with reveal.js-style FLIP fallback (closed 2026-07-01) |
+| 08 | `08-code-rendering` | [`docs/built/08-code-rendering.md`](../docs/built/08-code-rendering.md) — build-time Shiki highlighting (dual themes), static + click-stepped line highlight, `<<<` snippet imports, Twoslash, Magic Move (closed 2026-07-01) |
 
 ---
 

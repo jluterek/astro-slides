@@ -1,5 +1,6 @@
 // @astro-slides/core — Astro integration + Vite plugins + slide pipeline.
 
+export * from "./code/index.js";
 export { deckCollectionSchema } from "./content.js";
 export {
   deckNameFromFile,

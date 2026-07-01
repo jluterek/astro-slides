@@ -1,4 +1,4 @@
-import type { Plugin } from "vite";
+import type { Plugin, ViteDevServer } from "vite";
 import { discoverDeckFiles, loadAllDecks } from "./deck-loader.js";
 import { resolveLayouts, userLayoutsDir } from "./layout-resolver.js";
 import { emitSlideModules } from "./mdx-emit.js";
@@ -15,6 +15,10 @@ export interface VitePluginOptions {
   decks?: string[];
   /** Extra layout override folders (e.g. a theme's `layouts/`), low-to-high priority. */
   layoutDirs?: string[];
+  /** Snippet files (`<<<` imports) to watch for HMR; populated during rendering. */
+  snippetFiles?: Set<string>;
+  /** Called once with the dev server so the integration can add watch files live. */
+  onServer?: (server: ViteDevServer) => void;
 }
 
 const resolvedId = (id: string): string => `\0${id}`;
@@ -61,13 +65,14 @@ export function astroSlidesVitePlugin(options: VitePluginOptions): Plugin {
       return null;
     },
     configureServer(server) {
+      options.onServer?.(server);
       for (const file of discoverDeckFiles(options.root, options.decks)) {
         server.watcher.add(file);
       }
       const onChange = (file: string) => {
-        // Reload on any deck/markdown source under the project (deck files, `src:`
-        // imports, and snippets all affect the manifest).
-        if (!/\.mdx?$/.test(file)) return;
+        // Reload on any deck/markdown source (deck files, `src:` imports) or a
+        // watched snippet file (`<<<` imports) — all affect the rendered output.
+        if (!/\.mdx?$/.test(file) && !options.snippetFiles?.has(file)) return;
         cache = null;
         for (const id of ids) {
           const mod = server.moduleGraph.getModuleById(resolvedId(id));

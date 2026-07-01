@@ -1,4 +1,6 @@
 import { createAnnouncer } from "./a11y.js";
+import { bindCopyButtons } from "./code/copy.js";
+import { initMagicMove } from "./code/magic-move.js";
 import { bindKeyboard, type NavActions } from "./keyboard.js";
 import { DeckController, type SlideMeta } from "./navigation.js";
 import { applyScale, type Size } from "./scaling.js";
@@ -119,6 +121,10 @@ export function initDeck(root: HTMLElement): DeckHandle {
   window.addEventListener("resize", onResize);
   window.addEventListener("popstate", onPopState);
 
+  // --- Code islands (Phase 08) ----------------------------------------------
+  const unbindCopy = bindCopyButtons(root);
+  const stopMagicMove = initMagicMove(root, store);
+
   controller.start();
 
   return {
@@ -128,6 +134,8 @@ export function initDeck(root: HTMLElement): DeckHandle {
       unbindKeyboard();
       unbindTouch();
       unbindOverview();
+      unbindCopy();
+      stopMagicMove();
       window.removeEventListener("resize", onResize);
       window.removeEventListener("popstate", onPopState);
     },

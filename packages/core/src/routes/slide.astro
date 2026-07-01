@@ -2,6 +2,8 @@
 import Click from "@astro-slides/client/components/Click.tsx";
 import After from "@astro-slides/client/components/After.tsx";
 import Clicks from "@astro-slides/client/components/Clicks.tsx";
+import CodeBlock from "@astro-slides/client/components/CodeBlock.astro";
+import ShikiMagicMove from "@astro-slides/client/components/ShikiMagicMove.astro";
 import FlexBlock from "@astro-slides/client/components/FlexBlock.astro";
 import FitText from "@astro-slides/client/components/FitText.astro";
 import Grid from "@astro-slides/client/components/Grid.astro";
@@ -20,6 +22,8 @@ import "@astro-slides/client/styles/layouts.css";
 import "@astro-slides/client/styles/primitives.css";
 import "@astro-slides/client/styles/click.css";
 import "@astro-slides/client/styles/transitions.css";
+import "@astro-slides/client/styles/code.css";
+import "@shikijs/magic-move/style.css";
 
 /**
  * Deck route. Renders the whole deck as a `<section>` stack (current = `present`).
@@ -31,6 +35,8 @@ const COMPONENTS = {
   Click,
   After,
   Clicks,
+  CodeBlock,
+  ShikiMagicMove,
   Stack,
   HStack,
   Grid,

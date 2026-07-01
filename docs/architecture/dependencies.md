@@ -67,13 +67,14 @@ Every entry includes the package, current version (June 2026 snapshot), why it w
 
 | Category | Library | Why | Caveat |
 | --- | --- | --- | --- |
-| Syntax highlighting | `shiki` v4+ | ADR-0011. | — |
-| Animated code diffs | `@shikijs/magic-move` v1.4+ | ADR-0011. **Ships React/Solid/Svelte wrappers** — no porting needed. | Tokenization is theme-coupled; theme changes invalidate the artifact. |
-| TS hover in code | `@shikijs/twoslash` | ADR-0011, opt-in. | — |
+| Syntax highlighting | `shiki` v4+ (installed v4.3) via `@shikijs/rehype` | ADR-0011. Build-time highlighting as a rehype plugin over the emitted MDX; Astro's built-in highlight is disabled (`markdown.syntaxHighlight: false`). Dual themes (`github-dark`/`github-light`). | — |
+| Highlight transformers | `@shikijs/transformers` v4.3 | Meta line highlight `{1,3-5}`, notation transformers. Our own transformer adds per-click `{1|2-3}` line reveals wired to the click model. | — |
+| Animated code diffs | `@shikijs/magic-move` v4.3 | ADR-0011. **Ships React/Solid/Svelte wrappers** — consumed via `@shikijs/magic-move/react`; build-time tokenization via `/core`. | Tokenization is theme-coupled; theme changes invalidate the artifact. |
+| TS hover in code | `@shikijs/twoslash` v4.3 | ADR-0011, opt-in via the `twoslash` fence flag. | Needs a TS project context (`tsconfig`); plain-MD-without-TS can't infer types. |
 | Math | `katex` v0.17+ | ADR-0011. | Self-host fonts to avoid CDN dependency. |
 | Diagrams (Mermaid) | `mermaid` v11+ | ADR-0011. | Mount inside a Shadow DOM for CSS isolation. |
 | Diagrams (PlantUML) | `plantuml-encoder` + configurable server URL | ADR-0011. | — |
-| Compression for embedded code | `lz-string` v1.5 | Used by Magic Move's payload. | Dormant since 2023, but feature-complete. |
+| Compression for embedded code | `lz-string` v1.5 | Compresses the build-time Magic Move token payload embedded in the output; decompressed at runtime. | Dormant since 2023, but feature-complete. |
 
 ## Drawing / recording
 
