@@ -1,6 +1,6 @@
 {
   "name": "@astro-slides/client",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": false,
   "type": "module",
   "description": "Runtime UI — layouts, click runtime, transitions, and presenter mode.",
@@ -48,5 +48,35 @@
     "@types/recordrtc": "catalog:dev",
     "react": "catalog:frontend",
     "react-dom": "catalog:frontend"
+  },
+  "homepage": "https://jluterek.github.io/astro-slides/",
+  "bugs": {
+    "url": "https://github.com/jluterek/astro-slides/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jluterek/astro-slides.git",
+    "directory": "packages/client"
+  },
+  "keywords": [
+    "astro-slides",
+    "presentation",
+    "slides",
+    "deck",
+    "react",
+    "layouts",
+    "themes",
+    "presenter"
+  ],
+  "files": [
+    "src",
+    "components",
+    "layouts",
+    "!**/__tests__",
+    "!**/*.test.ts"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

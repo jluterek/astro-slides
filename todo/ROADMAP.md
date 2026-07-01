@@ -4,15 +4,17 @@ The phase index. Always current. Update when a phase starts or ends.
 
 ## Active
 
-- _None. Phase 17 closed (docs site, examples, scaffolder, CLI polish); Phase 18 (v1 release) is next up._
+- **Phase 18 — v1.0 release** ([`18-v1-release`](./18-v1-release/README.md)) — _in progress._ The
+  GitHub-side release tooling is done (Changesets, publish metadata + dry-run validation, release +
+  docs-deploy workflows, open-source meta files, release-notes draft). Remaining: claim the
+  `@astro-slides` npm scope, add `NPM_TOKEN`, enable GitHub Pages, then cut the real publish + GitHub
+  release.
 
 ## Planned
 
 Phases are listed in dependency order. They can be re-sequenced if a later phase becomes a higher priority, but dependencies must be honored.
 
-| # | Phase | One-liner |
-| --- | --- | --- |
-| 18 | [`18-v1-release`](./18-v1-release/README.md) | Changesets release tooling, npm publish, GitHub release |
+_None — Phase 18 (the final phase) is in progress; see **Active**._
 
 ## Done
 

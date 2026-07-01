@@ -1,6 +1,6 @@
 {
   "name": "@astro-slides/cli",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": false,
   "type": "module",
   "description": "The astro-slides command — dev server, build, export, and MCP server entry points.",
@@ -40,5 +40,36 @@
   "devDependencies": {
     "@types/node": "catalog:dev",
     "astro": "catalog:frontend"
+  },
+  "homepage": "https://jluterek.github.io/astro-slides/",
+  "bugs": {
+    "url": "https://github.com/jluterek/astro-slides/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jluterek/astro-slides.git",
+    "directory": "packages/cli"
+  },
+  "keywords": [
+    "astro-slides",
+    "presentation",
+    "slides",
+    "deck",
+    "cli",
+    "pdf",
+    "png",
+    "pptx",
+    "export",
+    "mcp"
+  ],
+  "files": [
+    "bin",
+    "src",
+    "!**/__tests__",
+    "!**/*.test.ts"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

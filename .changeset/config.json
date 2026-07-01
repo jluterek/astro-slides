@@ -1,0 +1,28 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
+  "changelog": ["@changesets/changelog-github", { "repo": "jluterek/astro-slides" }],
+  "commit": false,
+  "fixed": [
+    [
+      "@astro-slides/types",
+      "@astro-slides/parser",
+      "@astro-slides/core",
+      "@astro-slides/client",
+      "@astro-slides/cli",
+      "@astro-slides/mcp-server",
+      "create-astro-slides"
+    ]
+  ],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": [
+    "@astro-slides/docs-site",
+    "@astro-slides/example-minimal",
+    "@astro-slides/example-blog-post-embed",
+    "@astro-slides/example-conference-talk",
+    "@astro-slides/example-technical-tutorial",
+    "@astro-slides/example-marketing-pitch"
+  ]
+}

@@ -1,9 +1,15 @@
 ---
 title: Phase 18 — v1.0 release
-status: pending
-started:
+status: in-progress
+started: 2026-07-01
 ended:
 ---
+
+> **Progress (2026-07-01): GitHub-side release tooling landed; npm publishing deferred.**
+> Everything that doesn't require the npm registry / an `NPM_TOKEN` is done (Changesets, publish
+> metadata + dry-run validation, release + docs-deploy workflows, open-source meta files, release-
+> notes draft). The remaining criteria all depend on claiming the `@astro-slides` npm scope and a
+> real publish — see the unchecked boxes and the *Remaining (npm)* note below.
 
 ## Goal
 
@@ -11,17 +17,24 @@ Cut a real 1.0. Wire up Changesets for release notes and version bumping, publis
 
 ## Exit criteria
 
-- [ ] Changesets configured at repo root with a release workflow.
-- [ ] All packages have a stable, semver-compliant version.
-- [ ] All packages declare `repository`, `license`, `keywords`, `author`, `homepage`, `bugs` fields and pass `npm publish --dry-run`.
-- [ ] `pnpm publish -r` succeeds (dry-run first, then real).
-- [ ] `@astro-slides/cli` is `npm install`-able and the `astro-slides` bin works in a fresh shell.
-- [ ] `pnpm create astro-slides my-deck` works end-to-end against the published packages.
-- [ ] GitHub release created with notes, links to docs, links to demo, screenshots.
-- [ ] A "what's in 1.0" announcement post drafted (post is the user's call).
-- [ ] CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md added.
-- [ ] CI release workflow: tags push triggers `pnpm publish -r --tag latest`.
-- [ ] npm provenance attestation enabled.
+- [x] Changesets configured at repo root with a release workflow. (`.changeset/config.json`, `.github/workflows/release.yml`)
+- [x] All packages have a stable, semver-compliant version. (all publishable packages → `0.1.0`, versioned in lockstep via the changesets `fixed` group)
+- [x] All packages declare `repository`, `license`, `keywords`, `author`, `homepage`, `bugs` fields and pass `npm publish --dry-run`. (validated — tests excluded from tarballs via `files` negation)
+- [ ] `pnpm publish -r` succeeds (dry-run first, then real). **Dry-run done; real publish needs the npm scope + token.**
+- [ ] `@astro-slides/cli` is `npm install`-able and the `astro-slides` bin works in a fresh shell. **(post-publish)**
+- [ ] `pnpm create astro-slides my-deck` works end-to-end against the published packages. **(post-publish; scaffolded projects already pin `^0.1.0`)**
+- [ ] GitHub release created with notes, links to docs, links to demo, screenshots. **(coupled to publish; notes drafted — see `RELEASE-NOTES-DRAFT.md`)**
+- [x] A "what's in 1.0" announcement post drafted. (`RELEASE-NOTES-DRAFT.md`)
+- [x] CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md added.
+- [x] CI release workflow via `changesets/action` (opens a Version PR; publishes on merge once `NPM_TOKEN` is set).
+- [x] npm provenance attestation enabled. (`publishConfig.provenance: true` + `NPM_CONFIG_PROVENANCE` + `id-token: write` in the workflow)
+
+### Remaining (npm — requires the registry, out of scope for the GitHub-side pass)
+
+- Claim the `@astro-slides` scope on npm; add an `NPM_TOKEN` repo secret (and enable GitHub Pages).
+- Add a release changeset and let the workflow's Version PR bump `0.1.0` → the 1.0 line, then merge
+  to publish. Verify install + `pnpm create astro-slides` against the published packages.
+- Cut the GitHub release from `RELEASE-NOTES-DRAFT.md` with Cosmic screenshots + the live docs URL.
 
 ## Locked decisions
 
