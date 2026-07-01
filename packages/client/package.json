@@ -25,6 +25,7 @@
     "@shikijs/magic-move": "catalog:frontend",
     "fitty": "catalog:frontend",
     "lz-string": "catalog:frontend",
+    "mermaid": "catalog:frontend",
     "nanostores": "catalog:frontend",
     "shiki": "catalog:frontend",
     "tinykeys": "catalog:frontend"

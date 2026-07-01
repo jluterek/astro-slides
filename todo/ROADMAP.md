@@ -4,7 +4,7 @@ The phase index. Always current. Update when a phase starts or ends.
 
 ## Active
 
-- _None. Phase 08 closed (Shiki highlighting + Magic Move + snippets + Twoslash); Phase 09 (math and diagrams) is next up._
+- _None. Phase 09 closed (KaTeX math + Mermaid + PlantUML); Phase 10 (presenter mode) is next up._
 
 ## Planned
 
@@ -12,7 +12,6 @@ Phases are listed in dependency order. They can be re-sequenced if a later phase
 
 | # | Phase | One-liner |
 | --- | --- | --- |
-| 09 | [`09-math-and-diagrams`](./09-math-and-diagrams/README.md) | KaTeX, Mermaid, PlantUML with click-step reveals |
 | 10 | [`10-presenter-mode`](./10-presenter-mode/README.md) | Speaker view, BroadcastChannel sync, timer, notes, next-slide preview |
 | 11 | [`11-drawing-and-recording`](./11-drawing-and-recording/README.md) | Drauu drawing overlay, RecordRTC capture, mobile remote (QR + WebSocket) |
 | 12 | [`12-export-web`](./12-export-web/README.md) | PDF, PNG, standalone HTML, SPA build, per-slide embeds |
@@ -35,6 +34,7 @@ Phases are listed in dependency order. They can be re-sequenced if a later phase
 | 06 | `06-click-model` | [`docs/built/06-click-model.md`](../docs/built/06-click-model.md) — MDX+React foundation (slides compile as MDX); parse-time `<Click>`/`<After>`/`<Clicks>` resolution; runtime stepping (closed 2026-06-30) |
 | 07 | `07-transitions` | [`docs/built/07-transitions.md`](../docs/built/07-transitions.md) — CSS slide transitions + `<Morph>` object continuity; same-document VTA (single-page runtime) with reveal.js-style FLIP fallback (closed 2026-07-01) |
 | 08 | `08-code-rendering` | [`docs/built/08-code-rendering.md`](../docs/built/08-code-rendering.md) — build-time Shiki highlighting (dual themes), static + click-stepped line highlight, `<<<` snippet imports, Twoslash, Magic Move (closed 2026-07-01) |
+| 09 | `09-math-and-diagrams` | [`docs/built/09-math-and-diagrams.md`](../docs/built/09-math-and-diagrams.md) — build-time KaTeX (inline/block/stepped via remark-math), lazy Shadow-DOM Mermaid, PlantUML server images; conditional inclusion (closed 2026-07-01) |
 
 ---
 

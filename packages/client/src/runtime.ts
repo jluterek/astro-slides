@@ -1,6 +1,7 @@
 import { createAnnouncer } from "./a11y.js";
 import { bindCopyButtons } from "./code/copy.js";
 import { initMagicMove } from "./code/magic-move.js";
+import { initMermaid } from "./diagrams/mermaid.js";
 import { bindKeyboard, type NavActions } from "./keyboard.js";
 import { DeckController, type SlideMeta } from "./navigation.js";
 import { applyScale, type Size } from "./scaling.js";
@@ -125,6 +126,9 @@ export function initDeck(root: HTMLElement): DeckHandle {
   const unbindCopy = bindCopyButtons(root);
   const stopMagicMove = initMagicMove(root, store);
 
+  // --- Diagram islands (Phase 09) -------------------------------------------
+  const stopMermaid = initMermaid(root);
+
   controller.start();
 
   return {
@@ -136,6 +140,7 @@ export function initDeck(root: HTMLElement): DeckHandle {
       unbindOverview();
       unbindCopy();
       stopMagicMove();
+      stopMermaid();
       window.removeEventListener("resize", onResize);
       window.removeEventListener("popstate", onPopState);
     },

@@ -1,8 +1,8 @@
 ---
 title: Phase 09 — Math and diagrams
-status: pending
-started:
-ended:
+status: done
+started: 2026-07-01
+ended: 2026-07-01
 ---
 
 ## Goal
@@ -11,13 +11,17 @@ Add KaTeX-rendered math, Mermaid diagrams, and PlantUML diagrams. All three plug
 
 ## Exit criteria
 
-- [ ] Inline math (`$x$`) and block math (`$$ ... $$`) render via KaTeX, with conditional bundle inclusion (skip KaTeX when no math is detected — leverages parser feature detection from Phase 02).
-- [ ] Block math supports per-click reveal via `$$ {1|3|all}\n…\n$$` syntax.
-- [ ] Mermaid code blocks (` ```mermaid `) render as SVG inside a Shadow DOM (CSS isolation).
-- [ ] Mermaid block options accepted via YAML in the fence info (`theme: neutral, scale: 0.8`).
-- [ ] PlantUML code blocks render via a configurable server endpoint (default `https://www.plantuml.com/plantuml`).
-- [ ] All three respect the active color scheme (dark/light) and update on theme switch.
-- [ ] Tests cover: math click-step rendering, Mermaid SVG isolation, PlantUML encoding, conditional bundle inclusion.
+- [x] Inline math (`$x$`) and block math (`$$ ... $$`) render via KaTeX at build time, with conditional CSS inclusion (KaTeX stylesheet linked only when `deck.features.katex`).
+- [x] Block math supports per-click reveal via `$$ {1|3|all}` syntax (each `\\`-row is a step, wired to the click model).
+- [x] Mermaid code blocks (` ```mermaid `) render as SVG inside a Shadow DOM (CSS isolation), lazily loaded (code-split).
+- [x] Mermaid block options accepted via the fence info (`theme: neutral, scale: 0.8`).
+- [x] PlantUML code blocks render via a configurable server endpoint (default `https://www.plantuml.com/plantuml`, `plantumlServer` option).
+- [x] KaTeX/Mermaid follow the active color scheme; Mermaid re-renders on theme switch. (PlantUML scheme response is server-limited — documented.)
+- [x] Tests cover math + stepped-math rendering, Mermaid SVG isolation, PlantUML encoding, and conditional inclusion.
+
+> **Deviation from plan:** the "port markdown-it-katex" approach is impossible under MDX
+> (`{` in `e^{i\pi}` is parsed as a JS expression before any remark plugin runs). Uses
+> **`remark-math`** for delimiter tokenization, then our `remark-katex` renders the nodes.
 
 ## Locked decisions
 
@@ -66,4 +70,10 @@ MathJax is **not** in v1. KaTeX is faster and sufficient. Users who need MathJax
 
 ## Outcome
 
-_Fill in when the phase closes._
+Shipped. Build-time KaTeX (inline + block + `$$ {1|3}` stepped rows wired to the click
+model) via `remark-math` (delimiter tokenization, essential under MDX) + our `remark-katex`;
+KaTeX CSS linked conditionally via `deck.features.katex`. Mermaid rendered client-side —
+lazily imported (code-split) only when present, mounted in a Shadow DOM, scheme-aware.
+PlantUML encoded at build time to a configurable-server `<img>`. Shared `click-total.ts` lets
+math + code cooperate on `totalClicks`. 181 unit + 17 e2e green; demo grew to 21 slides.
+Distilled → `docs/built/09-math-and-diagrams.md`.

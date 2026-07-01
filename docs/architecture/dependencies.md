@@ -71,9 +71,10 @@ Every entry includes the package, current version (June 2026 snapshot), why it w
 | Highlight transformers | `@shikijs/transformers` v4.3 | Meta line highlight `{1,3-5}`, notation transformers. Our own transformer adds per-click `{1|2-3}` line reveals wired to the click model. | — |
 | Animated code diffs | `@shikijs/magic-move` v4.3 | ADR-0011. **Ships React/Solid/Svelte wrappers** — consumed via `@shikijs/magic-move/react`; build-time tokenization via `/core`. | Tokenization is theme-coupled; theme changes invalidate the artifact. |
 | TS hover in code | `@shikijs/twoslash` v4.3 | ADR-0011, opt-in via the `twoslash` fence flag. | Needs a TS project context (`tsconfig`); plain-MD-without-TS can't infer types. |
-| Math | `katex` v0.17+ | ADR-0011. | Self-host fonts to avoid CDN dependency. |
-| Diagrams (Mermaid) | `mermaid` v11+ | ADR-0011. | Mount inside a Shadow DOM for CSS isolation. |
-| Diagrams (PlantUML) | `plantuml-encoder` + configurable server URL | ADR-0011. | — |
+| Math | `katex` v0.17 | ADR-0011. Rendered at build time to HTML; the stylesheet is linked only when `deck.features.katex` (conditional include). | KaTeX's `.woff2` fonts ship with the package (no CDN). |
+| Math delimiters | `remark-math` v6 (`micromark-extension-math`) | Tokenizes `$…$`/`$$…$$` at the micromark level so LaTeX braces (`e^{i\pi}`) aren't parsed as MDX expressions — the reason a hand-rolled remark port isn't viable under MDX. `remark-katex` then renders the nodes. | — |
+| Diagrams (Mermaid) | `mermaid` v11 | ADR-0011. Rendered client-side; lazily imported only when a `.as-mermaid` element exists (code-split), mounted in a Shadow DOM for CSS isolation, scheme-aware. | Large — must stay lazy. |
+| Diagrams (PlantUML) | `plantuml-encoder` v1.4 + configurable server URL | ADR-0011. Build-time deflate+base64 encode → `<server>/svg/<encoded>` `<img>`; default public plantuml.com, `plantumlServer` option to self-host. | Color-scheme response limited to what the server renders. |
 | Compression for embedded code | `lz-string` v1.5 | Compresses the build-time Magic Move token payload embedded in the output; decompressed at runtime. | Dormant since 2023, but feature-complete. |
 
 ## Drawing / recording

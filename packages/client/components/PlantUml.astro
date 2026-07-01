@@ -1,0 +1,11 @@
+---
+// PlantUML diagram (Phase 09, ADR-0011). The source was deflate+base64-encoded at
+// build time into a server image URL; this is just an `<img>`. No client code.
+interface Props {
+  src: string;
+  alt?: string;
+}
+const { src, alt = "PlantUML diagram" } = Astro.props;
+---
+
+<img class="as-plantuml" src={src} alt={alt} loading="lazy" decoding="async" />

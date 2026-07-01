@@ -1,6 +1,7 @@
 export type { Announcer } from "./a11y.js";
 export { createAnnouncer } from "./a11y.js";
 export { bindCopyButtons, initMagicMove } from "./code/index.js";
+export { initMermaid } from "./diagrams/index.js";
 export { initFitText } from "./fit-text.js";
 export { bindKeyboard, type NavActions, SHORTCUTS } from "./keyboard.js";
 export { fmString, type LayoutProps } from "./layout-types.js";

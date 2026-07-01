@@ -1,5 +1,6 @@
 import type { Highlighter, ShikiTransformer } from "shiki";
 import { visit } from "unist-util-visit";
+import { findTotalClicks, setTotalClicks } from "../click-total.js";
 import { loadShikiSetup, type ResolvedShikiConfig, resolveShikiConfig } from "./config.js";
 import { ensureLang, getHighlighter } from "./highlighter.js";
 import { buildMagicMove } from "./magic-move.js";
@@ -71,33 +72,6 @@ function replaceNode(node: Node, replacement: Record<string, unknown>): void {
   const target = node as unknown as Record<string, unknown>;
   for (const key of Object.keys(target)) delete target[key];
   Object.assign(target, replacement);
-}
-
-/** Find the `export const totalClicks = N` esm node remark-clicks injected. */
-function findTotalClicks(tree: Node): { node: Node; value: number } | null {
-  for (const child of tree.children ?? []) {
-    if (child.type === "mdxjsEsm" && /export const totalClicks/.test(child.value ?? "")) {
-      const m = (child.value ?? "").match(/totalClicks\s*=\s*(\d+)/);
-      return { node: child, value: m ? Number(m[1]) : 0 };
-    }
-  }
-  return null;
-}
-
-function setTotalClicks(entry: { node: Node; value: number }, total: number): void {
-  entry.node.value = `export const totalClicks = ${total};`;
-  const estree = entry.node.data?.estree as
-    | {
-        body?: Array<{
-          declaration?: { declarations?: Array<{ init?: { value: number; raw: string } }> };
-        }>;
-      }
-    | undefined;
-  const init = estree?.body?.[0]?.declaration?.declarations?.[0]?.init;
-  if (init) {
-    init.value = total;
-    init.raw = String(total);
-  }
 }
 
 export function remarkCode(options: RemarkCodeOptions) {

@@ -2,10 +2,13 @@ import { fileURLToPath } from "node:url";
 import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
 import type { AstroIntegration } from "astro";
+import remarkMath from "remark-math";
 import Icons from "unplugin-icons/vite";
 import type { ViteDevServer } from "vite";
 import { remarkCode } from "./code/remark-code.js";
 import { remarkSnippets } from "./code/snippets.js";
+import { remarkDiagrams } from "./diagrams/remark-diagrams.js";
+import { remarkKatex } from "./math/remark-katex.js";
 import { remarkClicks } from "./remark-clicks.js";
 import { astroSlidesVitePlugin, type VitePluginOptions } from "./vite-plugin.js";
 
@@ -15,6 +18,8 @@ export interface AstroSlidesOptions {
    * `slides.{mdx,md}` at the root and `content/decks/<name>/slides.{mdx,md}`.
    */
   decks?: string[];
+  /** PlantUML server base URL (default the public plantuml.com). */
+  plantumlServer?: string;
 }
 
 /**
@@ -52,14 +57,21 @@ export function astroSlides(options: AstroSlidesOptions = {}): AstroIntegration 
           // Move); disable Astro's built-in highlighter so it doesn't also run.
           markdown: { syntaxHighlight: false },
           // Slides compile as MDX (components in scope) with React islands. Plugin
-          // order: snippets -> clicks (numbers prose clicks + totalClicks) -> code
-          // (highlights fences, appends code-line clicks after the prose ones).
+          // order: snippets -> clicks (numbers prose clicks + totalClicks) -> katex
+          // (math + stepped-math clicks) -> diagrams (mermaid/plantuml fences become
+          // components, so remark-code skips them) -> code (highlights the rest,
+          // appends code-line clicks). katex + code both bump the shared totalClicks.
           integrations: [
             react(),
             mdx({
               remarkPlugins: [
                 [remarkSnippets, { root, onFile: onSnippetFile }],
                 remarkClicks,
+                // remark-math tokenizes `$…$`/`$$…$$` (protects LaTeX braces under MDX);
+                // remark-katex then renders those nodes with KaTeX.
+                remarkMath,
+                remarkKatex,
+                [remarkDiagrams, { plantumlServer: options.plantumlServer }],
                 [remarkCode, { root, twoslash: true }],
               ],
             }),
