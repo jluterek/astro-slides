@@ -225,7 +225,7 @@ const notImplemented = (name: string, phase: string) =>
 // pipeline builds the deck, previews it, and drives headless Chromium against the
 // prerendered `/print/<deck>` page.
 
-export type ExportFormat = "pdf" | "png" | "html";
+export type ExportFormat = "pdf" | "png" | "pptx" | "html";
 
 /** Parse Slidev-style `--range` (`"1,3-5,8"`) into sorted, deduped, in-bounds slide nos. */
 export function parseRange(spec: string | undefined, total: number): number[] {
@@ -499,15 +499,478 @@ export async function exportDeckPng(
   }
 }
 
+// --- PPTX export (Phase 13, ADR-0007) --------------------------------------
+// Editable OOXML via PptxGenJS. The exporter has no runtime access to the parser AST
+// (workspace TS can't be imported from the type-stripped bin), so it extracts a
+// structured model from the *rendered* slide DOM — headings/paragraphs/lists/tables/
+// images become editable shapes, code blocks and `exportAs: image` slides rasterize.
+// Positions come from bounding rects in design pixels, converted to inches (EMU under
+// the hood). The pure model → PptxGenJS mapper is unit-tested with a fake slide.
+
+const EMU_PER_INCH = 914400;
+
+/** Design-pixel length → inches, given the slide dimension it maps onto. */
+export function pxToIn(px: number, designPx: number, slideIn: number): number {
+  if (designPx <= 0) return 0;
+  return (px / designPx) * slideIn;
+}
+
+/** Inches → EMU (PowerPoint's internal unit). */
+export function inToEmu(inches: number): number {
+  return Math.round(inches * EMU_PER_INCH);
+}
+
+/** Normalize a CSS color (`rgb()`, `rgba()`, `#rgb`, `#rrggbb`) to `RRGGBB`, or "". */
+export function parseCssColor(css: string | undefined | null): string {
+  if (!css) return "";
+  const s = css.trim().toLowerCase();
+  if (s === "transparent" || s.startsWith("rgba(0, 0, 0, 0")) return "";
+  const hex = s.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/);
+  if (hex?.[1]) {
+    const h = hex[1];
+    const full = h.length === 3 ? h.replace(/./g, (c) => c + c) : h;
+    return full.toUpperCase();
+  }
+  const rgb = s.match(/^rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/);
+  if (rgb) {
+    const toHex = (n: string) => Number(n).toString(16).padStart(2, "0");
+    return `${toHex(rgb[1] ?? "0")}${toHex(rgb[2] ?? "0")}${toHex(rgb[3] ?? "0")}`.toUpperCase();
+  }
+  return "";
+}
+
+export interface PptxRun {
+  text: string;
+  bold?: boolean;
+  italic?: boolean;
+  color?: string;
+  link?: string;
+}
+export interface PptxBox {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export type PptxElement =
+  | {
+      kind: "text";
+      box: PptxBox;
+      runs: PptxRun[];
+      fontSize: number;
+      align: "left" | "center" | "right";
+      color?: string;
+    }
+  | {
+      kind: "list";
+      box: PptxBox;
+      items: { runs: PptxRun[]; level: number }[];
+      fontSize: number;
+      color?: string;
+    }
+  | { kind: "image"; box: PptxBox; data: string }
+  | { kind: "table"; box: PptxBox; rows: string[][] };
+
+export interface SlideModel {
+  no: number;
+  widthIn: number;
+  heightIn: number;
+  elements: PptxElement[];
+  notes: string;
+  background?: string;
+}
+
+/** Minimal slice of a PptxGenJS slide the mapper touches (so tests use a fake). */
+export interface PptxSlideLike {
+  background?: { color?: string };
+  // biome-ignore lint/suspicious/noExplicitAny: PptxGenJS's TextProps/options are broad unions; a fake slide records them.
+  addText(text: any, options?: any): unknown;
+  // biome-ignore lint/suspicious/noExplicitAny: image options union.
+  addImage(options: any): unknown;
+  // biome-ignore lint/suspicious/noExplicitAny: table rows/options union.
+  addTable(rows: any, options?: any): unknown;
+  addNotes(notes: string): unknown;
+}
+
+/** Convert our runs to PptxGenJS text-run props. */
+function toTextRuns(runs: PptxRun[]): unknown[] {
+  return runs.map((r) => ({
+    text: r.text,
+    options: {
+      ...(r.bold ? { bold: true } : {}),
+      ...(r.italic ? { italic: true } : {}),
+      ...(r.color ? { color: r.color } : {}),
+      ...(r.link ? { hyperlink: { url: r.link } } : {}),
+    },
+  }));
+}
+
+/** Map one extracted slide model onto a PptxGenJS slide (pure over the slide API). */
+export function buildPptxSlide(slide: PptxSlideLike, model: SlideModel): void {
+  if (model.background) slide.background = { color: model.background };
+  for (const el of model.elements) {
+    const pos = { x: el.box.x, y: el.box.y, w: el.box.w, h: el.box.h };
+    if (el.kind === "text") {
+      slide.addText(toTextRuns(el.runs), {
+        ...pos,
+        fontSize: el.fontSize,
+        align: el.align,
+        valign: "top",
+        ...(el.color ? { color: el.color } : {}),
+      });
+    } else if (el.kind === "list") {
+      slide.addText(
+        el.items.map((it) => ({
+          text: it.runs.map((r) => r.text).join(""),
+          options: { bullet: { indent: 15 }, indentLevel: it.level },
+        })),
+        { ...pos, fontSize: el.fontSize, valign: "top", ...(el.color ? { color: el.color } : {}) },
+      );
+    } else if (el.kind === "image") {
+      slide.addImage({ data: el.data, ...pos });
+    } else if (el.kind === "table") {
+      slide.addTable(
+        el.rows.map((row) => row.map((cell) => ({ text: cell }))),
+        { ...pos, border: { type: "solid", pt: 1, color: "D0D0D0" }, autoPage: false },
+      );
+    }
+  }
+  if (model.notes.trim()) slide.addNotes(model.notes.trim());
+}
+
+/** Build a `.pptx` Buffer for a deck from its extracted slide models. */
+/** Minimal slice of the PptxGenJS presentation API the exporter uses. */
+interface PptxApp {
+  defineLayout(layout: { name: string; width: number; height: number }): void;
+  layout: string;
+  addSlide(): PptxSlideLike;
+  write(props: { outputType: string }): Promise<unknown>;
+}
+
+export async function buildDeckPptx(
+  models: SlideModel[],
+  layout: { widthIn: number; heightIn: number },
+): Promise<Buffer> {
+  const mod = await import("pptxgenjs");
+  const Ctor = ((mod as { default?: unknown }).default ?? mod) as unknown as new () => PptxApp;
+  const pptx = new Ctor();
+  pptx.defineLayout({ name: "DECK", width: layout.widthIn, height: layout.heightIn });
+  pptx.layout = "DECK";
+  for (const model of models) buildPptxSlide(pptx.addSlide(), model);
+  return (await pptx.write({ outputType: "nodebuffer" })) as Buffer;
+}
+
+/** Raw block shape returned by the in-browser DOM walker (px rects in design space). */
+interface RawBlock {
+  kind: "text" | "list" | "table" | "image" | "code";
+  px: { x: number; y: number; w: number; h: number };
+  runs?: PptxRun[];
+  items?: { runs: PptxRun[]; level: number }[];
+  rows?: string[][];
+  data?: string;
+  fontPx?: number;
+  align?: "left" | "center" | "right";
+  color?: string;
+}
+interface RawSlide {
+  designW: number;
+  designH: number;
+  notes: string;
+  background: string;
+  blocks: RawBlock[];
+}
+
+/**
+ * Walk the rendered slide DOM into a serializable model (runs in the browser). Captures
+ * headings/paragraphs (text), lists, tables, and images (inlined as data URLs); code
+ * blocks are marked for rasterization. Skips content nested inside a captured container.
+ */
+/* c8 ignore start — executes in the browser via page.evaluate, not under coverage. */
+const DOM_WALKER = async (no: number): Promise<RawSlide> => {
+  const deck = document.querySelector(".as-deck") as HTMLElement | null;
+  const vp = document.querySelector(".as-viewport") as HTMLElement | null;
+  const present = (document.querySelector(".as-slide.present") as HTMLElement | null) ?? vp;
+  const notesMap = JSON.parse(
+    document.querySelector(".as-notes-data")?.textContent || "{}",
+  ) as Record<string, string>;
+  const empty = {
+    designW: 1920,
+    designH: 1080,
+    notes: notesMap[String(no)] ?? "",
+    background: "",
+    blocks: [] as RawBlock[],
+  };
+  if (!vp || !present) return empty;
+
+  const designW = Number(deck?.dataset.designWidth) || vp.getBoundingClientRect().width || 1920;
+  const designH = Number(deck?.dataset.designHeight) || 1080;
+  const vpRect = vp.getBoundingClientRect();
+  const scale = vpRect.width / designW || 1;
+  const toPx = (r: DOMRect) => ({
+    x: (r.left - vpRect.left) / scale,
+    y: (r.top - vpRect.top) / scale,
+    w: r.width / scale,
+    h: r.height / scale,
+  });
+  const hex = (css: string): string => {
+    const m = css.match(/rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/);
+    if (!m) return "";
+    const h = (n: string) => Number(n).toString(16).padStart(2, "0");
+    return `${h(m[1] as string)}${h(m[2] as string)}${h(m[3] as string)}`.toUpperCase();
+  };
+  const runsOf = (el: Element): PptxRun[] => {
+    const runs: PptxRun[] = [];
+    const walk = (node: Node, link?: string, bold?: boolean, italic?: boolean): void => {
+      for (const child of node.childNodes) {
+        if (child.nodeType === 3) {
+          const text = child.textContent ?? "";
+          if (text.trim())
+            runs.push({
+              text,
+              ...(link ? { link } : {}),
+              ...(bold ? { bold } : {}),
+              ...(italic ? { italic } : {}),
+            });
+        } else if (child.nodeType === 1) {
+          const e = child as HTMLElement;
+          const tag = e.tagName.toLowerCase();
+          const w = Number(getComputedStyle(e).fontWeight);
+          walk(
+            e,
+            tag === "a" ? (e as HTMLAnchorElement).href : link,
+            bold || tag === "strong" || tag === "b" || w >= 600,
+            italic || tag === "em" || tag === "i",
+          );
+        }
+      }
+    };
+    walk(el);
+    return runs;
+  };
+  const inlineImage = async (img: HTMLImageElement): Promise<string> => {
+    try {
+      const res = await fetch(img.currentSrc || img.src);
+      const blob = await res.blob();
+      return await new Promise((resolve) => {
+        const fr = new FileReader();
+        fr.onload = () => resolve(String(fr.result));
+        fr.onerror = () => resolve("");
+        fr.readAsDataURL(blob);
+      });
+    } catch {
+      return "";
+    }
+  };
+
+  const blocks: RawBlock[] = [];
+  const nodes = present.querySelectorAll("h1,h2,h3,h4,p,ul,ol,table,img,.as-code");
+  for (const el of nodes) {
+    // Skip content owned by a captured container (list items, cells, code spans).
+    if (el.parentElement?.closest("ul,ol,table,.as-code")) continue;
+    if (el.closest(".as-code") && !el.classList.contains("as-code")) continue;
+    const rect = el.getBoundingClientRect();
+    if (rect.width < 1 || rect.height < 1) continue;
+    const px = toPx(rect);
+    const tag = el.tagName.toLowerCase();
+    const style = getComputedStyle(el);
+    if (el.classList.contains("as-code")) {
+      blocks.push({ kind: "code", px });
+    } else if (tag === "img") {
+      const data = await inlineImage(el as HTMLImageElement);
+      if (data) blocks.push({ kind: "image", px, data });
+    } else if (tag === "ul" || tag === "ol") {
+      const items: { runs: PptxRun[]; level: number }[] = [];
+      for (const li of el.querySelectorAll("li")) {
+        let level = 0;
+        let p: Element | null = li.parentElement;
+        while (p && p !== el) {
+          if (p.tagName === "UL" || p.tagName === "OL") level++;
+          p = p.parentElement;
+        }
+        items.push({ runs: runsOf(li), level });
+      }
+      blocks.push({
+        kind: "list",
+        px,
+        items,
+        fontPx: Number.parseFloat(style.fontSize),
+        color: hex(style.color),
+      });
+    } else if (tag === "table") {
+      const rows: string[][] = [];
+      for (const tr of el.querySelectorAll("tr")) {
+        rows.push(
+          [...tr.querySelectorAll("th,td")].map((c) => (c as HTMLElement).innerText.trim()),
+        );
+      }
+      blocks.push({ kind: "table", px, rows });
+    } else {
+      const runs = runsOf(el);
+      if (runs.length)
+        blocks.push({
+          kind: "text",
+          px,
+          runs,
+          fontPx: Number.parseFloat(style.fontSize),
+          align: (style.textAlign === "center" || style.textAlign === "right"
+            ? style.textAlign
+            : "left") as "left" | "center" | "right",
+          color: hex(style.color),
+        });
+    }
+  }
+  const bg = present ? hex(getComputedStyle(present).backgroundColor) : "";
+  return { designW, designH, notes: notesMap[String(no)] ?? "", background: bg, blocks };
+};
+/* c8 ignore stop */
+
+export interface PptxExportOptions {
+  baseUrl: string;
+  deck: string;
+  slides: number[];
+  total: number;
+  outFile: string;
+  /** Rasterize every slide to a full-slide image instead of editable shapes. */
+  rasterizeAll?: boolean;
+}
+
+/** Export a deck to an editable `.pptx` by extracting each slide's rendered DOM. */
+export async function exportDeckPptx(
+  browser: Browser,
+  options: PptxExportOptions,
+): Promise<string[]> {
+  const context = await browser.newContext({ deviceScaleFactor: 2 });
+  try {
+    const page = await context.newPage();
+    // Read the design size once to fix the slide layout aspect (px maps onto inches).
+    await page.goto(slideUrl(options.baseUrl, options.deck, options.slides[0] ?? 1), {
+      waitUntil: "networkidle",
+    });
+    await waitForRenderReady(page);
+    const design = await page.evaluate(() => {
+      const d = document.querySelector(".as-deck") as HTMLElement | null;
+      return {
+        w: Number(d?.dataset.designWidth) || 1920,
+        h: Number(d?.dataset.designHeight) || 1080,
+      };
+    });
+    const widthIn = 13.333;
+    const heightIn = Math.round(((widthIn * design.h) / design.w) * 100) / 100;
+
+    const models: SlideModel[] = [];
+    for (const no of options.slides) {
+      await page.goto(slideUrl(options.baseUrl, options.deck, no), { waitUntil: "networkidle" });
+      await waitForRenderReady(page);
+      // A slide can opt into rasterization via `exportAs: image` frontmatter.
+      const slideRasterize =
+        options.rasterizeAll ||
+        (await page
+          .locator(`.as-slide[data-slide-no="${no}"]`)
+          .first()
+          .getAttribute("data-export-as")
+          .then((v) => v === "image")
+          .catch(() => false));
+      if (slideRasterize) {
+        const shot = await page.locator(".as-viewport").first().screenshot();
+        const notesMap = await page.evaluate(
+          () =>
+            JSON.parse(document.querySelector(".as-notes-data")?.textContent || "{}") as Record<
+              string,
+              string
+            >,
+        );
+        models.push({
+          no,
+          widthIn,
+          heightIn,
+          notes: notesMap[String(no)] ?? "",
+          elements: [
+            {
+              kind: "image",
+              box: { x: 0, y: 0, w: widthIn, h: heightIn },
+              data: `data:image/png;base64,${shot.toString("base64")}`,
+            },
+          ],
+        });
+        continue;
+      }
+      const raw = await page.evaluate(DOM_WALKER, no);
+      const elements: PptxElement[] = [];
+      let codeIdx = 0;
+      const toBox = (px: RawBlock["px"]): PptxBox => ({
+        x: pxToIn(px.x, raw.designW, widthIn),
+        y: pxToIn(px.y, raw.designH, heightIn),
+        w: pxToIn(px.w, raw.designW, widthIn),
+        h: pxToIn(px.h, raw.designH, heightIn),
+      });
+      const pt = (fontPx: number | undefined): number =>
+        Math.max(6, Math.round(pxToIn(fontPx ?? 24, raw.designW, widthIn) * 72));
+      for (const b of raw.blocks) {
+        const box = toBox(b.px);
+        if (b.kind === "text" && b.runs)
+          elements.push({
+            kind: "text",
+            box,
+            runs: b.runs,
+            fontSize: pt(b.fontPx),
+            align: b.align ?? "left",
+            ...(b.color ? { color: b.color } : {}),
+          });
+        else if (b.kind === "list" && b.items)
+          elements.push({
+            kind: "list",
+            box,
+            items: b.items,
+            fontSize: pt(b.fontPx),
+            ...(b.color ? { color: b.color } : {}),
+          });
+        else if (b.kind === "table" && b.rows) elements.push({ kind: "table", box, rows: b.rows });
+        else if (b.kind === "image" && b.data) elements.push({ kind: "image", box, data: b.data });
+        else if (b.kind === "code") {
+          const shot = await page
+            .locator(".as-code")
+            .nth(codeIdx++)
+            .screenshot()
+            .catch(() => null);
+          if (shot)
+            elements.push({
+              kind: "image",
+              box,
+              data: `data:image/png;base64,${shot.toString("base64")}`,
+            });
+        }
+      }
+      models.push({
+        no,
+        widthIn,
+        heightIn,
+        notes: raw.notes,
+        elements,
+        ...(raw.background ? { background: raw.background } : {}),
+      });
+    }
+
+    const buf = await buildDeckPptx(models, { widthIn, heightIn });
+    await mkdir(join(options.outFile, ".."), { recursive: true }).catch(() => {});
+    await writeFile(options.outFile, buf);
+    return [options.outFile];
+  } finally {
+    await context.close();
+  }
+}
+
 interface AstroExportModule extends AstroModule {
   preview(config: { root: string }): Promise<AstroPreviewServer>;
 }
 
 const exportCommand = defineCommand({
-  meta: { name: "export", description: "Export the deck to PDF, PNG, or an offline HTML bundle." },
+  meta: {
+    name: "export",
+    description: "Export the deck to PDF, PNG, PPTX, or an offline HTML bundle.",
+  },
   args: {
     root: { type: "positional", required: false, description: "Project directory (default: cwd)." },
-    format: { type: "string", description: "pdf | png | html", default: "pdf" },
+    format: { type: "string", description: "pdf | png | pptx | html", default: "pdf" },
     output: { type: "string", description: "Output file or directory." },
     range: { type: "string", description: 'Slides to include, e.g. "1,3-5".' },
     "per-slide": { type: "boolean", description: "One file per slide (pdf).", default: false },
@@ -519,6 +982,11 @@ const exportCommand = defineCommand({
     "with-toc": {
       type: "boolean",
       description: "Add a PDF outline from slide titles.",
+      default: false,
+    },
+    rasterize: {
+      type: "boolean",
+      description: "PPTX: rasterize every slide to a full-slide image.",
       default: false,
     },
     dark: { type: "boolean", description: "Force the dark color scheme.", default: false },
@@ -533,8 +1001,8 @@ const exportCommand = defineCommand({
   async run({ args }) {
     const root = args.root ?? process.cwd();
     const format = String(args.format) as ExportFormat;
-    if (!["pdf", "png", "html"].includes(format)) {
-      console.error(pc.red(`Unknown --format "${format}" (expected pdf | png | html).`));
+    if (!["pdf", "png", "pptx", "html"].includes(format)) {
+      console.error(pc.red(`Unknown --format "${format}" (expected pdf | png | pptx | html).`));
       process.exit(1);
     }
     const astro = (await import("astro")) as unknown as AstroExportModule;
@@ -599,6 +1067,17 @@ const exportCommand = defineCommand({
                     ...(scale != null ? { scale } : {}),
                     toc: !!args["with-toc"],
                     titles: titleMap,
+                  })),
+                );
+              } else if (format === "pptx") {
+                ctx.written.push(
+                  ...(await exportDeckPptx(ctx.browser, {
+                    baseUrl: ctx.baseUrl,
+                    deck,
+                    slides,
+                    total,
+                    outFile: args.output ?? join(root, `${deck}.pptx`),
+                    rasterizeAll: !!args.rasterize,
                   })),
                 );
               } else {

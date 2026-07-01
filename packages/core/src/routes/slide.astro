@@ -79,6 +79,9 @@ const config = configs[current.deck] ?? {};
 const drawingsCfg = (config.drawings ?? {}) as { persist?: boolean };
 const drawingsEnabled = config.drawings != null;
 const deckDrawings = persistedDrawings[current.deck] ?? {};
+// Speaker notes per slide (Phase 13): embedded so the PPTX exporter can read them from
+// the rendered page (the exporter has no access to the parser AST at runtime).
+const deckNotes = Object.fromEntries(deckSlides.map((s) => [s.no, s.notes ?? ""]));
 // Conditional asset inclusion (Phase 09): only link KaTeX's stylesheet when the deck
 // actually uses math. Mermaid's runtime is code-split and fetched on demand.
 const deckFeatures = features[current.deck] ?? {};
@@ -160,6 +163,7 @@ const fallbackLayout = layouts.default ?? layouts["404"];
                 data-title={s.title ?? ""}
                 data-transition={transitionName(t)}
                 data-background={s.background ?? undefined}
+                data-export-as={s.frontmatter?.exportAs === "image" ? "image" : undefined}
                 style={style || undefined}
               >
                 <Layout no={s.no} title={s.title} layout={s.layout} frontmatter={s.frontmatter}>
@@ -182,6 +186,7 @@ const fallbackLayout = layouts.default ?? layouts["404"];
           />
         )
       }
+      <script type="application/json" class="as-notes-data" set:html={JSON.stringify(deckNotes)} />
     </div>
 
     <script>

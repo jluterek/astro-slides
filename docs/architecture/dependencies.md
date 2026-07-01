@@ -116,7 +116,7 @@ Every entry includes the package, current version (June 2026 snapshot), why it w
 | PDF/PNG generation (high fidelity) | `Playwright` (`@playwright/test` v1.61, installed) | ADR via plan. Phase 12 drives it against a built+previewed deck; `page.pdf()` on the `/print` route, `page.screenshot()` per slide. | Chromium download is large — an **optional peer** of `@astro-slides/core` (lazy-imported); `--executable-path` for BYO binary. |
 | PDF manipulation / merging | `pdf-lib` (installed v1.17.1) | Merges `--per-slide` PDFs into one document. | — |
 | PDF TOC outlines | `@lillallol/outline-pdf` (installed v4.0.0) | `--with-toc` adds slide-title bookmarks. | ESM; called via dynamic import. |
-| PPTX generation | `PptxGenJS` v4+ | ADR-0007. | Theme palette beyond fonts requires forking OOXML theme XML. |
+| PPTX generation | `PptxGenJS` (installed v4.0.1) | ADR-0007. Phase 13 maps rendered-DOM extraction → editable OOXML (text/lists/tables/images/notes); code + `exportAs:image`/`--rasterize` fall back to screenshots. | Theme palette beyond per-shape colors requires forking OOXML theme XML (descoped). Default export is a class+namespace merge — construct via `(mod.default ?? mod)`. |
 | ZIP packaging | `JSZip` (installed v3.10.1) | Packages the offline `--format html` bundle (dist + assets). | Also a transitive dep of PptxGenJS. |
 | Export progress UI | `listr2` (installed v10.2.2) | Multi-step export progress in the CLI (`build → preview → render → write`). | — |
 

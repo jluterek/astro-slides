@@ -23,6 +23,7 @@
     "jszip": "catalog:prod",
     "listr2": "catalog:prod",
     "pdf-lib": "catalog:prod",
+    "pptxgenjs": "catalog:prod",
     "picocolors": "catalog:prod",
     "uqr": "catalog:prod"
   },
