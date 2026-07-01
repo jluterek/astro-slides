@@ -47,21 +47,25 @@
   overflow: hidden;
   opacity: 0;
   visibility: hidden;
+  --as-dur: var(--slide-transition-duration, 0.4s);
+  --as-ease: var(--slide-transition-easing, ease);
+  /* Delay `visibility:hidden` until the opacity/transform animation finishes so an
+     exiting slide stays painted while it animates out (built-in transitions live in
+     transitions.css). */
   transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
+    opacity var(--as-dur) var(--as-ease),
+    transform var(--as-dur) var(--as-ease),
+    visibility 0s linear var(--as-dur);
 }
 .as-slide.present {
   opacity: 1;
   visibility: visible;
   z-index: 2;
   transform: none;
-}
-.as-slide.past {
-  transform: translateX(-4%);
-}
-.as-slide.future {
-  transform: translateX(4%);
+  transition:
+    opacity var(--as-dur) var(--as-ease),
+    transform var(--as-dur) var(--as-ease),
+    visibility 0s;
 }
 
 /* Click-step reveals (generic contract; the <Click> component lands in Phase 06). */

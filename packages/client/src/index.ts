@@ -18,5 +18,16 @@ export { applyScale, computeScale, type Size } from "./scaling.js";
 export { applySlideStates, type SlideState, slideState } from "./state-machine.js";
 export { createDeckStore, type DeckStore, type DeckStoreInit } from "./store.js";
 export { bindTouch, type TouchOptions } from "./touch.js";
+export {
+  createSlideTransition,
+  flipMorph,
+  type MorphPair,
+  matchMorphs,
+  prefersReducedMotion,
+  type SlideTransition,
+  supportsViewTransitions,
+  type TransitionContext,
+  type TransitionOptions,
+} from "./transitions/index.js";
 export { bindOverviewClicks, ensureHelpOverlay } from "./ui.js";
 export { basePath, buildLocation, type DeckLocation, parseLocation } from "./url.js";

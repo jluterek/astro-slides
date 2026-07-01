@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe("deck runtime", () => {
   test("renders every slide with the current one present", async ({ page }) => {
     await page.goto("/slides/1");
-    await expect(page.locator(".as-slide")).toHaveCount(10);
+    await expect(page.locator(".as-slide")).toHaveCount(13);
     await expect(page.locator('.as-slide[data-slide-no="1"]')).toHaveClass(/present/);
     await expect(page.locator('.as-slide[data-slide-no="2"]')).toHaveClass(/future/);
   });
@@ -60,6 +60,34 @@ test.describe("deck runtime", () => {
     await expect(page.locator(".as-deck")).toHaveClass(/as-overview/);
     await page.keyboard.press("Escape");
     await expect(page.locator(".as-deck")).not.toHaveClass(/as-overview/);
+  });
+
+  test("carries the resolved transition onto the deck root and slides", async ({ page }) => {
+    await page.goto("/slides/1");
+    // Deck default transition (fade) is mirrored onto the root...
+    await expect(page.locator(".as-deck")).toHaveAttribute("data-transition", "fade");
+    // ...and the per-slide `transition: slide-left` override reaches its section.
+    await expect(page.locator('.as-slide[data-slide-no="10"]')).toHaveAttribute(
+      "data-transition",
+      "slide-left",
+    );
+  });
+
+  test("keeps a morphed element present across the slide change", async ({ page }) => {
+    // Slides 11 and 12 share a `<Morph id="hero">`. After advancing, the incoming
+    // slide's morph element is present and settled (no view-transition-name leaks).
+    await page.goto("/slides/11");
+    await expect(page.locator('.as-slide[data-slide-no="11"] [data-morph="hero"]')).toBeVisible();
+    await page.keyboard.press("ArrowRight");
+    await expect(page).toHaveURL(/\/slides\/12$/);
+    const hero = page.locator('.as-slide[data-slide-no="12"] [data-morph="hero"]');
+    await expect(hero).toBeVisible();
+    // The transition drops any dynamically-assigned view-transition-name when it ends.
+    await expect
+      .poll(() =>
+        hero.evaluate((el) => getComputedStyle(el).getPropertyValue("view-transition-name")),
+      )
+      .toMatch(/^(none|)$/);
   });
 
   test("scales the viewport to fit the window", async ({ page }) => {

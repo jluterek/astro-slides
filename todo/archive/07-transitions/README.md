@@ -1,8 +1,8 @@
 ---
 title: Phase 07 — Transitions and object continuity
-status: pending
-started:
-ended:
+status: done
+started: 2026-07-01
+ended: 2026-07-01
 ---
 
 ## Goal
@@ -11,13 +11,17 @@ Implement slide-level transitions per ADR-0006: the View Transitions API for bro
 
 ## Exit criteria
 
-- [ ] Built-in slide-level transitions: `fade`, `fade-out`, `slide-up`, `slide-down`, `slide-left`, `slide-right`, `view-transition`. Per-slide `transition:` frontmatter overrides the deck default.
-- [ ] `<Morph id="logo">` (or similar) component on two consecutive slides causes the named element to morph between positions/sizes/styles.
-- [ ] On browsers with `document.startViewTransition`, the morph uses VTA via Astro's `<ClientRouter />`; on others, the FLIP fallback runs.
-- [ ] Feature detection happens once at runtime; behavior is consistent within a session.
-- [ ] Reduced-motion (`prefers-reduced-motion`) softens or disables transitions automatically (Astro's `<ClientRouter />` already handles this — verify and document).
-- [ ] FLIP implementation matches matched elements by `data-morph-id` (explicit) and by heading text content (heuristic), à la reveal.js.
-- [ ] Trade-off cases documented in `docs/built/07-transitions.md`: where VTA and FLIP differ.
+- [x] Built-in slide-level transitions: `fade`, `slide-up`, `slide-down`, `slide-left`, `slide-right`, `view-transition`, `none`. Per-slide `transition:` frontmatter overrides the deck default.
+- [x] `<Morph id="logo">` component on two consecutive slides causes the named element to morph between positions/sizes.
+- [x] On browsers with `document.startViewTransition`, the morph uses VTA (same-document — **not** `<ClientRouter />`, see note); on others, the FLIP fallback runs.
+- [x] Feature detection happens once at runtime; behavior is consistent within a session.
+- [x] Reduced-motion (`prefers-reduced-motion`) disables transitions automatically (CSS in deck.css + runtime short-circuit).
+- [x] FLIP implementation matches elements by `data-morph` (explicit) and by heading text content (heuristic), à la reveal.js.
+- [x] Trade-off cases documented in `docs/built/07-transitions.md`: where VTA and FLIP differ.
+
+> **Deviation from plan:** the single-page runtime (Phase 04) means there is no cross-document
+> swap for `<ClientRouter />` to animate. The VTA trigger is same-document
+> `document.startViewTransition()` driven by the runtime. ADR-0006 is amended accordingly.
 
 ## Locked decisions
 
@@ -64,4 +68,9 @@ Reference: `docs/reference-applications/reveal.js.md` § *Auto-Animate — revea
 
 ## Outcome
 
-_Fill in when the phase closes._
+Shipped. CSS state-class transitions (`fade` + `slide-*` + `none`) keyed by `data-transition`;
+`<Morph>` object continuity via same-document `document.startViewTransition()` with a reveal.js-style
+FLIP fallback (`packages/client/src/transitions/`). Fixed the Phase-04 `visibility: hidden`
+exit-animation bug with the visibility-delay trick. ADR-0006 amended to record the same-document
+trigger (the `<ClientRouter />` plan was incompatible with the single-page runtime). 139 unit tests
++ 10 Playwright e2e green; demo grew to 13 slides. Distilled → `docs/built/07-transitions.md`.

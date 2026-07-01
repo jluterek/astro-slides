@@ -85,6 +85,29 @@ layout: quote
 </Clicks>
 
 ---
+transition: slide-left
+---
+
+## Directional transition
+
+This slide arrives with a `slide-left` transition (per-slide `transition:` frontmatter).
+
+---
+
+## Morph: before
+
+<Morph id="hero" as="div" class="demo-hero">astro-slides</Morph>
+
+---
+layout: center
+---
+
+<Morph id="hero" as="div" class="demo-hero demo-hero--big">astro-slides</Morph>
+
+The `<Morph>` element above continues from the previous slide — same-document View
+Transition where supported, FLIP animation as the fallback.
+
+---
 layout: end
 
 class: themed-accent
