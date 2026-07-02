@@ -162,9 +162,11 @@ export function remarkClicks() {
           i += 1;
           return wrapInClick(child, step, anim);
         });
-        const steps = Math.max(1, Math.ceil(i / every));
+        // A <Clicks> with no revealable children contributes no steps (a dead
+        // trailing keypress otherwise).
+        const steps = Math.ceil(i / every);
         r.next = base + steps;
-        r.last = base + steps - 1;
+        if (steps > 0) r.last = base + steps - 1;
         return SKIP;
       }
       // <Click>

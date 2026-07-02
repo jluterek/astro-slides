@@ -35,13 +35,25 @@
     "schema"
   ],
   "files": [
+    "dist",
     "src",
     "schemas",
     "!**/__tests__",
-    "!**/*.test.ts"
+    "!**/*.test.ts",
+    "!**/*.test.js"
   ],
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      },
+      "./schemas/frontmatter.json": "./schemas/frontmatter.json"
+    }
+  },
+  "engines": {
+    "node": ">=22.18.0"
   }
 }

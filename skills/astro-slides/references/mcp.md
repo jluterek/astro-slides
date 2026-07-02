@@ -72,12 +72,14 @@ its sync gateway (`astro-slides dev --remote`), passed to the MCP server via `--
 (and `--sync-token` if the gateway is password-protected). Without a gateway they return a
 clear "no running presentation" error.
 
-### Export & capture
+### Export & capture (omitted under `--read-only`)
 
 `export_pdf`, `export_png`, `export_pptx`, `export_md`, `screenshot_slide` — these spawn the
 CLI's export pipeline (Playwright). `export_*` accept `output` and format-specific flags
-(`withClicks`, `perSlide`, `range`, `rasterize`). Playwright must be installed for the
-PDF/PNG/PPTX/screenshot paths.
+(`withClicks`, `perSlide`, `range`, `rasterize`). `output` is contained to the project root —
+an absolute or `../`-escaping path is refused. Playwright must be installed for the
+PDF/PNG/PPTX/screenshot paths. Because they write files, these tools are dropped under
+`--read-only` too (which leaves only read + navigate).
 
 ## Typical agent flow
 

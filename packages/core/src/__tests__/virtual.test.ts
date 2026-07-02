@@ -68,13 +68,17 @@ describe("slidesModuleSource", () => {
     slotFiles: { default: "/abs/1.default.mdx", right: "/abs/1.right.mdx" },
   };
 
-  it("imports slot modules and sums their totalClicks exports", () => {
+  it("imports slot modules and takes the MAX of their totalClicks exports", () => {
+    // Each slot compiles as its own MDX file, numbering clicks from 1 — slots step in
+    // parallel, so summing would leave dead trailing steps (pre-1.0 review fix).
     const src = slidesModuleSource([meta]);
     expect(src).toContain('import S_0_0, * as N_0_0 from "/abs/1.default.mdx";');
     expect(src).toContain('import S_0_1, * as N_0_1 from "/abs/1.right.mdx";');
     expect(src).toContain('"default": S_0_0');
     expect(src).toContain('"right": S_0_1');
-    expect(src).toContain("totalClicks: (N_0_0.totalClicks || 0) + (N_0_1.totalClicks || 0)");
+    expect(src).toContain(
+      "totalClicks: Math.max((N_0_0.totalClicks || 0), (N_0_1.totalClicks || 0))",
+    );
     expect(src).toContain("export const slides");
     expect(src).toContain("export default slides");
   });

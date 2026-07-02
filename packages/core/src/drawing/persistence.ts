@@ -58,7 +58,9 @@ export function loadDrawings(root: string, deck: string): Record<string, string>
   return out;
 }
 
-/** Keep deck names to a safe path segment (they come from directory names already). */
+/** Keep deck names to a safe path segment. The name can arrive from a network request
+ * (the gateway's drawings POST), so dot-only segments (`.`/`..`) are rejected too. */
 function sanitize(deck: string): string {
-  return deck.replace(/[^\w.-]+/g, "_") || "deck";
+  const safe = deck.replace(/[^\w.-]+/g, "_");
+  return !safe || /^\.+$/.test(safe) ? "deck" : safe;
 }

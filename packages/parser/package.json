@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": false,
   "type": "module",
-  "description": "MDX/Markdown → slide AST. Frontmatter, separators, slot sugar, snippet and slide imports.",
+  "description": "MDX/Markdown \u2192 slide AST. Frontmatter, separators, slot sugar, snippet and slide imports.",
   "license": "MIT",
   "author": "James Luterek",
   "exports": {
@@ -36,12 +36,23 @@
     "unified"
   ],
   "files": [
+    "dist",
     "src",
     "!**/__tests__",
-    "!**/*.test.ts"
+    "!**/*.test.ts",
+    "!**/*.test.js"
   ],
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
+  "engines": {
+    "node": ">=22.18.0"
   }
 }

@@ -10,7 +10,10 @@ import type { RawFrontmatter } from "@astro-slides/types";
  * our schema (`backgroundColor` → `background`); the rest pass through (loose schema).
  */
 const COMMENT = /<!--([\s\S]*?)-->/g;
-const DIRECTIVE_LINE = /^[ \t]*(_?)([A-Za-z][\w-]*)[ \t]*:[ \t]*(.*)$/;
+// Keys must start lowercase: Marp directives are lowerCamelCase (`theme`, `paginate`,
+// `backgroundColor`…), and requiring it keeps prose notes like "Remember: pause here"
+// from being eaten as directives.
+const DIRECTIVE_LINE = /^[ \t]*(_?)([a-z][\w-]*)[ \t]*:[ \t]*(.*)$/;
 
 const KEY_MAP: Record<string, string> = {
   backgroundColor: "background",
@@ -49,7 +52,10 @@ function coerce(value: string): unknown {
  *  - **Sized images** — `![w:200 h:120](url)` / `![w:200](url)` become an inline
  *    `<img src width height>` so the dimensions survive (Markdown alt can't carry them).
  */
-const BG_IMAGE = /!\[bg([^\]]*)\]\(\s*([^)\s]+)[^)]*\)/;
+// `bg` must be the whole first word (`![bg]`, `![bg cover]`) — an alt that merely
+// *starts* with "bg" (`![bg-hero]`) is a normal image. Global: split backgrounds
+// produce several `bg` images; all are stripped, the first sets `background`.
+const BG_IMAGE = /!\[bg(\s[^\]]*)?\]\(\s*([^)\s]+)[^)]*\)/g;
 const SIZED_IMAGE = /!\[([^\]]*?)\]\(\s*([^)\s]+)[^)]*\)/g;
 const SIZE_TOKEN = /\b([wh]):(\d+(?:px)?)\b/g;
 
@@ -62,10 +68,13 @@ export function extractMarpImages(body: string): MarpImageResult {
   const frontmatter: RawFrontmatter = {};
   let out = body;
 
-  // Background image → `background` frontmatter (first one wins), stripped from the body.
+  // Background images → `background` frontmatter (first one wins); ALL `bg` images are
+  // stripped from the body — a second (split-background) one must not render as text.
+  BG_IMAGE.lastIndex = 0;
   const bg = BG_IMAGE.exec(out);
   if (bg) {
     frontmatter.background = (bg[2] as string).trim();
+    BG_IMAGE.lastIndex = 0;
     out = out.replace(BG_IMAGE, "").replace(/^[ \t]*\n/gm, (m, off) => (off === 0 ? "" : m));
   }
 

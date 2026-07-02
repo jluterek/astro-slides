@@ -105,6 +105,10 @@ const deckDrawings = persistedDrawings[current.deck] ?? {};
 // Speaker notes per slide (Phase 13): embedded so the PPTX exporter can read them from
 // the rendered page (the exporter has no access to the parser AST at runtime).
 const deckNotes = Object.fromEntries(deckSlides.map((s) => [s.no, s.notes ?? ""]));
+// JSON destined for a <script> block: escape `<` so `</script>` in a note (or a stored
+// drawing SVG arriving via the gateway) can't break out of the block — same guard as
+// entry-page.ts.
+const jsonForScript = (v: unknown): string => JSON.stringify(v).replace(/</g, "\\u003c");
 // Conditional asset inclusion (Phase 09): only link KaTeX's stylesheet when the deck
 // actually uses math. Mermaid's runtime is code-split and fetched on demand.
 const deckFeatures = features[current.deck] ?? {};
@@ -206,11 +210,11 @@ const fallbackLayout = layouts.default ?? layouts["404"];
           <script
             type="application/json"
             class="as-drawings-data"
-            set:html={JSON.stringify(deckDrawings)}
+            set:html={jsonForScript(deckDrawings)}
           />
         )
       }
-      <script type="application/json" class="as-notes-data" set:html={JSON.stringify(deckNotes)} />
+      <script type="application/json" class="as-notes-data" set:html={jsonForScript(deckNotes)} />
     </div>
 
     <script>

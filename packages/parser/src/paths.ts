@@ -4,11 +4,18 @@
  * forward slashes regardless of host OS.
  */
 
+/** Import *specifiers* are always forward-slash, but file paths come from `node:path`
+ * and carry backslashes on Windows — normalize before any `/`-based logic. */
+function toPosix(p: string): string {
+  return p.replace(/\\/g, "/");
+}
+
 export function dirname(p: string): string {
-  const i = p.lastIndexOf("/");
+  const posix = toPosix(p);
+  const i = posix.lastIndexOf("/");
   if (i < 0) return ".";
   if (i === 0) return "/";
-  return p.slice(0, i);
+  return posix.slice(0, i);
 }
 
 export function normalizePath(p: string): string {
@@ -28,22 +35,30 @@ export function normalizePath(p: string): string {
 
 /**
  * Resolve a deck import specifier. `@/x` and `/x` are root-relative; everything else is
- * relative to the importing file's directory.
+ * relative to the importing file's directory. The result is contained to the project
+ * root: a specifier that `..`-escapes it throws — deck content must never be able to
+ * inline arbitrary files from elsewhere on disk (decks may be untrusted, and the MCP
+ * server parses them remotely).
  */
 export function resolveImport(spec: string, fromFile: string, root: string): string {
   let base: string;
   let rel: string;
   if (spec.startsWith("@/")) {
-    base = root;
+    base = toPosix(root);
     rel = spec.slice(2);
   } else if (spec.startsWith("/")) {
-    base = root;
+    base = toPosix(root);
     rel = spec.slice(1);
   } else {
     base = dirname(fromFile);
     rel = spec;
   }
-  return normalizePath(`${base}/${rel}`);
+  const resolved = normalizePath(`${base}/${rel}`);
+  const posixRoot = normalizePath(toPosix(root));
+  if (resolved !== posixRoot && !resolved.startsWith(`${posixRoot}/`)) {
+    throw new Error(`Import "${spec}" resolves outside the project root (${root})`);
+  }
+  return resolved;
 }
 
 const EXT_LANG: Record<string, string> = {

@@ -9,7 +9,10 @@ import { slides } from "@astro-slides/slides";
  * on any host, and copied to `404.html` by the `astro:build:done` hook so unknown paths land
  * here too. Base-path aware via `import.meta.env.BASE_URL`.
  */
-const base = import.meta.env.BASE_URL;
+// BASE_URL keeps the configured form — `base: "/talks"` has no trailing slash
+// (trailingSlash "ignore"/"never"), so normalize before concatenating segments.
+const rawBase = import.meta.env.BASE_URL;
+const base = rawBase.endsWith("/") ? rawBase : `${rawBase}/`;
 
 const ordered = [...slides].sort((a, b) => a.no - b.no);
 const byDeck = new Map<string, typeof slides>();

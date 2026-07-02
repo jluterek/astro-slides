@@ -6,7 +6,14 @@ import { listLayouts, listThemes } from "../discovery.js";
 import { createDeckServer } from "../server.js";
 import { buildExportArgs } from "../tools/media.js";
 import { gatewayWsUrl } from "../tools/navigate.js";
-import { bearerToken, createHttpApp, isLoopbackHost, startHttp } from "../transports.js";
+import {
+  bearerToken,
+  createHttpApp,
+  hostHeaderName,
+  isLoopbackHost,
+  startHttp,
+  tokenMatches,
+} from "../transports.js";
 
 describe("buildExportArgs", () => {
   it("builds format + output + flags", () => {
@@ -85,6 +92,61 @@ describe("createHttpApp auth gate", () => {
       body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "ping" }),
     });
     expect(res.status).not.toBe(401);
+  });
+
+  it("403s a tokenless server on a non-loopback Host (DNS rebinding)", async () => {
+    const app = createHttpApp({ makeServer });
+    const res = await app.request("/mcp", {
+      method: "POST",
+      headers: { host: "evil.example.com:4444", "content-type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "ping" }),
+    });
+    expect(res.status).toBe(403);
+  });
+
+  it("403s a tokenless server on a non-loopback Origin", async () => {
+    const app = createHttpApp({ makeServer });
+    const res = await app.request("/mcp", {
+      method: "POST",
+      headers: {
+        host: "127.0.0.1:4444",
+        origin: "https://evil.example.com",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "ping" }),
+    });
+    expect(res.status).toBe(403);
+  });
+
+  it("accepts a tokenless request with loopback Host and Origin", async () => {
+    const app = createHttpApp({ makeServer });
+    const res = await app.request("/mcp", {
+      method: "POST",
+      headers: {
+        host: "localhost:4444",
+        origin: "http://localhost:5173",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "ping" }),
+    });
+    expect(res.status).not.toBe(403);
+  });
+});
+
+describe("host/token helpers", () => {
+  it("hostHeaderName strips ports and IPv6 brackets", () => {
+    expect(hostHeaderName("127.0.0.1:4444")).toBe("127.0.0.1");
+    expect(hostHeaderName("localhost")).toBe("localhost");
+    expect(hostHeaderName("[::1]:4444")).toBe("::1");
+    expect(hostHeaderName("::1")).toBe("::1");
+    expect(hostHeaderName("evil.com:80")).toBe("evil.com");
+  });
+
+  it("tokenMatches accepts only the exact token", () => {
+    expect(tokenMatches("s3cret", "s3cret")).toBe(true);
+    expect(tokenMatches("wrong", "s3cret")).toBe(false);
+    expect(tokenMatches(undefined, "s3cret")).toBe(false);
+    expect(tokenMatches("", "s3cret")).toBe(false);
   });
 });
 

@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import { readdir, readFile, writeFile } from "node:fs/promises";
-import { isAbsolute, join } from "node:path";
+import { join, resolve, sep } from "node:path";
 import { promisify } from "node:util";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
@@ -8,6 +8,11 @@ import { guard, ok, type ServerContext } from "../context.js";
 import { loadDeck, resolveDeckFile } from "../deck-loader.js";
 
 const run = promisify(execFile);
+
+// Exports drive headless Chromium — slow, but never unbounded: a wedged browser must
+// not hang the tool call forever. stdout is progress chatter; give it headroom.
+const EXPORT_TIMEOUT_MS = 5 * 60_000;
+const EXPORT_MAX_BUFFER = 16 * 1024 * 1024;
 
 export interface ExportArgOptions {
   root: string;
@@ -30,17 +35,25 @@ export function buildExportArgs(opts: ExportArgOptions): string[] {
   return args;
 }
 
+/** Resolve a tool-supplied output path, CONTAINED to the project root. Tool arguments
+ * are model-controlled input on a network-reachable surface — an absolute or
+ * `../`-escaping path must never become an arbitrary filesystem write. */
 function resolveOut(root: string, output: string): string {
-  return isAbsolute(output) ? output : join(root, output);
+  const abs = resolve(root, output);
+  const base = resolve(root);
+  if (abs !== base && !abs.startsWith(base + sep))
+    throw new Error(`Output path "${output}" escapes the project root.`);
+  return abs;
 }
 
 export function registerMediaTools(server: McpServer, ctx: ServerContext): void {
   /** Spawn the CLI (reusing the tested Phase 12/13 pipeline) and return its stdout. */
   async function runExport(opts: ExportArgOptions): Promise<string> {
     const args = buildExportArgs(opts);
+    const execOpts = { cwd: ctx.root, timeout: EXPORT_TIMEOUT_MS, maxBuffer: EXPORT_MAX_BUFFER };
     const { stdout } = ctx.cliBin
-      ? await run(process.execPath, [ctx.cliBin, ...args], { cwd: ctx.root })
-      : await run("astro-slides", args, { cwd: ctx.root });
+      ? await run(process.execPath, [ctx.cliBin, ...args], execOpts)
+      : await run("astro-slides", args, execOpts);
     return stdout;
   }
 
@@ -63,7 +76,8 @@ export function registerMediaTools(server: McpServer, ctx: ServerContext): void 
     ({ deck, output, withClicks, perSlide, range }) =>
       guard(async () => {
         resolveDeckFile(ctx.root, deck); // validate deck exists
-        const out = output ?? `${deck}.pdf`;
+        // Contain BEFORE spawning — the CLI writes wherever --output points.
+        const out = resolveOut(ctx.root, output ?? `${deck}.pdf`);
         await runExport({
           root: ctx.root,
           format: "pdf",
@@ -72,7 +86,7 @@ export function registerMediaTools(server: McpServer, ctx: ServerContext): void 
           ...(perSlide ? { perSlide } : {}),
           ...(range ? { range } : {}),
         });
-        return ok({ path: resolveOut(ctx.root, out) });
+        return ok({ path: out });
       }),
   );
 
@@ -91,14 +105,14 @@ export function registerMediaTools(server: McpServer, ctx: ServerContext): void 
     ({ deck, output, rasterize }) =>
       guard(async () => {
         resolveDeckFile(ctx.root, deck);
-        const out = output ?? `${deck}.pptx`;
+        const out = resolveOut(ctx.root, output ?? `${deck}.pptx`);
         await runExport({
           root: ctx.root,
           format: "pptx",
           output: out,
           ...(rasterize ? { rasterize } : {}),
         });
-        return ok({ path: resolveOut(ctx.root, out) });
+        return ok({ path: out });
       }),
   );
 
@@ -118,15 +132,14 @@ export function registerMediaTools(server: McpServer, ctx: ServerContext): void 
     ({ deck, output, withClicks, range }) =>
       guard(async () => {
         resolveDeckFile(ctx.root, deck);
-        const dir = output ?? `${deck}-png`;
+        const abs = resolveOut(ctx.root, output ?? `${deck}-png`);
         await runExport({
           root: ctx.root,
           format: "png",
-          output: dir,
+          output: abs,
           ...(withClicks ? { withClicks } : {}),
           ...(range ? { range } : {}),
         });
-        const abs = resolveOut(ctx.root, dir);
         const files = (await readdir(abs).catch(() => []))
           .filter((f) => f.endsWith(".png"))
           .sort()
@@ -151,20 +164,23 @@ export function registerMediaTools(server: McpServer, ctx: ServerContext): void 
     ({ deck, no, step, output }) =>
       guard(async () => {
         resolveDeckFile(ctx.root, deck);
-        const dir = output ?? `${deck}-shots`;
+        const abs = resolveOut(ctx.root, output ?? `${deck}-shots`);
         await runExport({
           root: ctx.root,
           format: "png",
-          output: dir,
+          output: abs,
           range: String(no),
-          ...(step != null ? { withClicks: true } : {}),
+          ...(step != null && step > 0 ? { withClicks: true } : {}),
         });
-        const abs = resolveOut(ctx.root, dir);
         const files = (await readdir(abs).catch(() => []))
           .filter((f) => f.endsWith(".png"))
           .sort()
           .map((f) => join(abs, f));
-        return ok({ path: files[0] ?? null, paths: files });
+        // Select the requested slide (and step) from the CLI's `<deck>-<paddedNo>[.step].png`
+        // naming — files[0] of an unfiltered listing could be a stale/other-slide shot.
+        const want = new RegExp(`-0*${no}${step && step > 0 ? `\\.${step}` : ""}\\.png$`);
+        const match = files.find((f) => want.test(f)) ?? null;
+        return ok({ path: match, paths: files });
       }),
   );
 

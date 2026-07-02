@@ -26,9 +26,12 @@ function makeQueue() {
   };
 }
 
-export function registerWriteTools(server: McpServer, ctx: ServerContext): void {
-  const enqueue = makeQueue();
+// ONE queue per process, not per McpServer: the Streamable HTTP transport builds a fresh
+// server (and would build a fresh queue) per request, which un-serializes concurrent
+// writes from two clients — a lost-update race on the deck file.
+const enqueue = makeQueue();
 
+export function registerWriteTools(server: McpServer, ctx: ServerContext): void {
   /** Read → transform source → write back, then return a fresh summary. */
   async function mutate(deckId: string, transform: (src: string) => string) {
     return enqueue(async () => {

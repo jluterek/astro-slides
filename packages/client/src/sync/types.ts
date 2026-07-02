@@ -90,6 +90,10 @@ export function reduce(state: SharedState, action: SyncAction): SharedState {
     case "timer/reset":
       return { ...state, timer: { ...state.timer, startedAt: null, elapsedBeforePause: 0 } };
     case "timer/mode":
+      // Idempotent: re-declaring the current mode (e.g. a presenter window
+      // remounting mid-talk) must NOT reset a running timer across windows.
+      if (state.timer.mode === action.mode && state.timer.durationMs === action.durationMs)
+        return state;
       return {
         ...state,
         timer: {

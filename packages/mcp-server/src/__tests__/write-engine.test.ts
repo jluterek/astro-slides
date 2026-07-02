@@ -160,3 +160,30 @@ describe("setFrontmatter", () => {
     expect(hm.title).toBe("Test Deck");
   });
 });
+
+describe("pre-1.0 review regressions", () => {
+  it("keeps untouched slides byte-identical in a CRLF deck", () => {
+    const crlf =
+      "---\r\ntitle: T\r\n---\r\n\r\n# One\r\n\r\n---\r\n\r\n# Two\r\n\r\n---\r\n\r\n# Three\r\n";
+    const out = updateSlide(crlf, 2, { content: "# Two (edited)" });
+    // Slides 1 and 3 keep their CRLF line endings verbatim.
+    expect(out).toContain("title: T\r\n");
+    expect(out).toContain("# Three\r\n");
+    expect(out).toContain("# Two (edited)");
+  });
+
+  it("does not slice code-fence `---` content out as frontmatter", () => {
+    const block = "# Slide\n\n```\nfront\n---\nback\n---\nend\n```\n";
+    const { frontmatter, body } = splitBlock(block);
+    expect(frontmatter).toEqual({});
+    expect(body).toContain("front");
+    expect(body).toContain("end");
+  });
+
+  it("frontmatter-only update preserves a fence containing separators", () => {
+    const deck = "---\ntitle: T\n---\n\n# One\n\n---\n\n# Two\n\n```\na\n---\nb\n```\n";
+    const out = updateSlide(deck, 2, { frontmatter: { layout: "center" } });
+    expect(out).toContain("a\n---\nb");
+    expect(parse(out).slides).toHaveLength(2);
+  });
+});

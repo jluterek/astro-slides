@@ -94,10 +94,16 @@ function extractBlockFrontmatter(body: string): { yaml: string; rest: string } |
     i++;
   }
   if (i >= lines.length) return null; // unterminated fence — not frontmatter
-  return { yaml: yamlLines.join("\n"), rest: lines.slice(i + 1).join("\n") };
+  const yaml = yamlLines.join("\n");
+  // Same vetting as the `---` path: a leading ```yaml fence is frontmatter only if it
+  // parses as a mapping — a yaml *code sample* (a list, a scalar) stays slide content.
+  if (!isYamlMapping(yaml)) return null;
+  return { yaml, rest: lines.slice(i + 1).join("\n") };
 }
 
 export function splitSlides(source: string): RawSlide[] {
+  // A UTF-8 BOM on the first line would defeat separator/frontmatter detection.
+  if (source.charCodeAt(0) === 0xfeff) source = source.slice(1);
   const lines = source.split(/\r?\n/);
   const n = lines.length;
   const slides: RawSlide[] = [];
@@ -137,14 +143,18 @@ export function splitSlides(source: string): RawSlide[] {
         i++;
         continue;
       }
-      const f = fenceInfo(line);
-      if (f) {
-        fence = f;
-        contentLines.push(line);
-        i++;
-        continue;
+      // Comment state first: a fence-looking line *inside* `<!-- -->` is prose, not a
+      // fence opener (otherwise one ``` in a speaker note swallows the rest of the deck).
+      if (!inComment) {
+        const f = fenceInfo(line);
+        if (f) {
+          fence = f;
+          contentLines.push(line);
+          i++;
+          continue;
+        }
+        if (isSeparator(line)) break; // do NOT consume — next slide starts here
       }
-      if (!inComment && isSeparator(line)) break; // do NOT consume — next slide starts here
       inComment = advanceComment(line, inComment);
       contentLines.push(line);
       i++;
