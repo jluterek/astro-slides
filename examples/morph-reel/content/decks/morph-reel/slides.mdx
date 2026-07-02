@@ -1,0 +1,290 @@
+---
+title: The Morph Reel
+theme: cosmic
+colorSchema: dark
+transition: view-transition
+---
+
+<style>{`
+  /* ── The Morph Reel — one embedded stylesheet drives every form ── */
+  /* The reel content lives inside the layout's flex column; center the whole
+     group on both axes so every form and its caption sit dead-center. */
+  .layout-default:has(.reel-stage) {
+    justify-content: center;
+    align-items: center;
+    gap: clamp(24px, 4vh, 56px);
+    text-align: center;
+  }
+  .reel-stage {
+    display: grid;
+    place-items: center;
+    min-height: 46vh;
+    width: 100%;
+  }
+
+  /* Caption pill that travels between slides. */
+  .reel-cap {
+    justify-self: center;
+    width: fit-content;
+    max-width: 90%;
+    font-size: clamp(0.8rem, 1.4vw, 1.05rem);
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: color-mix(in oklch, var(--slide-fg, #e5e7eb) 62%, transparent);
+    padding: 0.5em 1.4em;
+    border: 1px solid color-mix(in oklch, #a78bfa 40%, transparent);
+    border-radius: 999px;
+    background: color-mix(in oklch, #4c1d95 24%, transparent);
+    backdrop-filter: blur(4px);
+  }
+  .reel-cap b { color: #c4b5fd; font-weight: 700; }
+  .reel-cap code {
+    font-family: var(--slide-font-mono, ui-monospace, monospace);
+    letter-spacing: 0;
+    color: #67e8f9;
+    text-transform: none;
+  }
+
+  /* 1 + 6 — the orb */
+  .reel-orb {
+    width: clamp(180px, 26vw, 300px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 34% 28%, #ede9fe 0%, #a78bfa 26%, #7c3aed 58%, #4c1d95 100%);
+    box-shadow:
+      0 0 8px 2px rgba(196, 181, 253, 0.9),
+      0 0 90px 24px rgba(124, 58, 237, 0.55),
+      0 0 180px 60px rgba(124, 58, 237, 0.28);
+    animation: reel-pulse 3.6s ease-in-out infinite;
+  }
+  @keyframes reel-pulse {
+    0%, 100% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.035); filter: brightness(1.12); }
+  }
+
+  /* 2 — the number */
+  .reel-number {
+    font-family: var(--slide-font-display, "Space Grotesk", system-ui, sans-serif);
+    font-weight: 700;
+    font-size: clamp(120px, 26vw, 340px);
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    background: linear-gradient(120deg, #f0abfc 0%, #a78bfa 40%, #38bdf8 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 40px rgba(129, 140, 248, 0.45));
+  }
+
+  /* 3 — the chart */
+  .reel-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: clamp(16px, 2.6vw, 36px);
+    height: clamp(220px, 34vh, 340px);
+  }
+  .reel-bar {
+    width: clamp(48px, 7vw, 92px);
+    border-radius: 14px 14px 4px 4px;
+    background: linear-gradient(180deg, #c4b5fd, #7c3aed);
+    box-shadow: 0 0 40px rgba(124, 58, 237, 0.4), inset 0 2px 0 rgba(255,255,255,0.35);
+  }
+  .reel-bar:nth-child(1) { height: 42%; background: linear-gradient(180deg, #7dd3fc, #0284c7); box-shadow: 0 0 40px rgba(2,132,199,0.4), inset 0 2px 0 rgba(255,255,255,0.35); }
+  .reel-bar:nth-child(2) { height: 68%; }
+  .reel-bar:nth-child(3) { height: 100%; background: linear-gradient(180deg, #f0abfc, #a21caf); box-shadow: 0 0 50px rgba(162,28,175,0.5), inset 0 2px 0 rgba(255,255,255,0.35); }
+  .reel-bar:nth-child(4) { height: 55%; background: linear-gradient(180deg, #6ee7b7, #059669); box-shadow: 0 0 40px rgba(5,150,105,0.4), inset 0 2px 0 rgba(255,255,255,0.35); }
+
+  /* 4 — the code window */
+  .reel-window {
+    width: min(760px, 84vw);
+    border-radius: 16px;
+    overflow: hidden;
+    background: #0b1021;
+    border: 1px solid color-mix(in oklch, #a78bfa 30%, transparent);
+    box-shadow: 0 30px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.03) inset;
+    text-align: left;
+  }
+  .reel-window::before {
+    content: "◉  ◉  ◉";
+    display: block;
+    letter-spacing: 0.55em;
+    font-size: 12px;
+    color: #5b6478;
+    padding: 12px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    background: linear-gradient(180deg, rgba(167,139,250,0.08), transparent);
+  }
+  .reel-window .as-magic-move,
+  .reel-window pre {
+    margin: 0;
+    padding: 22px 26px;
+    font-size: clamp(0.95rem, 1.7vw, 1.35rem);
+    line-height: 1.6;
+    background: transparent !important;
+  }
+
+  /* 5 — the result cards */
+  .reel-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(16px, 2.4vw, 32px);
+    width: min(880px, 90vw);
+  }
+  .reel-card {
+    padding: clamp(20px, 3vw, 40px) clamp(16px, 2vw, 28px);
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: linear-gradient(160deg, rgba(124,58,237,0.16), rgba(56,189,248,0.06));
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    display: grid;
+    gap: 0.35em;
+    align-content: center;
+  }
+  .reel-card .n {
+    font-family: var(--slide-font-display, "Space Grotesk", sans-serif);
+    font-weight: 700;
+    font-size: clamp(2.4rem, 6vw, 4.4rem);
+    line-height: 1;
+    background: linear-gradient(120deg, #f0abfc, #38bdf8);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .reel-card .l {
+    font-size: clamp(0.8rem, 1.4vw, 1rem);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: color-mix(in oklch, var(--slide-fg, #e5e7eb) 68%, transparent);
+  }
+
+  /* 7 — the wordmark */
+  .reel-wordmark {
+    font-family: var(--slide-font-display, "Space Grotesk", sans-serif);
+    font-weight: 700;
+    font-size: clamp(56px, 11vw, 148px);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    background: linear-gradient(110deg, #ede9fe 0%, #a78bfa 45%, #38bdf8 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 44px rgba(129,140,248,0.4));
+  }
+`}</style>
+
+<div class="reel-stage">
+  <Morph id="hero" as="div" class="reel-orb" />
+</div>
+
+<div data-morph="cap" class="reel-cap">One element. Watch it.</div>
+
+<!--
+Cold open. Don't say a word for a beat — let the orb breathe on the starfield.
+Then: "Keep your eye on this shape. It never leaves." Advance.
+-->
+
+---
+
+<div class="reel-stage">
+  <Morph id="hero" as="div" class="reel-number">100%</Morph>
+</div>
+
+<div data-morph="cap" class="reel-cap">…and it&rsquo;s a number</div>
+
+<!--
+The orb didn't cut to a number — it BECAME one. Same object, new form.
+"That's the whole trick. One element, morphing."
+-->
+
+---
+
+<div class="reel-stage">
+  <Morph id="hero" as="div" class="reel-chart">
+    <div class="reel-bar" />
+    <div class="reel-bar" />
+    <div class="reel-bar" />
+    <div class="reel-bar" />
+  </Morph>
+</div>
+
+<div data-morph="cap" class="reel-cap">…now it&rsquo;s a chart</div>
+
+<!--
+The number reflowed into bars. Point out nothing animated by hand —
+the browser interpolated the boxes. This is the View Transitions API.
+-->
+
+---
+
+<div class="reel-stage">
+
+<div data-morph="hero" class="reel-window">
+
+````md magic-move
+```ts
+const total = items.reduce((a, b) => a + b, 0)
+```
+```ts
+const total = items.reduce((a, b) => a + b, 0)
+const avg = total / items.length
+```
+```ts
+const total = items.reduce((a, b) => a + b, 0)
+const avg = total / items.length
+console.log(`average: ${avg.toFixed(1)}`)
+```
+````
+
+</div>
+
+</div>
+
+<div data-morph="cap" class="reel-cap">…now it&rsquo;s <b>living code</b> — click to refactor</div>
+
+<!--
+The chart zoomed into a code window. Now CLICK: the code rewrites ITSELF,
+token by token — that's Shiki Magic Move. Two clicks, three states.
+-->
+
+---
+
+<div class="reel-stage">
+  <Morph id="hero" as="div" class="reel-cards">
+    <div class="reel-card"><div class="n">0</div><div class="l">plugins</div></div>
+    <div class="reel-card"><div class="n">1</div><div class="l">attribute</div></div>
+    <div class="reel-card"><div class="n">&infin;</div><div class="l">transitions</div></div>
+  </Morph>
+</div>
+
+<div data-morph="cap" class="reel-cap">…and it&rsquo;s your results</div>
+
+<!--
+The window unfolded into three cards. The punchline is on screen:
+zero plugins, one attribute, unlimited transitions.
+-->
+
+---
+
+<div class="reel-stage">
+  <Morph id="hero" as="div" class="reel-orb" />
+</div>
+
+<div data-morph="cap" class="reel-cap">…and home again</div>
+
+<!--
+Full circle. The cards collapsed back into the orb we started with.
+Beat of silence. "Same element. The entire time."
+-->
+
+---
+
+<div class="reel-stage">
+  <Morph id="hero" as="div" class="reel-wordmark">astro-slides</Morph>
+</div>
+
+<div data-morph="cap" class="reel-cap"><code>npm create astro-slides</code></div>
+
+Every cut you just watched is one line of MDX — <code>data-morph="hero"</code>.
+
+<!--
+Land the wordmark. The morph you just watched IS the pitch: object continuity
+with nothing but a shared attribute. Point them at `npm create astro-slides`.
+-->

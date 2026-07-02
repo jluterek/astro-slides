@@ -11,3 +11,4 @@ export with `astro-slides export --format pdf|png|pptx|html`.
 | [`conference-talk`](./conference-talk/) | A full-length talk: sections, reveals, code, quote/fact/statement, speaker notes. |
 | [`technical-tutorial`](./technical-tutorial/) | Code-heavy: Shiki highlights, Magic Move, a two-column walkthrough, a Mermaid diagram. |
 | [`marketing-pitch`](./marketing-pitch/) | Landing-page quality on the Cosmic theme: FlexBlock feature/metric grids. |
+| [`morph-reel`](./morph-reel/) | The showcase: one element morphs through orb → number → chart → live code → cards → wordmark, driven entirely by a shared `data-morph` id and the View Transitions API. Present it in Chrome/Safari for the full effect. |
