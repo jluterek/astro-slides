@@ -20,21 +20,34 @@ Cut a real 1.0. Wire up Changesets for release notes and version bumping, publis
 - [x] Changesets configured at repo root with a release workflow. (`.changeset/config.json`, `.github/workflows/release.yml`)
 - [x] All packages have a stable, semver-compliant version. (all publishable packages → `0.1.0`, versioned in lockstep via the changesets `fixed` group)
 - [x] All packages declare `repository`, `license`, `keywords`, `author`, `homepage`, `bugs` fields and pass `npm publish --dry-run`. (validated — tests excluded from tarballs via `files` negation)
-- [ ] `pnpm publish -r` succeeds (dry-run first, then real). **Dry-run done; real publish needs the npm scope + token.**
-- [ ] `@astro-slides/cli` is `npm install`-able and the `astro-slides` bin works in a fresh shell. **(post-publish)**
-- [ ] `pnpm create astro-slides my-deck` works end-to-end against the published packages. **(post-publish; scaffolded projects already pin `^0.1.0`)**
-- [ ] GitHub release created with notes, links to docs, links to demo, screenshots. **(coupled to publish; notes drafted — see `RELEASE-NOTES-DRAFT.md`)**
-- [x] A "what's in 1.0" announcement post drafted. (`RELEASE-NOTES-DRAFT.md`)
+- [x] `pnpm publish -r` succeeds (dry-run first, then real). **All 7 packages published at `0.1.0` from CI (2026-07-02) via changesets + OIDC/Trusted Publishing.**
+- [x] `@astro-slides/cli` is `npm install`-able and the `astro-slides` bin works in a fresh shell. **Verified from a clean-room `npm install` outside the workspace.**
+- [x] `pnpm create astro-slides my-deck` works end-to-end against the published packages. **Verified: scaffold → install published deps → `astro-slides build` (14 pages).**
+- [x] GitHub release created with notes, links to docs, links to demo. (`v0.1.0`; Cosmic screenshots are an optional follow-up.)
+- [x] A "what's in 1.0" announcement post drafted. (`RELEASE-NOTES-DRAFT.md`; adapted to a `v0.1.0` first-public-release framing for the actual release.)
 - [x] CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md added.
-- [x] CI release workflow via `changesets/action` (opens a Version PR; publishes on merge once `NPM_TOKEN` is set).
-- [x] npm provenance attestation enabled. (`publishConfig.provenance: true` + `NPM_CONFIG_PROVENANCE` + `id-token: write` in the workflow)
+- [x] CI release workflow via `changesets/action`.
+- [x] npm provenance attestation enabled. **Confirmed on the published packages (`slsa.dev/provenance/v1`).**
+- [x] Third-party license attribution (`THIRD-PARTY.md`) — 705 prod packages, no pure copyleft in the shipped tree.
 
-### Remaining (npm — requires the registry, out of scope for the GitHub-side pass)
+### Shipped as `0.1.0`, not `1.0.0`
 
-- Claim the `@astro-slides` scope on npm; add an `NPM_TOKEN` repo secret (and enable GitHub Pages).
-- Add a release changeset and let the workflow's Version PR bump `0.1.0` → the 1.0 line, then merge
-  to publish. Verify install + `pnpm create astro-slides` against the published packages.
-- Cut the GitHub release from `RELEASE-NOTES-DRAFT.md` with Cosmic screenshots + the live docs URL.
+We published `0.1.0` as the first public release rather than jumping to `1.0.0`: the framework is
+feature-complete, but a `0.x` line lets real-world install/use surface issues before committing to
+the 1.0 stability promise. `1.0.0` becomes a later, deliberate call. This phase can close as
+"first public release shipped"; a future phase cuts `1.0.0`.
+
+### Notes from the actual publish
+
+- The workflow's `changesets/action` runs `publish` directly (no changesets pending → no Version
+  PR); packages already at `0.1.0` publish on push to main.
+- Changesets used **OIDC/Trusted Publishing** (it keys token auth on an env var named `NPM_TOKEN`;
+  the workflow only sets `NODE_AUTH_TOKEN`, so it fell through to OIDC — which worked).
+- Scoped packages appeared "missing" from the registry until the `astro-slides` org was created to
+  claim the `@astro-slides` namespace; they had in fact published. Lesson: **create the org before
+  the first publish.**
+- Known cosmetic follow-up: the CLI banner and MCP server report `version "0.0.0"`
+  (`cli/src/main.ts`, `mcp-server/src/server.ts`); fold the fix into `0.1.1`.
 
 ## Locked decisions
 
