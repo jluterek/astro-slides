@@ -41,5 +41,10 @@ jobs:
           commit: "chore: version packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # changesets reads NPM_TOKEN specifically to pick token auth; without it, it
+          # falls back to OIDC/trusted-publishing, which can't first-publish scoped
+          # packages before the org + a per-package trusted publisher exist. Set both:
+          # NPM_TOKEN for changesets' auth decision, NODE_AUTH_TOKEN for the npm CLI .npmrc.
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: "true"
