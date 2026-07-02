@@ -6,20 +6,28 @@ transition: view-transition
 ---
 
 <style>{`
-  /* ── The Morph Reel — one embedded stylesheet drives every form ── */
-  /* The reel content lives inside the layout's flex column; center the whole
-     group on both axes so every form and its caption sit dead-center. */
-  .layout-default:has(.reel-stage) {
+  /* ── The Morph Reel — twelve dots that never leave the stage ── */
+  .layout-default:has(.particle-stage) {
     justify-content: center;
     align-items: center;
-    gap: clamp(24px, 4vh, 56px);
+    gap: clamp(20px, 3.5vh, 48px);
     text-align: center;
   }
-  .reel-stage {
-    display: grid;
-    place-items: center;
-    min-height: 46vh;
-    width: 100%;
+  .particle-stage {
+    position: relative;
+    width: 1200px;
+    height: 680px;
+    max-width: 92vw;
+  }
+  .dot {
+    position: absolute;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle at 35% 30%, #fff 0%, var(--c) 45%, color-mix(in oklch, var(--c) 60%, #000) 100%);
+    box-shadow: 0 0 4px 1px color-mix(in oklch, var(--c) 90%, transparent),
+                0 0 26px 6px color-mix(in oklch, var(--c) 55%, transparent);
   }
 
   /* Caption pill that travels between slides. */
@@ -46,122 +54,16 @@ transition: view-transition
     text-transform: none;
   }
 
-  /* 1 + 6 — the orb */
-  .reel-orb {
-    width: clamp(180px, 26vw, 300px);
-    aspect-ratio: 1;
-    border-radius: 50%;
-    background:
-      radial-gradient(circle at 34% 28%, #ede9fe 0%, #a78bfa 26%, #7c3aed 58%, #4c1d95 100%);
-    box-shadow:
-      0 0 8px 2px rgba(196, 181, 253, 0.9),
-      0 0 90px 24px rgba(124, 58, 237, 0.55),
-      0 0 180px 60px rgba(124, 58, 237, 0.28);
-    animation: reel-pulse 3.6s ease-in-out infinite;
-  }
-  @keyframes reel-pulse {
-    0%, 100% { transform: scale(1); filter: brightness(1); }
-    50% { transform: scale(1.035); filter: brightness(1.12); }
-  }
-
-  /* 2 — the number */
-  .reel-number {
-    font-family: var(--slide-font-display, "Space Grotesk", system-ui, sans-serif);
-    font-weight: 700;
-    font-size: clamp(120px, 26vw, 340px);
-    line-height: 0.9;
-    letter-spacing: -0.03em;
-    background: linear-gradient(120deg, #f0abfc 0%, #a78bfa 40%, #38bdf8 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    filter: drop-shadow(0 0 40px rgba(129, 140, 248, 0.45));
-  }
-
-  /* 3 — the chart */
-  .reel-chart {
-    display: flex;
-    align-items: flex-end;
-    gap: clamp(16px, 2.6vw, 36px);
-    height: clamp(220px, 34vh, 340px);
-  }
-  .reel-bar {
-    width: clamp(48px, 7vw, 92px);
-    border-radius: 14px 14px 4px 4px;
-    background: linear-gradient(180deg, #c4b5fd, #7c3aed);
-    box-shadow: 0 0 40px rgba(124, 58, 237, 0.4), inset 0 2px 0 rgba(255,255,255,0.35);
-  }
-  .reel-bar:nth-child(1) { height: 42%; background: linear-gradient(180deg, #7dd3fc, #0284c7); box-shadow: 0 0 40px rgba(2,132,199,0.4), inset 0 2px 0 rgba(255,255,255,0.35); }
-  .reel-bar:nth-child(2) { height: 68%; }
-  .reel-bar:nth-child(3) { height: 100%; background: linear-gradient(180deg, #f0abfc, #a21caf); box-shadow: 0 0 50px rgba(162,28,175,0.5), inset 0 2px 0 rgba(255,255,255,0.35); }
-  .reel-bar:nth-child(4) { height: 55%; background: linear-gradient(180deg, #6ee7b7, #059669); box-shadow: 0 0 40px rgba(5,150,105,0.4), inset 0 2px 0 rgba(255,255,255,0.35); }
-
-  /* 4 — the code window */
-  .reel-window {
-    width: min(760px, 84vw);
-    border-radius: 16px;
-    overflow: hidden;
-    background: #0b1021;
-    border: 1px solid color-mix(in oklch, #a78bfa 30%, transparent);
-    box-shadow: 0 30px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.03) inset;
-    text-align: left;
-  }
-  .reel-window::before {
-    content: "◉  ◉  ◉";
-    display: block;
-    letter-spacing: 0.55em;
-    font-size: 12px;
-    color: #5b6478;
-    padding: 12px 18px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    background: linear-gradient(180deg, rgba(167,139,250,0.08), transparent);
-  }
-  .reel-window .as-magic-move,
-  .reel-window pre {
-    margin: 0;
-    padding: 22px 26px;
-    font-size: clamp(0.95rem, 1.7vw, 1.35rem);
-    line-height: 1.6;
-    background: transparent !important;
-  }
-
-  /* 5 — the result cards */
-  .reel-cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: clamp(16px, 2.4vw, 32px);
-    width: min(880px, 90vw);
-  }
-  .reel-card {
-    padding: clamp(20px, 3vw, 40px) clamp(16px, 2vw, 28px);
-    border-radius: 18px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: linear-gradient(160deg, rgba(124,58,237,0.16), rgba(56,189,248,0.06));
-    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
-    display: grid;
-    gap: 0.35em;
-    align-content: center;
-  }
-  .reel-card .n {
-    font-family: var(--slide-font-display, "Space Grotesk", sans-serif);
-    font-weight: 700;
-    font-size: clamp(2.4rem, 6vw, 4.4rem);
-    line-height: 1;
-    background: linear-gradient(120deg, #f0abfc, #38bdf8);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-  }
-  .reel-card .l {
-    font-size: clamp(0.8rem, 1.4vw, 1rem);
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: color-mix(in oklch, var(--slide-fg, #e5e7eb) 68%, transparent);
-  }
-
-  /* 7 — the wordmark */
+  /* Finale wordmark, centered behind the underline row of dots. */
   .reel-wordmark {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
     font-family: var(--slide-font-display, "Space Grotesk", sans-serif);
     font-weight: 700;
-    font-size: clamp(56px, 11vw, 148px);
+    font-size: clamp(56px, 11vw, 150px);
     line-height: 0.95;
     letter-spacing: -0.03em;
     background: linear-gradient(110deg, #ede9fe 0%, #a78bfa 45%, #38bdf8 100%);
@@ -170,121 +72,146 @@ transition: view-transition
   }
 `}</style>
 
-<div class="reel-stage">
-  <Morph id="hero" as="div" class="reel-orb" />
+<div class="particle-stage">
+  <div data-morph="p0" class="dot" style="left:600px;top:340px;--c:#c4b5fd"></div>
+  <div data-morph="p1" class="dot" style="left:578px;top:360px;--c:#a78bfa"></div>
+  <div data-morph="p2" class="dot" style="left:604px;top:298px;--c:#8b5cf6"></div>
+  <div data-morph="p3" class="dot" style="left:632px;top:381px;--c:#7c3aed"></div>
+  <div data-morph="p4" class="dot" style="left:541px;top:330px;--c:#d946ef"></div>
+  <div data-morph="p5" class="dot" style="left:657px;top:304px;--c:#f0abfc"></div>
+  <div data-morph="p6" class="dot" style="left:581px;top:411px;--c:#38bdf8"></div>
+  <div data-morph="p7" class="dot" style="left:563px;top:270px;--c:#0ea5e9"></div>
+  <div data-morph="p8" class="dot" style="left:680px;top:369px;--c:#22d3ee"></div>
+  <div data-morph="p9" class="dot" style="left:517px;top:374px;--c:#2dd4bf"></div>
+  <div data-morph="p10" class="dot" style="left:640px;top:254px;--c:#34d399"></div>
+  <div data-morph="p11" class="dot" style="left:630px;top:435px;--c:#6ee7b7"></div>
 </div>
 
-<div data-morph="cap" class="reel-cap">One element. Watch it.</div>
+<div data-morph="cap" class="reel-cap">Watch these twelve dots.</div>
 
 <!--
-Cold open. Don't say a word for a beat — let the orb breathe on the starfield.
-Then: "Keep your eye on this shape. It never leaves." Advance.
+Cold open: twelve glowing dots, loosely clustered. Say nothing for a beat.
+"Keep your eye on the dots. They do not leave this slide — ever."
 -->
 
 ---
 
-<div class="reel-stage">
-  <Morph id="hero" as="div" class="reel-number">100%</Morph>
+<div class="particle-stage">
+  <div data-morph="p0" class="dot" style="left:890px;top:340px;--c:#c4b5fd"></div>
+  <div data-morph="p1" class="dot" style="left:851px;top:195px;--c:#a78bfa"></div>
+  <div data-morph="p2" class="dot" style="left:745px;top:89px;--c:#8b5cf6"></div>
+  <div data-morph="p3" class="dot" style="left:600px;top:50px;--c:#7c3aed"></div>
+  <div data-morph="p4" class="dot" style="left:455px;top:89px;--c:#d946ef"></div>
+  <div data-morph="p5" class="dot" style="left:349px;top:195px;--c:#f0abfc"></div>
+  <div data-morph="p6" class="dot" style="left:310px;top:340px;--c:#38bdf8"></div>
+  <div data-morph="p7" class="dot" style="left:349px;top:485px;--c:#0ea5e9"></div>
+  <div data-morph="p8" class="dot" style="left:455px;top:591px;--c:#22d3ee"></div>
+  <div data-morph="p9" class="dot" style="left:600px;top:630px;--c:#2dd4bf"></div>
+  <div data-morph="p10" class="dot" style="left:745px;top:591px;--c:#34d399"></div>
+  <div data-morph="p11" class="dot" style="left:851px;top:485px;--c:#6ee7b7"></div>
 </div>
 
-<div data-morph="cap" class="reel-cap">…and it&rsquo;s a number</div>
+<div data-morph="cap" class="reel-cap">They never leave&hellip;</div>
 
 <!--
-The orb didn't cut to a number — it BECAME one. Same object, new form.
-"That's the whole trick. One element, morphing."
+The cluster opened into a perfect ring. Nothing faded — each dot GLIDED to its
+new seat. That is the View Transitions API tracking twelve objects by id.
 -->
 
 ---
 
-<div class="reel-stage">
-  <Morph id="hero" as="div" class="reel-chart">
-    <div class="reel-bar" />
-    <div class="reel-bar" />
-    <div class="reel-bar" />
-    <div class="reel-bar" />
-  </Morph>
+<div class="particle-stage">
+  <div data-morph="p0" class="dot" style="left:150px;top:520px;--c:#c4b5fd"></div>
+  <div data-morph="p1" class="dot" style="left:232px;top:507px;--c:#a78bfa"></div>
+  <div data-morph="p2" class="dot" style="left:314px;top:481px;--c:#8b5cf6"></div>
+  <div data-morph="p3" class="dot" style="left:395px;top:439px;--c:#7c3aed"></div>
+  <div data-morph="p4" class="dot" style="left:477px;top:390px;--c:#d946ef"></div>
+  <div data-morph="p5" class="dot" style="left:559px;top:348px;--c:#f0abfc"></div>
+  <div data-morph="p6" class="dot" style="left:641px;top:323px;--c:#38bdf8"></div>
+  <div data-morph="p7" class="dot" style="left:723px;top:310px;--c:#0ea5e9"></div>
+  <div data-morph="p8" class="dot" style="left:805px;top:297px;--c:#22d3ee"></div>
+  <div data-morph="p9" class="dot" style="left:886px;top:271px;--c:#2dd4bf"></div>
+  <div data-morph="p10" class="dot" style="left:968px;top:229px;--c:#34d399"></div>
+  <div data-morph="p11" class="dot" style="left:1050px;top:180px;--c:#6ee7b7"></div>
 </div>
 
-<div data-morph="cap" class="reel-cap">…now it&rsquo;s a chart</div>
+<div data-morph="cap" class="reel-cap">&hellip;they just rearrange.</div>
 
 <!--
-The number reflowed into bars. Point out nothing animated by hand —
-the browser interpolated the boxes. This is the View Transitions API.
+The ring reflowed into a rising line. Same twelve dots, new formation.
+This is what PowerPoint Morph does — native, in the browser, from Markdown.
 -->
 
 ---
 
-<div class="reel-stage">
-
-<div data-morph="hero" class="reel-window">
-
-````md magic-move
-```ts
-const total = items.reduce((a, b) => a + b, 0)
-```
-```ts
-const total = items.reduce((a, b) => a + b, 0)
-const avg = total / items.length
-```
-```ts
-const total = items.reduce((a, b) => a + b, 0)
-const avg = total / items.length
-console.log(`average: ${avg.toFixed(1)}`)
-```
-````
-
+<div class="particle-stage">
+  <div data-morph="p0" class="dot" style="left:600px;top:150px;--c:#c4b5fd"></div>
+  <div data-morph="p1" class="dot" style="left:530px;top:220px;--c:#a78bfa"></div>
+  <div data-morph="p2" class="dot" style="left:460px;top:290px;--c:#8b5cf6"></div>
+  <div data-morph="p3" class="dot" style="left:390px;top:360px;--c:#7c3aed"></div>
+  <div data-morph="p4" class="dot" style="left:670px;top:220px;--c:#d946ef"></div>
+  <div data-morph="p5" class="dot" style="left:740px;top:290px;--c:#f0abfc"></div>
+  <div data-morph="p6" class="dot" style="left:810px;top:360px;--c:#38bdf8"></div>
+  <div data-morph="p7" class="dot" style="left:600px;top:230px;--c:#0ea5e9"></div>
+  <div data-morph="p8" class="dot" style="left:600px;top:300px;--c:#22d3ee"></div>
+  <div data-morph="p9" class="dot" style="left:600px;top:370px;--c:#2dd4bf"></div>
+  <div data-morph="p10" class="dot" style="left:600px;top:440px;--c:#34d399"></div>
+  <div data-morph="p11" class="dot" style="left:600px;top:510px;--c:#6ee7b7"></div>
 </div>
 
-</div>
-
-<div data-morph="cap" class="reel-cap">…now it&rsquo;s <b>living code</b> — click to refactor</div>
+<div data-morph="cap" class="reel-cap">No fades. Pure motion.</div>
 
 <!--
-The chart zoomed into a code window. Now CLICK: the code rewrites ITSELF,
-token by token — that's Shiki Magic Move. Two clicks, three states.
+The line snapped into an arrow. Point out: boxes stay boxes, dots stay dots —
+they travel, they never dissolve. That is the whole trick.
 -->
 
 ---
 
-<div class="reel-stage">
-  <Morph id="hero" as="div" class="reel-cards">
-    <div class="reel-card"><div class="n">0</div><div class="l">plugins</div></div>
-    <div class="reel-card"><div class="n">1</div><div class="l">attribute</div></div>
-    <div class="reel-card"><div class="n">&infin;</div><div class="l">transitions</div></div>
-  </Morph>
+<div class="particle-stage">
+  <div data-morph="p0" class="dot" style="left:180px;top:140px;--c:#c4b5fd"></div>
+  <div data-morph="p1" class="dot" style="left:420px;top:90px;--c:#a78bfa"></div>
+  <div data-morph="p2" class="dot" style="left:700px;top:160px;--c:#8b5cf6"></div>
+  <div data-morph="p3" class="dot" style="left:980px;top:110px;--c:#7c3aed"></div>
+  <div data-morph="p4" class="dot" style="left:120px;top:360px;--c:#d946ef"></div>
+  <div data-morph="p5" class="dot" style="left:380px;top:300px;--c:#f0abfc"></div>
+  <div data-morph="p6" class="dot" style="left:640px;top:400px;--c:#38bdf8"></div>
+  <div data-morph="p7" class="dot" style="left:900px;top:340px;--c:#0ea5e9"></div>
+  <div data-morph="p8" class="dot" style="left:1080px;top:480px;--c:#22d3ee"></div>
+  <div data-morph="p9" class="dot" style="left:260px;top:560px;--c:#2dd4bf"></div>
+  <div data-morph="p10" class="dot" style="left:560px;top:600px;--c:#34d399"></div>
+  <div data-morph="p11" class="dot" style="left:820px;top:560px;--c:#6ee7b7"></div>
 </div>
 
-<div data-morph="cap" class="reel-cap">…and it&rsquo;s your results</div>
+<div data-morph="cap" class="reel-cap">This is <b>object continuity</b>.</div>
 
 <!--
-The window unfolded into three cards. The punchline is on screen:
-zero plugins, one attribute, unlimited transitions.
+The arrow scattered into a constellation. Land the line: object continuity.
+Every frame you have seen is the same twelve elements, morphing.
 -->
 
 ---
 
-<div class="reel-stage">
-  <Morph id="hero" as="div" class="reel-orb" />
+<div class="particle-stage">
+  <div data-morph="p0" class="dot" style="left:180px;top:560px;--c:#c4b5fd"></div>
+  <div data-morph="p1" class="dot" style="left:256px;top:560px;--c:#a78bfa"></div>
+  <div data-morph="p2" class="dot" style="left:333px;top:560px;--c:#8b5cf6"></div>
+  <div data-morph="p3" class="dot" style="left:409px;top:560px;--c:#7c3aed"></div>
+  <div data-morph="p4" class="dot" style="left:485px;top:560px;--c:#d946ef"></div>
+  <div data-morph="p5" class="dot" style="left:562px;top:560px;--c:#f0abfc"></div>
+  <div data-morph="p6" class="dot" style="left:638px;top:560px;--c:#38bdf8"></div>
+  <div data-morph="p7" class="dot" style="left:715px;top:560px;--c:#0ea5e9"></div>
+  <div data-morph="p8" class="dot" style="left:791px;top:560px;--c:#22d3ee"></div>
+  <div data-morph="p9" class="dot" style="left:867px;top:560px;--c:#2dd4bf"></div>
+  <div data-morph="p10" class="dot" style="left:944px;top:560px;--c:#34d399"></div>
+  <div data-morph="p11" class="dot" style="left:1020px;top:560px;--c:#6ee7b7"></div>
 </div>
 
-<div data-morph="cap" class="reel-cap">…and home again</div>
-
-<!--
-Full circle. The cards collapsed back into the orb we started with.
-Beat of silence. "Same element. The entire time."
--->
-
----
-
-<div class="reel-stage">
-  <Morph id="hero" as="div" class="reel-wordmark">astro-slides</Morph>
-</div>
+<div class="reel-wordmark">astro-slides</div>
 
 <div data-morph="cap" class="reel-cap"><code>npm create astro-slides</code></div>
 
-Every cut you just watched is one line of MDX — <code>data-morph="hero"</code>.
-
 <!--
-Land the wordmark. The morph you just watched IS the pitch: object continuity
-with nothing but a shared attribute. Point them at `npm create astro-slides`.
+The dots settle into an underline as the wordmark rises. Payoff:
+each dot is ONE data-morph id. Point them at npm create astro-slides.
 -->
