@@ -64,6 +64,14 @@ function rowSteps(steps: LineStep[]): { lineToStep: Map<number, number>; allFrom
 
 const LEADING_STEPS = /^\s*(\{[^}]*\})\s*/;
 
+/** A leading `{…}` is a *step spec* only if every `|`/`,`-separated part is a number,
+ * range, `*`, `all`, or empty — otherwise it's TeX (set-builder `{x | x > 0}` etc.). */
+function isStepSpec(braced: string): boolean {
+  const inner = braced.slice(1, -1).trim();
+  if (inner === "") return false;
+  return inner.split(/[|,]/).every((part) => /^\s*(?:\d+(?:\s*-\s*\d+)?|\*|all)?\s*$/.test(part));
+}
+
 export function remarkKatex() {
   return (tree: Node): void => {
     const totalEntry = findTotalClicks(tree);
@@ -80,7 +88,8 @@ export function remarkKatex() {
       // Step spec comes from the fence meta (`$$ {1|3}`); fall back to a leading
       // `{…}` in the body for parsers that don't split meta.
       let spec = (node.meta ?? "").trim();
-      const stepMatch = spec === "" ? tex.match(LEADING_STEPS) : null;
+      let stepMatch = spec === "" ? tex.match(LEADING_STEPS) : null;
+      if (stepMatch && !isStepSpec(stepMatch[1] ?? "")) stepMatch = null;
       if (stepMatch) spec = stepMatch[1] ?? "";
       const clickSteps = spec ? parseCodeMeta(spec).clickSteps : null;
 

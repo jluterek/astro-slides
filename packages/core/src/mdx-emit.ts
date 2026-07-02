@@ -5,12 +5,17 @@ import type { LoadedDeck } from "./deck-loader.js";
 
 /**
  * Per-slide MDX emission. Each slide's slot sources are written to temp `.mdx`
- * files under `<root>/.astro-slides/` so Astro's MDX pipeline compiles them (with
+ * files under `<root>/.astro-slides/slides/` so Astro's MDX pipeline compiles them (with
  * components + the remark-clicks plugin in scope). The generated `@astro-slides/slides`
  * module imports these files; the route renders the resulting components inside layouts.
+ *
+ * The emit dir MUST stay namespaced under `.astro-slides/` — the recompute rm-rf's it,
+ * and `.astro-slides/drawings/` (persisted annotations, drawing/persistence.ts) shares
+ * the scratch root and must survive.
  */
 
 const OUT_DIR = ".astro-slides";
+const SLIDES_SUBDIR = "slides";
 
 export interface SlideModuleMeta {
   deck: string;
@@ -27,7 +32,7 @@ export interface SlideModuleMeta {
 }
 
 export function slideModulesDir(root: string): string {
-  return join(root, OUT_DIR);
+  return join(root, OUT_DIR, SLIDES_SUBDIR);
 }
 
 /** Write every slide's slot sources to temp `.mdx` files; return the manifest. */

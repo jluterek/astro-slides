@@ -194,5 +194,5 @@ Questions?
 
 ## Compatibility
 
-- **Marp:** set `marp: true` in headmatter to select Marp-flavor parsing; Marp directives (`paginate`, `header`, `footer`, `_class:`, etc.) are honored.
+- **Marp:** set `marp: true` in headmatter to select Marp-flavor parsing; Marp directives (`_class:`, `backgroundColor`, etc.) are parsed into frontmatter. Note: `paginate`, `header`, and `footer` pass through to frontmatter but have no visible rendering yet — do not promise page numbers or running headers.
 - **Slidev:** documented Slidev frontmatter fields are honored; Slidev-only extras are ignored gracefully.

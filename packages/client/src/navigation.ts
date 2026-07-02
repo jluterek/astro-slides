@@ -150,7 +150,9 @@ export class DeckController {
     this.opts.store.slide.set(next.slide);
     this.opts.store.step.set(next.step);
 
-    if (url !== "none") this.syncUrl(url);
+    // Only touch the URL when the state actually moved: a same-URL pushState still
+    // adds a history entry, so Space-mashing at the last slide would break Back.
+    if (url !== "none" && (changed || url === "replace")) this.syncUrl(url);
     if (changed || url === "replace") this.announce();
   }
 

@@ -77,8 +77,17 @@ export function initDrawing(root: HTMLElement, options: DrawingOptions): Drawing
 
   const toolbar = buildToolbar(root, drauu, {
     onClear: () => clearCurrent(),
-    onUndo: () => drauu.undo(),
-    onRedo: () => drauu.redo(),
+    // drauu's undo/redo emit only `changed`, never `committed` — sync + persist the
+    // result explicitly, or peers/disk keep the pre-undo strokes and the next remote
+    // action reverts the undo on screen.
+    onUndo: () => {
+      drauu.undo();
+      commitCurrent();
+    },
+    onRedo: () => {
+      drauu.redo();
+      commitCurrent();
+    },
   });
 
   let activeState = false;
@@ -99,7 +108,20 @@ export function initDrawing(root: HTMLElement, options: DrawingOptions): Drawing
 
   function clearCurrent(): void {
     drauu.clear();
-    options.sync.dispatch({ type: "draw/clear", key: keyNow() });
+    const key = keyNow();
+    options.sync.dispatch({ type: "draw/clear", key });
+    // Delete from disk too (the gateway relay doesn't persist WS actions) — otherwise a
+    // cleared annotation resurrects on the next reload.
+    if (options.persist) save(options.deckId, key, "");
+  }
+
+  /** Push the surface's current SVG into the shared store (+ disk when persisting). */
+  function commitCurrent(): void {
+    const key = keyNow();
+    const svgData = drauu.dump();
+    if (svgData.trim()) options.sync.dispatch({ type: "draw", key, svg: svgData });
+    else options.sync.dispatch({ type: "draw/clear", key });
+    if (options.persist) save(options.deckId, key, svgData.trim() ? svgData : "");
   }
 
   // Load the stored SVG for the current slide-step into drauu (without echoing).

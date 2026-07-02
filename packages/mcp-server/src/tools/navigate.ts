@@ -35,8 +35,28 @@ async function withSocket<T>(
   const url = gatewayWsUrl(ctx.syncGateway, deck, ctx.syncToken);
   const socket = new WebSocket(url);
   await new Promise<void>((resolve, reject) => {
-    socket.addEventListener("open", () => resolve(), { once: true });
-    socket.addEventListener("error", () => reject(new Error(`Cannot reach gateway at ${url}`)), {
+    // A black-holed connection (firewall drop) never fires open OR error — bound it,
+    // and close the socket on any failure path so nothing leaks.
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const fail = (err: Error): void => {
+      if (timer) clearTimeout(timer);
+      try {
+        socket.close();
+      } catch {
+        // already closed
+      }
+      reject(err);
+    };
+    timer = setTimeout(() => fail(new Error(`Timed out reaching gateway at ${url}`)), 5000);
+    socket.addEventListener(
+      "open",
+      () => {
+        clearTimeout(timer);
+        resolve();
+      },
+      { once: true },
+    );
+    socket.addEventListener("error", () => fail(new Error(`Cannot reach gateway at ${url}`)), {
       once: true,
     });
   });

@@ -1,6 +1,5 @@
 packages:
   - 'packages/*'
-  - 'themes/*'
   - 'examples/*'
   - 'docs-site'
 

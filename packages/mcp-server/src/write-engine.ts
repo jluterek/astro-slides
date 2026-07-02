@@ -19,7 +19,10 @@ import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 export function toBlocks(source: string): string[] {
   const raw = splitSlides(source);
   if (raw.length === 0) return source.trim() === "" ? [] : [source];
-  const lines = source.split(/\r?\n/);
+  // Split on "\n" ONLY, leaving any "\r" attached to its line: rejoining with "\n" then
+  // reconstructs a CRLF file byte-for-byte, so untouched slides stay byte-identical.
+  // (splitSlides' startLine indexes are the same either way — every "\r\n" has one "\n".)
+  const lines = source.split("\n");
   const blocks: string[] = [];
   for (let k = 0; k < raw.length; k++) {
     const start = raw[k]?.startLine ?? 0;
@@ -48,24 +51,25 @@ export function makeBlock(content: string, frontmatter?: Record<string, unknown>
   return `${body}\n`;
 }
 
-/** Parse a single block's leading frontmatter into `{ frontmatter, body }`. */
+/** Parse a single block's leading frontmatter into `{ frontmatter, body }`. Delegates to
+ * the parser's `splitSlides`, which is fence- and comment-aware and vets the candidate
+ * region as a YAML *mapping* — a naive `---…---` regex would slice code-fence content
+ * containing `---` lines out of the body. */
 export function splitBlock(block: string): { frontmatter: Record<string, unknown>; body: string } {
-  const m = block.match(/^\s*---[ \t]*\n([\s\S]*?)\n---[ \t]*\n?/);
-  if (m) {
-    let fm: Record<string, unknown> = {};
+  const [raw] = splitSlides(block);
+  if (!raw) return { frontmatter: {}, body: "" };
+  let fm: Record<string, unknown> = {};
+  if (raw.frontmatterRaw != null) {
     try {
-      const parsed = parseYaml(m[1] ?? "");
+      const parsed = parseYaml(raw.frontmatterRaw);
       if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
         fm = parsed as Record<string, unknown>;
       }
     } catch {
-      // Malformed frontmatter → treat the whole block as body.
-      return { frontmatter: {}, body: block.trim() };
+      // Malformed frontmatter — keep it out rather than corrupting the block.
     }
-    return { frontmatter: fm, body: block.slice(m[0].length).trim() };
   }
-  // Strip a bare leading separator (a plain slide's boundary line) before returning body.
-  return { frontmatter: {}, body: block.replace(/^\s*---[ \t]*\n/, "").trim() };
+  return { frontmatter: fm, body: raw.body.trim() };
 }
 
 /** Reparse the result and assert the literal slide count matches, or throw. */

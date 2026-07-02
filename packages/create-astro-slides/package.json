@@ -11,15 +11,17 @@
   },
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "import": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
   "files": [
     "bin",
+    "dist",
     "src",
     "!**/__tests__",
-    "!**/*.test.ts"
+    "!**/*.test.ts",
+    "!**/*.test.js"
   ],
   "dependencies": {
     "@clack/prompts": "catalog:prod",
@@ -50,5 +52,8 @@
   "publishConfig": {
     "access": "public",
     "provenance": true
+  },
+  "engines": {
+    "node": ">=22.18.0"
   }
 }

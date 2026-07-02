@@ -37,7 +37,7 @@ The server listens on `http://127.0.0.1:4444/mcp` by default. Relevant flags:
 | `--host <host>` | `127.0.0.1` | HTTP bind host. |
 | `--port <n>` | `4444` | HTTP port. |
 | `--token <secret>` | — | Bearer token for HTTP auth (or `ASTRO_SLIDES_MCP_TOKEN`). |
-| `--read-only` | `false` | Disable the write tools. |
+| `--read-only` | `false` | Drop every file-mutating tool (write **and** export/capture). |
 | `--sync-gateway <url>` | — | Running dev-server sync gateway URL for the navigate tools. |
 | `--sync-token <token>` | — | Token for the sync gateway. |
 
@@ -65,7 +65,7 @@ The server exposes 20 tools across five categories. Schemas are authored in Zod 
 A few things worth knowing about how these behave:
 
 - **Write tools are text-level.** The parser has no AST-to-source serializer, so writes slice the deck file into verbatim per-slide blocks and reserialize only the edited block — untouched slides stay byte-for-byte identical. Every mutation is reparse-verified against the expected slide count before it returns, so a write that would corrupt structure is refused. Whole files are written back, so a running dev server picks up changes via HMR.
-- **`--read-only` drops the write tools** entirely, leaving only read/navigate/export/capture. Use it when you want an agent that can inspect and present but never mutate.
+- **`--read-only` drops every tool that writes to disk** — the write tools *and* export/capture (exports write files too) — leaving only read and navigate. Use it when you want an agent that can inspect and present but never touch the filesystem.
 - **Navigate tools need a live sync gateway.** `goto_slide`, `next_slide`, `prev_slide`, and `set_step` drive a presented deck over a WebSocket to the Phase 11 sync gateway, which only runs under `astro-slides dev --remote`. Point the server at it with `--sync-gateway` (and `--sync-token` if the gateway is protected). Without a running gateway the navigate tools are inert.
 - **Export and capture spawn the CLI**, reusing the same tested Playwright pipeline as `astro-slides export`.
 

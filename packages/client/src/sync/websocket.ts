@@ -57,7 +57,12 @@ export function createWebSocketTransport(
 
   const url = gatewayUrl(options.path, deckId, options.suffix);
   const listeners = new Set<(action: SyncAction) => void>();
-  const backlog: string[] = [];
+  // Buffered posts while (re)connecting. High-frequency actions (laser ~25/s, goto)
+  // are coalesced — only the latest matters — and the buffer is capped so a long
+  // gateway outage can't grow it unbounded / replay a stale firehose on reconnect.
+  const COALESCED = new Set(["laser", "goto"]);
+  const BACKLOG_MAX = 256;
+  const backlog: Array<{ type: string; msg: string }> = [];
   const reconnectMs = options.reconnectMs ?? 1000;
   let socket: WebSocketLike | null = null;
   let closed = false;
@@ -67,8 +72,8 @@ export function createWebSocketTransport(
   function flush(): void {
     if (!socket || socket.readyState !== OPEN) return;
     while (backlog.length) {
-      const msg = backlog.shift();
-      if (msg != null) socket.send(msg);
+      const entry = backlog.shift();
+      if (entry != null) socket.send(entry.msg);
     }
   }
 
@@ -104,7 +109,12 @@ export function createWebSocketTransport(
   return {
     post: (action) => {
       const msg = JSON.stringify(action);
-      backlog.push(msg);
+      if (COALESCED.has(action.type)) {
+        const prior = backlog.findIndex((e) => e.type === action.type);
+        if (prior !== -1) backlog.splice(prior, 1);
+      }
+      backlog.push({ type: action.type, msg });
+      if (backlog.length > BACKLOG_MAX) backlog.shift();
       flush();
     },
     subscribe: (cb) => {

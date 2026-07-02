@@ -70,12 +70,15 @@ export function slidesModuleSource(metas: SlideModuleMeta[]): string {
     };
     // Frontmatter `clicks: N` is an authoritative override of the computed total
     // (the compile-time AST plan is preserved regardless — ADR-0008).
+    // Slots compile as separate MDX files, so each slot's clicks number independently
+    // from 1 — the slide total is the MAX across slots (slots step in parallel), not the
+    // sum, which would leave dead trailing steps.
     const override = m.frontmatter.clicks;
     const total =
       typeof override === "number"
         ? String(override)
         : clickTerms.length > 0
-          ? clickTerms.join(" + ")
+          ? `Math.max(${clickTerms.join(", ")})`
           : "0";
     entries.push(
       `  { ...${json(meta)}, totalClicks: ${total}, slots: { ${slotPairs.join(", ")} } }`,

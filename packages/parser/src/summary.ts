@@ -1,10 +1,12 @@
 import type { Deck, DeckSummary, Slide, SlideSummary } from "@astro-slides/types";
 
 const HEADING = /^#{1,6}\s+(.+?)\s*#*\s*$/m;
+const FENCED_BLOCK = /^\s{0,3}(`{3,}|~{3,})[^\n]*\n[\s\S]*?(?:^\s{0,3}\1`*\s*$|(?![\s\S]))/gm;
 
-/** First Markdown heading text in a slide, if any. */
+/** First Markdown heading text in a slide, if any. Fenced code is excluded so a
+ * `# comment` line inside a code block is never mistaken for the title. */
 export function slideTitle(slide: Slide): string | null {
-  const m = HEADING.exec(slide.content);
+  const m = HEADING.exec(slide.content.replace(FENCED_BLOCK, ""));
   return m ? (m[1] as string).trim() : null;
 }
 

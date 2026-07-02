@@ -158,14 +158,28 @@ describe("MCP server end-to-end (in-process client)", () => {
     expect((res as any).isError).toBe(true);
   });
 
-  it("omits write tools in read-only mode", async () => {
+  it("omits write AND export tools in read-only mode (exports write files too)", async () => {
     const ro = createDeckServer({ root, readOnly: true });
     const roClient = new Client({ name: "ro", version: "0.0.0" });
     const [a, b] = InMemoryTransport.createLinkedPair();
     await Promise.all([ro.connect(b), roClient.connect(a)]);
     const names = (await roClient.listTools()).tools.map((t) => t.name);
     expect(names).not.toContain("add_slide");
+    expect(names).not.toContain("export_md");
+    expect(names).not.toContain("export_pdf");
+    expect(names).not.toContain("screenshot_slide");
     expect(names).toContain("list_slides");
     await roClient.close();
+  });
+
+  it("rejects an output path that escapes the project root", async () => {
+    for (const output of ["../evil.md", "/tmp/evil.md"]) {
+      const res = await client.callTool({
+        name: "export_md",
+        arguments: { deck: "slides", output },
+      });
+      // biome-ignore lint/suspicious/noExplicitAny: reading the isError flag off the result.
+      expect((res as any).isError).toBe(true);
+    }
   });
 });

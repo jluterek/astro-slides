@@ -45,7 +45,13 @@ Cut a real 1.0. Wire up Changesets for release notes and version bumping, publis
 - **Open-source meta files:** Contributor Covenant for CoC; SECURITY.md points to private security email; CONTRIBUTING.md covers pnpm setup, branch policy, ADR/spec etiquette.
 - **VS Code extension:** **not** in v1. Documented as a post-v1 target.
 
-## Tasks (planned)
+## Tasks
+
+- [x] [`01-pre-release-code-review.md`](./01-pre-release-code-review.md) — full-project
+  review + fixes before publish (found + fixed two release blockers and several security
+  bugs; full gate green).
+
+### Planned
 
 - Changesets installation + initial config
 - Per-package metadata audit (one task per package — parallel)

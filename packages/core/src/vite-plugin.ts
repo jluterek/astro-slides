@@ -71,12 +71,12 @@ export function astroSlidesVitePlugin(options: VitePluginOptions): Plugin {
       return gatewayPaths.some((p) => path === p || path.startsWith(`${p}/`));
     };
 
-    const decks = data().decks;
-    const deckTotals = Object.fromEntries(decks.map((d) => [d.name, d.deck.slides.length]));
+    // Getters, not snapshots: `data()` re-parses after deck edits, so the mobile
+    // remote's slide bounds stay current across the dev session.
     const gateway = createSyncGateway({
       root,
-      deckTotals,
-      defaultDeck: decks[0]?.name ?? "slides",
+      deckTotals: () => Object.fromEntries(data().decks.map((d) => [d.name, d.deck.slides.length])),
+      defaultDeck: () => data().decks[0]?.name ?? "slides",
       token: process.env.ASTRO_SLIDES_REMOTE_TOKEN || undefined,
     });
     if (server.httpServer) gateway.injectWebSocket(server.httpServer);

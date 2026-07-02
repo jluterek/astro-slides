@@ -95,7 +95,8 @@ export function initDeck(root: HTMLElement): DeckHandle {
 
   // Embed mode (Phase 12): `?embed=1` strips presenter chrome for `<iframe>` embedding —
   // the slide still navigates, but help/status/toolbars stay hidden (see deck.css).
-  if (new URLSearchParams(location.search).get("embed")) root.classList.add("as-embed");
+  const embedded = Boolean(new URLSearchParams(location.search).get("embed"));
+  if (embedded) root.classList.add("as-embed");
 
   const store = createDeckStore({
     deck: root.dataset.deck ?? "",
@@ -124,7 +125,9 @@ export function initDeck(root: HTMLElement): DeckHandle {
     const deck = root.dataset.deck ?? "";
     // Vite substitutes `import.meta.env.BASE_URL` at bundle time; the client tsconfig doesn't
     // pull in vite/client types, so read it through a cast rather than widening the config.
-    const base = (import.meta as ImportMeta & { env?: { BASE_URL?: string } }).env?.BASE_URL || "/";
+    // BASE_URL keeps the configured form (`/talks` has no trailing slash) — normalize.
+    const raw = (import.meta as ImportMeta & { env?: { BASE_URL?: string } }).env?.BASE_URL || "/";
+    const base = raw.endsWith("/") ? raw : `${raw}/`;
     const url = `${base}presenter/${encodeURIComponent(deck)}/${controller.current.slide}`;
     window.open(url, "_blank", "noopener");
   };
@@ -191,7 +194,9 @@ export function initDeck(root: HTMLElement): DeckHandle {
   initial.drawings = readPersistedDrawings(root);
   const sync = createSyncStore(deckId, initial, {
     suffix: preview ? "preview" : "",
-    publish: !preview,
+    // Embeds are passive: two iframes of the same deck on one docs page (same origin,
+    // same BroadcastChannel room) must not navigate each other or a live presentation.
+    publish: !preview && !embedded,
     transports,
   });
   const blackout = ensureBlackout(root);

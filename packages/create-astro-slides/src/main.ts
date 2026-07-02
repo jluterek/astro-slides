@@ -75,6 +75,10 @@ function renderPackageJson(name: string): string {
       "@astro-slides/client": DEP_RANGE,
       "@astro-slides/core": DEP_RANGE,
       astro: ASTRO_RANGE,
+      // Peer deps of @astro-slides/client — explicit so the project also installs
+      // under strict peer settings (auto-install-peers=false).
+      react: "^19.0.0",
+      "react-dom": "^19.0.0",
     },
   };
   return `${JSON.stringify(pkg, null, 2)}\n`;
@@ -93,8 +97,10 @@ export default defineConfig({
 
 function renderSlides(name: string, theme: ThemeChoice): string {
   const title = titleFromName(name);
+  // Always quote: an unquoted title with `:` or `#` (from a name like "demo: colon")
+  // is invalid/truncated YAML and the scaffolded deck fails its first parse.
   return `---
-title: ${title}
+title: ${JSON.stringify(title)}
 theme: ${theme}
 ---
 
@@ -237,32 +243,51 @@ export async function run(argv: string[]): Promise<void> {
   intro(pc.bgCyan(pc.black(" create-astro-slides ")));
 
   const skipPrompts = argv.includes("--yes") || argv.includes("-y");
+  const force = argv.includes("--force");
+  // A cancelled scaffold is not a success — scripts must be able to tell them apart.
+  const bail = (message: string): void => {
+    process.exitCode = 1;
+    cancel(message);
+  };
   // The target directory is the first positional argument (flags follow it).
   const first = argv[0];
   let name = first && !first.startsWith("-") ? first : undefined;
   if (!name) {
-    const answer = await text({
-      message: "Where should we create your deck?",
-      placeholder: "my-talk",
-      defaultValue: "my-talk",
-    });
-    if (isCancel(answer)) return cancel("Cancelled.");
-    name = answer || "my-talk";
+    if (skipPrompts) {
+      name = "my-talk";
+    } else {
+      const answer = await text({
+        message: "Where should we create your deck?",
+        placeholder: "my-talk",
+        defaultValue: "my-talk",
+      });
+      if (isCancel(answer)) return bail("Cancelled.");
+      name = answer || "my-talk";
+    }
   }
 
   const targetDir = resolve(process.cwd(), name);
-  if (!isDirEmpty(targetDir) && !skipPrompts) {
+  if (!isDirEmpty(targetDir) && !force) {
+    // `--yes` means "accept defaults", NOT "overwrite my files" — a non-interactive run
+    // into a non-empty dir refuses unless --force is explicit.
+    if (skipPrompts) {
+      return bail(`${name} already exists and isn't empty. Pass --force to write into it.`);
+    }
     const proceed = await confirm({
       message: `${pc.yellow(name)} already exists and isn't empty. Write into it anyway?`,
       initialValue: false,
     });
-    if (isCancel(proceed) || !proceed) return cancel("Cancelled — nothing was written.");
+    if (isCancel(proceed) || !proceed) return bail("Cancelled — nothing was written.");
   }
 
   const flagTheme = readFlag(argv, "theme");
   let theme: ThemeChoice;
   if (flagTheme === "cosmic" || flagTheme === "starter") {
     theme = flagTheme;
+  } else if (skipPrompts) {
+    // `--yes` must be fully non-interactive: take the default theme instead of hanging
+    // scripted/CI runs on a select prompt.
+    theme = "cosmic";
   } else {
     const picked = await select({
       message: "Pick a theme",
@@ -272,7 +297,7 @@ export async function run(argv: string[]): Promise<void> {
       ],
       initialValue: "cosmic" as ThemeChoice,
     });
-    if (isCancel(picked)) return cancel("Cancelled.");
+    if (isCancel(picked)) return bail("Cancelled.");
     theme = picked;
   }
 

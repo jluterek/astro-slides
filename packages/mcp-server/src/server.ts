@@ -9,9 +9,10 @@ export const SERVER_NAME = "astro-slides";
 export const SERVER_VERSION = "0.0.0";
 
 /**
- * Build the deck MCP server with its tool surface registered. Read, navigate, and
- * export/capture tools are always present; write tools are omitted in `readOnly` mode so a
- * deck can be "published" to an MCP audience without granting authoring.
+ * Build the deck MCP server with its tool surface registered. Read and navigate tools
+ * are always present; write tools AND export/capture tools are omitted in `readOnly`
+ * mode — exports write files too, so a "published" (read-only) surface must not carry
+ * any filesystem-mutating tool.
  */
 export function createDeckServer(ctx: ServerContext): McpServer {
   const server = new McpServer(
@@ -23,8 +24,10 @@ export function createDeckServer(ctx: ServerContext): McpServer {
     },
   );
   registerReadTools(server, ctx);
-  if (!ctx.readOnly) registerWriteTools(server, ctx);
+  if (!ctx.readOnly) {
+    registerWriteTools(server, ctx);
+    registerMediaTools(server, ctx);
+  }
   registerNavigateTools(server, ctx);
-  registerMediaTools(server, ctx);
   return server;
 }

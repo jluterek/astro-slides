@@ -24,10 +24,11 @@ export const ENTRY_PATH = "/entry";
 export interface GatewayOptions {
   /** Project root — where drawings persist. */
   root: string;
-  /** Slide count per deck, so `/entry` can bound "next". */
-  deckTotals: Record<string, number>;
+  /** Slide count per deck, so `/entry` can bound "next". A getter — deck files change
+   * while the dev server runs, and the remote must see fresh totals. */
+  deckTotals: () => Record<string, number>;
   /** First deck id, used when `/entry` is loaded without `?deck=`. */
-  defaultDeck: string;
+  defaultDeck: () => string;
   /** Shared-secret token; when set, `/entry` + WS require `?token=` to match. */
   token?: string | undefined;
 }
@@ -49,8 +50,8 @@ export function createSyncGateway(options: GatewayOptions): Gateway {
   // Mobile remote page.
   app.get(ENTRY_PATH, (c) => {
     if (!authOk(c.req.query("token"))) return c.text("Forbidden", 403);
-    const deck = c.req.query("deck") || options.defaultDeck;
-    const total = options.deckTotals[deck] ?? 1;
+    const deck = c.req.query("deck") || options.defaultDeck();
+    const total = options.deckTotals()[deck] ?? 1;
     return c.html(renderEntryPage({ deck, wsPath: SYNC_PATH, total, token: options.token }));
   });
 
@@ -72,7 +73,10 @@ export function createSyncGateway(options: GatewayOptions): Gateway {
     SYNC_PATH,
     upgradeWebSocket((c) => {
       const authorized = authOk(c.req.query("token"));
-      const room = roomKey(c.req.query("deck") || options.defaultDeck, c.req.query("suffix") || "");
+      const room = roomKey(
+        c.req.query("deck") || options.defaultDeck(),
+        c.req.query("suffix") || "",
+      );
       let leave: (() => void) | null = null;
       let client: HubClient | null = null;
       return {

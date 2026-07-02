@@ -123,7 +123,12 @@ export default function PresenterApp({
   const nextSlide = slides.find((s) => s.no === preview.slide);
   const timer = useNow(state.timer.startedAt != null);
   const timeText = formatClock(displayMs(state.timer, timer));
-  const base = `/${encodeURIComponent(deckId)}`;
+  // Deck routes live under Astro's base path (e.g. GH Pages `/astro-slides/`) — a
+  // root-absolute `/deck` would 404 the panes there. Same BASE_URL cast as runtime.ts.
+  const rawBase =
+    (import.meta as ImportMeta & { env?: { BASE_URL?: string } }).env?.BASE_URL || "/";
+  const siteBase = rawBase.endsWith("/") ? rawBase : `${rawBase}/`;
+  const base = `${siteBase}${encodeURIComponent(deckId)}`;
 
   return (
     <div className="as-presenter">

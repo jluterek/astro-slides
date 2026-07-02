@@ -108,12 +108,23 @@ export async function startRecording(
   if (camera)
     requested.push(["camera", () => captureCamera(options.cameraDeviceId, options.micDeviceId)]);
 
-  for (const [kind, capture] of requested) {
-    const stream = await capture();
-    const config = mime ? { type: "video" as const, mimeType: mime } : { type: "video" as const };
-    const handler = new RecordRTCPromisesHandler(stream, config);
-    await handler.startRecording();
-    tracks.push({ kind, stream, handler });
+  // Captures run sequentially; if a later one is denied (e.g. screen picked, then
+  // camera permission refused), stop everything already live — otherwise the screen
+  // stream keeps recording with no session handle to ever stop it.
+  try {
+    for (const [kind, capture] of requested) {
+      const stream = await capture();
+      const config = mime ? { type: "video" as const, mimeType: mime } : { type: "video" as const };
+      const handler = new RecordRTCPromisesHandler(stream, config);
+      await handler.startRecording();
+      tracks.push({ kind, stream, handler });
+    }
+  } catch (err) {
+    for (const track of tracks) {
+      void track.handler.stopRecording().catch(() => {});
+      for (const t of track.stream.getTracks()) t.stop();
+    }
+    throw err;
   }
 
   const startedAt = Date.now();
@@ -123,22 +134,27 @@ export async function startRecording(
     async stop(): Promise<RecordedClip[]> {
       const elapsed = Date.now() - startedAt;
       const clips: RecordedClip[] = [];
-      for (const track of tracks) {
-        await track.handler.stopRecording();
-        let blob = await track.handler.getBlob();
-        const effectiveMime = mime ?? blob.type ?? "video/webm";
-        if (needsWebmDurationFix(effectiveMime)) {
-          const { fixWebmDuration } = await import("@fix-webm-duration/fix");
-          blob = await fixWebmDuration(blob, elapsed);
+      try {
+        for (const track of tracks) {
+          await track.handler.stopRecording();
+          let blob = await track.handler.getBlob();
+          const effectiveMime = mime ?? blob.type ?? "video/webm";
+          if (needsWebmDurationFix(effectiveMime)) {
+            const { fixWebmDuration } = await import("@fix-webm-duration/fix");
+            blob = await fixWebmDuration(blob, elapsed);
+          }
+          clips.push({
+            kind: track.kind,
+            blob,
+            mime: effectiveMime,
+            extension: extensionForMime(effectiveMime),
+            url: URL.createObjectURL(blob),
+          });
         }
-        for (const t of track.stream.getTracks()) t.stop();
-        clips.push({
-          kind: track.kind,
-          blob,
-          mime: effectiveMime,
-          extension: extensionForMime(effectiveMime),
-          url: URL.createObjectURL(blob),
-        });
+      } finally {
+        // Hardware release must not depend on the duration fix succeeding — a throw
+        // above would otherwise leave the screen-share indicator live forever.
+        for (const track of tracks) for (const t of track.stream.getTracks()) t.stop();
       }
       return clips;
     },

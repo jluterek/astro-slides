@@ -255,7 +255,14 @@ const devCommand = defineCommand({
     const restart = async (): Promise<void> => {
       console.log(pc.dim("  Restarting the dev server…"));
       await server.stop();
-      server = await astro.dev({ root, ...devOptions });
+      try {
+        server = await astro.dev({ root, ...devOptions });
+      } catch (err) {
+        // `r` is pressed exactly when the config may have just broken — report and
+        // keep the session alive instead of dying on an unhandled rejection.
+        console.error(pc.red(`  Restart failed: ${err instanceof Error ? err.message : err}`));
+        console.log(pc.dim("  Fix the error and press r again."));
+      }
     };
     const toggleMcp = (): void => {
       if (mcpChild) {
@@ -268,7 +275,15 @@ const devCommand = defineCommand({
         console.log(pc.dim("  Cannot resolve the CLI entry to start the MCP server."));
         return;
       }
-      mcpChild = spawn(process.execPath, [bin, "mcp-server", "--transport", "http"], {
+      // Point the child at THIS project (`root`, not cwd) and, under --remote, at the
+      // live sync gateway so its navigate tools can drive the presentation.
+      const port = server.address?.port ?? DEFAULT_PORT;
+      const mcpArgs = [bin, "mcp-server", root, "--transport", "http"];
+      if (remote) {
+        mcpArgs.push("--sync-gateway", `http://127.0.0.1:${port}`);
+        if (token) mcpArgs.push("--sync-token", token);
+      }
+      mcpChild = spawn(process.execPath, mcpArgs, {
         stdio: ["ignore", "inherit", "inherit"],
       });
       console.log(pc.dim("  MCP server started (HTTP). Press m again to stop."));
@@ -278,6 +293,18 @@ const devCommand = defineCommand({
       await server.stop();
       process.exit(0);
     };
+    // Don't orphan the MCP child if the dev process dies by any path other than `q`
+    // (SIGTERM, hangup, crash) — it would keep port 4444 bound for the next session.
+    const reapChild = (): void => {
+      mcpChild?.kill();
+    };
+    process.on("exit", reapChild);
+    for (const sig of ["SIGTERM", "SIGHUP"] as const) {
+      process.on(sig, () => {
+        reapChild();
+        process.exit(0);
+      });
+    }
     attachShortcuts({
       restart: () => void restart(),
       open: openBrowser,
@@ -417,10 +444,16 @@ async function launchChromium(executablePath?: string): Promise<Browser> {
   let chromium: typeof import("@playwright/test").chromium;
   try {
     ({ chromium } = await import("@playwright/test"));
-  } catch {
-    throw new Error(
-      "Export needs Playwright. Install `@playwright/test` and run `playwright install chromium`.",
-    );
+  } catch (err) {
+    // Only rewrite a genuinely-missing module — a broken install's real error must
+    // surface, not be masked by "install playwright" advice.
+    const code = (err as NodeJS.ErrnoException)?.code;
+    if (code === "ERR_MODULE_NOT_FOUND" || code === "MODULE_NOT_FOUND") {
+      throw new Error(
+        "Export needs Playwright. Install `@playwright/test` and run `playwright install chromium`.",
+      );
+    }
+    throw err;
   }
   return chromium.launch({ headless: true, ...(executablePath ? { executablePath } : {}) });
 }
@@ -487,9 +520,11 @@ export async function exportDeckPdf(
     const dir = options.outDir ?? ".";
     await mkdir(dir, { recursive: true });
     const written: string[] = [];
-    for (const [i, no] of options.slides.entries()) {
-      const pageIndex = indices[i];
-      if (pageIndex == null) continue;
+    for (const no of options.slides) {
+      // Derive the page index from the slide number directly — indexing the FILTERED
+      // `indices` array by loop position misaligns every slide after a dropped one.
+      const pageIndex = no - 1;
+      if (pageIndex < 0 || pageIndex >= pageCount) continue;
       const one = await select([pageIndex]);
       const file = join(dir, slideFileName(options.deck, no, options.total, "pdf"));
       await writeFile(file, await one.save());
@@ -606,7 +641,10 @@ export function inToEmu(inches: number): number {
 export function parseCssColor(css: string | undefined | null): string {
   if (!css) return "";
   const s = css.trim().toLowerCase();
-  if (s === "transparent" || s.startsWith("rgba(0, 0, 0, 0")) return "";
+  // Only FULLY transparent is "no color" — a prefix test like `rgba(0, 0, 0, 0` would
+  // also swallow semi-transparent black (`rgba(0, 0, 0, 0.5)`).
+  const alpha = s.match(/^rgba?\([^)]*[,\s/]\s*(0?\.?\d+)\s*\)$/);
+  if (s === "transparent" || (alpha?.[1] != null && Number.parseFloat(alpha[1]) === 0)) return "";
   const hex = s.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/);
   if (hex?.[1]) {
     const h = hex[1];
@@ -753,6 +791,9 @@ interface RawBlock {
   fontPx?: number;
   align?: "left" | "center" | "right";
   color?: string;
+  /** For `code`: index among the PRESENT slide's `.as-code` elements — the deck route
+   * stacks every slide in the DOM, so a page-wide index would hit other slides. */
+  codeIdx?: number;
 }
 interface RawSlide {
   designW: number;
@@ -794,10 +835,25 @@ const DOM_WALKER = async (no: number): Promise<RawSlide> => {
     w: r.width / scale,
     h: r.height / scale,
   });
+  // Normalize ANY computed CSS color (Chromium serializes oklch() colors as oklch —
+  // the Cosmic theme would otherwise lose every color) via canvas fillStyle, which
+  // round-trips to `#rrggbb` / `rgba(…)` in sRGB. Fully transparent → "" (no shape
+  // color / no background — the default `rgba(0, 0, 0, 0)` must NOT become black).
+  const colorCtx = document.createElement("canvas").getContext("2d");
   const hex = (css: string): string => {
-    const m = css.match(/rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/);
+    if (!css || css === "transparent") return "";
+    let n = css;
+    if (colorCtx) {
+      colorCtx.fillStyle = "#000";
+      colorCtx.fillStyle = css;
+      n = String(colorCtx.fillStyle);
+    }
+    const hx = n.match(/^#([0-9a-f]{6})$/i);
+    if (hx) return (hx[1] as string).toUpperCase();
+    const m = n.match(/rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:[,\s/]+([\d.]+))?/);
     if (!m) return "";
-    const h = (n: string) => Number(n).toString(16).padStart(2, "0");
+    if (m[4] !== undefined && Number.parseFloat(m[4]) === 0) return "";
+    const h = (v: string) => Math.round(Number(v)).toString(16).padStart(2, "0");
     return `${h(m[1] as string)}${h(m[2] as string)}${h(m[3] as string)}`.toUpperCase();
   };
   const runsOf = (el: Element): PptxRun[] => {
@@ -856,7 +912,8 @@ const DOM_WALKER = async (no: number): Promise<RawSlide> => {
     const tag = el.tagName.toLowerCase();
     const style = getComputedStyle(el);
     if (el.classList.contains("as-code")) {
-      blocks.push({ kind: "code", px });
+      const codeIdx = Array.prototype.indexOf.call(present.querySelectorAll(".as-code"), el);
+      blocks.push({ kind: "code", px, codeIdx });
     } else if (tag === "img") {
       const data = await inlineImage(el as HTMLImageElement);
       if (data) blocks.push({ kind: "image", px, data });
@@ -978,7 +1035,6 @@ export async function exportDeckPptx(
       }
       const raw = await page.evaluate(DOM_WALKER, no);
       const elements: PptxElement[] = [];
-      let codeIdx = 0;
       const toBox = (px: RawBlock["px"]): PptxBox => ({
         x: pxToIn(px.x, raw.designW, widthIn),
         y: pxToIn(px.y, raw.designH, heightIn),
@@ -1009,9 +1065,12 @@ export async function exportDeckPptx(
         else if (b.kind === "table" && b.rows) elements.push({ kind: "table", box, rows: b.rows });
         else if (b.kind === "image" && b.data) elements.push({ kind: "image", box, data: b.data });
         else if (b.kind === "code") {
+          // Scope to THIS slide's section — the deck route keeps every slide in the
+          // DOM, so a page-wide `.as-code` index would target (hidden) other slides
+          // and stall on Playwright's visibility wait.
           const shot = await page
-            .locator(".as-code")
-            .nth(codeIdx++)
+            .locator(`.as-slide[data-slide-no="${no}"] .as-code`)
+            .nth(b.codeIdx ?? 0)
             .screenshot()
             .catch(() => null);
           if (shot)
@@ -1131,6 +1190,15 @@ const exportCommand = defineCommand({
             ctx.browser = await launchChromium(args["executable-path"] || undefined);
             const decks = discoverDecks(ctx.dist);
             if (!decks.length) throw new Error("No built decks found under dist/.");
+            // With several decks, a single --output file would be overwritten by each
+            // deck in turn — suffix the deck name (talk.pdf → talk.slides-a.pdf).
+            const outputFor = (output: string | undefined, deck: string): string | undefined => {
+              if (!output || decks.length <= 1) return output;
+              const dot = output.lastIndexOf(".");
+              return dot > 0
+                ? `${output.slice(0, dot)}.${deck}${output.slice(dot)}`
+                : `${output}.${deck}`;
+            };
             for (const { deck, total, titles } of decks) {
               const slides = parseRange(args.range || undefined, total);
               task.output = `${deck}: ${slides.length} slide(s)`;
@@ -1145,7 +1213,9 @@ const exportCommand = defineCommand({
                     perSlide: !!args["per-slide"],
                     outDir: args.output && args["per-slide"] ? args.output : join(root, "dist"),
                     outFile:
-                      args.output && !args["per-slide"] ? args.output : join(root, `${deck}.pdf`),
+                      args.output && !args["per-slide"]
+                        ? (outputFor(args.output, deck) as string)
+                        : join(root, `${deck}.pdf`),
                     ...(scale != null ? { scale } : {}),
                     toc: !!args["with-toc"],
                     titles: titleMap,
@@ -1158,7 +1228,7 @@ const exportCommand = defineCommand({
                     deck,
                     slides,
                     total,
-                    outFile: args.output ?? join(root, `${deck}.pptx`),
+                    outFile: outputFor(args.output, deck) ?? join(root, `${deck}.pptx`),
                     rasterizeAll: !!args.rasterize,
                   })),
                 );
@@ -1226,13 +1296,18 @@ const mcpServerCommand = defineCommand({
       /* @vite-ignore */ MCP_SERVER_PACKAGE
     )) as McpServerModule;
     const transport = args.transport === "http" ? "http" : "stdio";
+    const port = Number(args.port);
+    if (!Number.isInteger(port) || port < 0 || port > 65535) {
+      console.error(pc.red(`Invalid --port "${args.port}" (expected 0-65535).`));
+      process.exit(1);
+    }
     const token = args.token ?? process.env.ASTRO_SLIDES_MCP_TOKEN;
     const handle = await runMcpServer({
       root: args.root ?? process.cwd(),
       readOnly: Boolean(args["read-only"]),
       transport,
       host: args.host,
-      port: Number(args.port),
+      port,
       ...(process.argv[1] ? { cliBin: process.argv[1] } : {}),
       ...(token ? { token } : {}),
       ...(args["sync-gateway"] ? { syncGateway: args["sync-gateway"] } : {}),
