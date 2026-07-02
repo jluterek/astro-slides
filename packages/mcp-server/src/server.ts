@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { ServerContext } from "./context.js";
 import { registerMediaTools } from "./tools/media.js";
@@ -6,7 +7,16 @@ import { registerReadTools } from "./tools/read.js";
 import { registerWriteTools } from "./tools/write.js";
 
 export const SERVER_NAME = "astro-slides";
-export const SERVER_VERSION = "0.0.0";
+/** Read from package.json (adjacent to the bundled dist/ and to src/) so the advertised
+ * MCP server version tracks the published version rather than a hardcoded string. */
+function packageVersion(): string {
+  try {
+    return JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")).version;
+  } catch {
+    return "0.0.0";
+  }
+}
+export const SERVER_VERSION = packageVersion();
 
 /**
  * Build the deck MCP server with its tool surface registered. Read and navigate tools
