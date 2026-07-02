@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": false,
   "type": "module",
-  "description": "The astro-slides command — dev server, build, export, and MCP server entry points.",
+  "description": "The astro-slides command \u2014 dev server, build, export, and MCP server entry points.",
   "license": "MIT",
   "author": "James Luterek",
   "bin": {
@@ -11,8 +11,8 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
     }
   },
   "dependencies": {
@@ -72,7 +72,13 @@
   ],
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
   },
   "engines": {
     "node": ">=22.18.0"

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": false,
   "type": "module",
-  "description": "Scaffold a new astro-slides deck project — pnpm create astro-slides <target>.",
+  "description": "Scaffold a new astro-slides deck project \u2014 pnpm create astro-slides <target>.",
   "license": "MIT",
   "author": "James Luterek",
   "bin": {
@@ -11,8 +11,8 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
     }
   },
   "files": [
@@ -51,7 +51,13 @@
   ],
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
   },
   "engines": {
     "node": ">=22.18.0"

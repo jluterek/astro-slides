@@ -8,8 +8,8 @@
   "author": "James Luterek",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
     },
     "./schemas/frontmatter.json": "./schemas/frontmatter.json"
   },
@@ -44,7 +44,14 @@
   ],
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      },
+      "./schemas/frontmatter.json": "./schemas/frontmatter.json"
+    }
   },
   "engines": {
     "node": ">=22.18.0"
