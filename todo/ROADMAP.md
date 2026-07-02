@@ -14,7 +14,7 @@ The phase index. Always current. Update when a phase starts or ends.
 
 Phases are listed in dependency order. They can be re-sequenced if a later phase becomes a higher priority, but dependencies must be honored.
 
-_None — Phase 18 (the final phase) is in progress; see **Active**._
+- **Phase 19 — Audience engagement** ([`19-audience-engagement`](./19-audience-engagement/README.md)) — polls, Q&A, and emoji reactions live on the slide, joined by QR over the Phase 11 sync gateway. First post-1.0 phase; starts after Phase 18 closes.
 
 ## Done
 

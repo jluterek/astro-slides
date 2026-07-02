@@ -11,9 +11,9 @@ Presentations live on the web now. They get shared in chats, embedded in blog po
 - **Author with the web.** Markdown, MDX, React, and Astro components — the same tools you already use. Compatible with Marp and Slidev syntax, so existing decks work unchanged.
 - **Share with a link.** Every deck is a website. Every slide has its own URL. Embed a single slide into a blog post with one tag.
 - **Animate like Keynote.** Object continuity between slides via the View Transitions API, with a FLIP-based fallback for older browsers. Code animates with Shiki Magic Move. Lists step. Diffs morph.
-- **Built for code.** Syntax highlighting (Shiki + Twoslash), animated code diffs (Magic Move), runnable snippets (Sandpack, StackBlitz), terminal simulations, Mermaid, KaTeX. Out of the box, not bolt-ons.
+- **Built for code.** Syntax highlighting (Shiki + Twoslash), animated code diffs (Magic Move), Mermaid, KaTeX, PlantUML. Out of the box, not bolt-ons.
 - **AI-native authoring.** Ships with a real MCP server — not just a skill bundle. Claude, Cursor, and any MCP-aware client can read, write, present, and export your decks programmatically.
-- **Honest exports.** PDF, PNG, video, and real editable PPTX (via PptxGenJS, not image rasterization). What survives the export is what an OOXML file can actually express; we tell you up front when something won't.
+- **Honest exports.** PDF, PNG, and real editable PPTX (via PptxGenJS, not image rasterization). What survives the export is what an OOXML file can actually express; we tell you up front when something won't.
 
 ## Tech Stack
 
@@ -41,7 +41,7 @@ Every authoring mode benefits from the same things:
 - **External snippet imports** — `<<< @/snippets/auth.ts#region {twoslash}` — so demo code lives next to the implementation.
 - **Slide imports** — `src: ./sections/intro.mdx` in frontmatter — for composing decks from reusable sections.
 - **Auto-imported components** from `components/` and the active theme.
-- **Hot reload** scoped per-slide via Vite. Frontmatter-only edits skip the SFC rebuild.
+- **Hot reload** via Vite — edit a slide, the deck refreshes in place.
 - **Git-friendly source.** Plain text. No opaque JSON, no binary blobs.
 
 ## Layouts & themes
@@ -60,10 +60,8 @@ Most decks worth giving have code in them.
 - **Shiki syntax highlighting** with VS-Code-grade themes, line numbers, and `{1|3-5|9}` per-step line highlighting.
 - **Shiki Magic Move** for animated diffs between code states — your function refactor literally morphs.
 - **Twoslash hover popovers** show inferred types right in the slide.
-- **Runnable snippets** via embedded Sandpack and StackBlitz.
-- **Terminal and CLI simulation** with typing animations for live-feeling demos.
 - **Mermaid, KaTeX, and PlantUML** built in, with click-step reveals.
-- **Charts** via Recharts, Chart.js, or D3 — your choice, none required.
+- **Charts** via any React library — slides are MDX, so import Recharts, Chart.js, or D3 straight into a slide. None required, none bundled.
 - **MDX everywhere** so a slide can import the very component it's demoing. The demo and the deck are the same code.
 
 ## Layout, animation, and continuity
@@ -71,22 +69,20 @@ Most decks worth giving have code in them.
 Move from a wall of text to a designed presentation without leaving the editor.
 
 - **Object continuity between slides** via the View Transitions API, with paired `view-transition-name` elements morphing position, size, and style. FLIP-based fallback for browsers without View Transitions, modeled on reveal.js's Auto-Animate.
-- **Smart transitions** that respond to content, not a single global preset.
+- **Per-slide transitions** — set a deck-wide default in headmatter, override it on any slide. Not a single global preset.
 - **Click steps** as a first-class primitive. `<Click>`, `<Clicks>`, `<After>`, ranges, absolute and relative positions. Steps are resolved at parse time — no mount-time discovery — so the presenter view, exports, and AI agents all see the same plan.
 - **Grid-based layouts** for consistent alignment across a deck.
-- **Layer-based objects** for fine control over stacking, position, and animation order.
-- **Slide sections** for organizing large decks and navigating them confidently.
+- **Overview mode** for seeing the whole deck at a glance and jumping anywhere in it.
 
 ## Presenter mode
 
 Everything you need on stage, nothing you don't.
 
 - **Speaker view** at `/presenter/:n` — current slide, next slide preview (with its own click context, so you see what the next click will do), notes, timer, clock.
-- **Per-slide timing** — declare `duration: 35min` in headmatter; rehearsal mode records per-slide pacing.
+- **Deck timer** — a stopwatch by default, or a countdown when the deck declares `duration: 35min` in headmatter.
 - **Laser pointer and freehand drawing** via Drauu, with brush colors, shapes, undo/redo, and persistent annotations.
-- **Phone-as-clicker** — bind to `0.0.0.0` with one flag, print a QR code, your phone becomes a touch-friendly remote. Optional Cloudflare quick-tunnel for cross-network presenting.
+- **Phone-as-clicker** — bind to `0.0.0.0` with one flag, print a QR code, your phone becomes a touch-friendly remote.
 - **Camera and screen recording** in the box — two streams (presenter + screen), Web-MIME negotiation, automatic duration repair. Capture a deck as a video without leaving the browser.
-- **Camera mirror** — flip the current-slide pane to mirror the audience window for "show what they see" demos.
 - **Blackout / Q&A toggle** for side conversations.
 - **Cross-window sync** via `BroadcastChannel` (same-origin) with WebSocket fallback for remote phones.
 
@@ -96,8 +92,7 @@ Your deck, in whatever format the moment calls for.
 
 - **PDF** — Browser-native print by default; Playwright for high-fidelity output when you need it. Cross-slide links, optional TOC outline, with-clicks or without.
 - **PNG** — One image per slide, or one image per click step.
-- **Video and animated GIF** of a single slide or the whole deck.
-- **PPTX with real editable text** via PptxGenJS — text frames stay editable, charts stay editable, tables stay editable. We document the fidelity gaps up front (CSS-only effects, web components, animations don't survive OOXML), and fall back to image-only PPTX per-slide for content that can't be expressed natively.
+- **PPTX with real editable text** via PptxGenJS — text frames stay editable, lists stay bullets, tables stay tables. We document the fidelity gaps up front (CSS-only effects, web components, animations don't survive OOXML), and fall back to image-only PPTX per-slide for content that can't be expressed natively.
 - **Standalone HTML bundle** for offline presenting.
 - **Static SPA build** for hosting on GitHub Pages, Netlify, or anywhere else.
 - **Per-slide deep links** and embeddable single slides — perfect for blog posts and docs.
@@ -107,16 +102,15 @@ Your deck, in whatever format the moment calls for.
 
 Slides that stay current and respond to the room.
 
-- **Present-time data fetching** — live dashboards and latest metrics rendered as you click to the slide.
+- **Present-time data** — slides are MDX, so a hydrated island can fetch live dashboards and latest metrics as you present.
 - **Interactive demos as slides** — clickable state, not just embedded video.
-- **Audience polls, Q&A, and reactions** for live engagement *(v2)*.
+- **Audience polls, Q&A, and reactions** for live engagement — the audience joins by QR code over the same sync gateway that powers the phone remote *(in development — the next phase after 1.0; see the [roadmap](#roadmap))*.
 
 ## Accessibility and polish
 
 - **Keyboard navigation** and screen reader labels throughout, with an `aria-live` status region announcing slide and fragment changes.
-- **Alt text fields baked into the authoring UI** so accessibility happens by default, not by audit.
 - **Responsive scaling** so a 16:9 deck doesn't look broken at 4:3 or on mobile.
-- **Dark and light theme variants** of the same deck, with `prefers-color-scheme` respected and overridable per slide.
+- **Dark and light theme variants** of the same deck, with `prefers-color-scheme` respected and overridable per deck.
 - **Reduced-motion mode** automatically softens transitions when the OS asks.
 
 ## Distribution as a site
@@ -138,20 +132,24 @@ astro-slides mcp-server
 That gives any MCP-aware client (Claude Code, Cursor, Windsurf, Continue, custom agents) tools to:
 
 - `list_decks`, `list_slides`, `get_slide`, `add_slide`, `update_slide`, `delete_slide`
+- `set_frontmatter`, `set_theme`, `get_speaker_notes`, `list_layouts`, `list_themes`
 - `next_slide`, `prev_slide`, `goto_slide`, `set_step`
-- `start_recording`, `stop_recording`, `screenshot_slide`
-- `export_pdf`, `export_pptx`, `export_png`
-- `get_speaker_notes`, `list_layouts`, `list_themes`
+- `screenshot_slide`, `export_pdf`, `export_pptx`, `export_png`, `export_md`
 
 A curated skill bundle ships alongside, so models without MCP support still get rich, structured reference docs in their context.
 
+## Roadmap
+
+What's next after 1.0, in order:
+
+- **Audience engagement** — polls, Q&A, and emoji reactions, live on the slide. The audience joins by QR code over the sync gateway that already powers the phone remote. See [`todo/19-audience-engagement`](./todo/19-audience-engagement/README.md).
+- **VS Code extension** — slide preview and navigation in the editor.
+
 ## Software details
 
-- 90%+ unit test coverage (Vitest)
-- Full end-to-end test suite (Playwright)
-- Fully typed, end to end
-- Per-slide hot reload via Vite
-- Garbage-collected runtime — initialize and tear down cleanly across HMR
+- Extensive unit test suite (Vitest) plus end-to-end tests (Playwright)
+- Fully typed, end to end — public types inferred from Zod schemas
+- Hot reload via Vite
 
 ## Project structure
 
