@@ -1,6 +1,6 @@
 export type { Announcer } from "./a11y.js";
 export { createAnnouncer } from "./a11y.js";
-export { bindCopyButtons, initMagicMove } from "./code/index.js";
+export { bindCopyButtons, initMagicMove, renderMagicMoveFinal } from "./code/index.js";
 export { initMermaid } from "./diagrams/index.js";
 export {
   type DrawingHandle,

@@ -58,6 +58,19 @@ function mount(el: HTMLElement): MagicMoveInstance | null {
 }
 
 /**
+ * Statically render every Magic Move island under `root` at its final step. For the
+ * print/export route, which reveals all click state and runs no deck runtime — the
+ * printed page shows each block as it looks after its last click.
+ */
+export function renderMagicMoveFinal(root: HTMLElement): void {
+  for (const el of Array.from(root.querySelectorAll<HTMLElement>(".as-magic-move"))) {
+    const inst = mount(el);
+    const last = inst?.steps[inst.steps.length - 1];
+    if (inst && last) inst.renderer.replace(last);
+  }
+}
+
+/**
  * Boot every Magic Move island under `root`, syncing them to the deck store. Returns
  * a cleanup that unsubscribes.
  */
