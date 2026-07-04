@@ -1,8 +1,8 @@
 ---
 title: Phase 18 — v1.0 release
-status: in-progress
+status: done
 started: 2026-07-01
-ended:
+ended: 2026-07-04
 ---
 
 > **Progress (2026-07-01): GitHub-side release tooling landed; npm publishing deferred.**
@@ -108,4 +108,13 @@ We do NOT need: a TSC, a steering committee, sponsorship infrastructure, or a Di
 
 ## Outcome
 
-_Fill in when the phase closes._
+Shipped the first public release: all 7 packages live on npm at `0.1.0` (2026-07-02, OIDC/Trusted
+Publishing with SLSA provenance), followed by `0.1.1` through the full automated loop (changeset →
+Version PR → merge → publish). Clean-room verified: `npm install @astro-slides/cli` works,
+`npm create astro-slides` scaffolds and builds against the published packages. GitHub release
+`v0.1.0` created with the Cosmic cover image; CONTRIBUTING/CoC/SECURITY/THIRD-PARTY.md in place.
+Deliberately released as `0.1.0`, not `1.0.0` — the 0.x line shakes out real-world issues before
+the stability promise; `1.0.0` is a later, separate call. Post-publish fixes folded into `0.1.1`:
+the version banner reads `package.json`, and the repo setting "Allow GitHub Actions to create PRs"
+was enabled (the changesets action couldn't open its Version PR without it). Distilled to
+`docs/built/18-v1-release.md`.
