@@ -128,6 +128,38 @@ don't add an explicit `id`, but an explicit `<Morph id="...">` is the reliable w
 elements across slides.
 :::
 
+### Designing a morph that lands
+
+A morph interpolates a paired element's **box** — its position and size — and cross-fades
+its contents. The difference between a morph that reads as a smooth animation and one that
+looks like a dissolve is whether you give the eye **movement to track**:
+
+- **Move or resize the element between slides.** If a pair sits in the same place at the
+  same size and only its _contents_ change, there is no box to interpolate and you get a
+  plain cross-fade — a dissolve. Reposition it, scale it, or both, and the browser glides it.
+- **Keep the two ends visually similar.** When the paired elements look alike, the content
+  cross-fade is imperceptible and you read pure motion. Boxes stay boxes.
+- **Morph many small objects at once.** Give each of a set of elements its own stable `id`
+  and rearrange them into a new formation on the next slide. Every object keeps its identity
+  and flies to its new spot — the "magic move" effect. The
+  [`morph-reel` example](https://github.com/jluterek/astro-slides/tree/main/examples/morph-reel)
+  does exactly this with twelve dots that never leave the stage.
+
+#### Staggering a group
+
+You can make a group of morphs settle as a wave by giving each pair a different
+`animation-delay`. While a morph runs, the runtime flags `<html data-as-morphing="vt">` and
+names each matched pair `as-morph-0`, `as-morph-1`, … in document order, so you can target
+their View Transition groups from a `<style>` block in your deck:
+
+```css
+html[data-as-morphing="vt"]::view-transition-group(as-morph-1) { animation-delay: 40ms; }
+html[data-as-morphing="vt"]::view-transition-group(as-morph-2) { animation-delay: 80ms; }
+```
+
+The morph itself uses an eased ~440ms timing by default, matching the FLIP fallback so both
+paths feel the same.
+
 ## Reduced motion
 
 `prefers-reduced-motion` is respected. When a viewer has reduced motion enabled, slide
@@ -144,6 +176,7 @@ no motion plays for viewers who opt out.
 - `packages/client/src/transitions/flip.ts`
 - `packages/client/src/transitions/detect.ts`
 - `packages/types/src/frontmatter.ts`
+- `examples/morph-reel/` — the object-continuity showcase deck
 - `docs/decisions/0006-view-transitions-with-flip-fallback.md`
 - `docs/built/07-transitions.md`
 - `examples/minimal/slides.md`
