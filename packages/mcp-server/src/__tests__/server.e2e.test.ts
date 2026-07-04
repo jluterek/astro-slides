@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
@@ -181,5 +181,51 @@ describe("MCP server end-to-end (in-process client)", () => {
       // biome-ignore lint/suspicious/noExplicitAny: reading the isError flag off the result.
       expect((res as any).isError).toBe(true);
     }
+  });
+
+  it("refuses an export output that would overwrite the deck source", async () => {
+    // export_pdf writing PDF bytes over slides.md must be rejected (wrong extension) …
+    const pdf = await client.callTool({
+      name: "export_pdf",
+      arguments: { deck: "slides", output: "slides.md" },
+    });
+    // biome-ignore lint/suspicious/noExplicitAny: reading the isError flag off the result.
+    expect((pdf as any).isError).toBe(true);
+    // … and export_md (extension matches!) must not clobber another deck's source.
+    mkdirSync(join(root, "content", "decks", "other"), { recursive: true });
+    writeFileSync(join(root, "content", "decks", "other", "slides.md"), "# Other deck\n");
+    const md = await client.callTool({
+      name: "export_md",
+      arguments: { deck: "slides", output: "content/decks/other/slides.md" },
+    });
+    // biome-ignore lint/suspicious/noExplicitAny: reading the isError flag off the result.
+    expect((md as any).isError).toBe(true);
+    expect(readFileSync(join(root, "content", "decks", "other", "slides.md"), "utf8")).toBe(
+      "# Other deck\n",
+    );
+  });
+
+  it("refuses writes on decks whose src: imports diverge read/write numbering", async () => {
+    writeFileSync(join(root, "part.md"), "# Part one\n\n---\n\n# Part two\n");
+    writeFileSync(
+      join(root, "slides.md"),
+      `---\ntitle: Importer\n---\n\n# Head\n\n---\nsrc: ./part.md\n---\n`,
+    );
+    // Read side expands: 1 head + 2 imported = 3 slides.
+    const slides = payload(
+      await client.callTool({ name: "list_slides", arguments: { deck: "slides" } }),
+    ).slides;
+    expect(slides).toHaveLength(3);
+    // Write side must refuse rather than slice the 2 literal blocks by expanded numbers.
+    const res = await client.callTool({
+      name: "update_slide",
+      arguments: { deck: "slides", no: 3, content: "# Clobbered" },
+    });
+    // biome-ignore lint/suspicious/noExplicitAny: reading the error result off the union.
+    const errRes = res as any;
+    expect(errRes.isError).toBe(true);
+    expect(errRes.content?.[0]?.text).toContain("src: imports");
+    // The deck file is untouched.
+    expect(readFileSync(join(root, "slides.md"), "utf8")).toContain("src: ./part.md");
   });
 });

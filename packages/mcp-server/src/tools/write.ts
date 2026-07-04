@@ -1,10 +1,11 @@
+import { readFileSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { parse, summarizeDeck, summarizeSlide } from "@astro-slides/parser";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { guard, ok, type ServerContext } from "../context.js";
 import { deckNameFromFile, resolveDeckFile } from "../deck-loader.js";
-import { addSlide, deleteSlide, setFrontmatter, updateSlide } from "../write-engine.js";
+import { addSlide, deleteSlide, setFrontmatter, slideCount, updateSlide } from "../write-engine.js";
 
 const WRITE = { readOnlyHint: false, destructiveHint: false, idempotentHint: false } as const;
 const frontmatterArg = z
@@ -32,11 +33,35 @@ function makeQueue() {
 const enqueue = makeQueue();
 
 export function registerWriteTools(server: McpServer, ctx: ServerContext): void {
+  /**
+   * Write tools slice this file's literal slide blocks, but the read tools expand
+   * `src:` imports — when an importer block fans out into several slides the two
+   * numberings diverge, and an agent that reads slide N then writes slide N would
+   * silently edit the wrong slide. Refuse loudly instead.
+   */
+  function assertNumbersAlign(deckId: string, file: string, source: string): void {
+    const literal = slideCount(source);
+    const expanded = parse(source, {
+      filepath: file,
+      root: ctx.root,
+      fs: { readFileSync: (p) => readFileSync(p, "utf8") },
+    }).slides.length;
+    if (literal !== expanded) {
+      throw new Error(
+        `Deck "${deckId}" uses src: imports — its ${literal} source block(s) expand to ` +
+          `${expanded} slides, so slide numbers from the read tools do not map onto this ` +
+          `file's blocks. Writes are disabled for this deck to prevent editing the wrong ` +
+          `slide; edit the imported source file directly instead.`,
+      );
+    }
+  }
+
   /** Read → transform source → write back, then return a fresh summary. */
   async function mutate(deckId: string, transform: (src: string) => string) {
     return enqueue(async () => {
       const file = resolveDeckFile(ctx.root, deckId);
       const before = await readFile(file, "utf8");
+      assertNumbersAlign(deckId, file, before);
       const after = transform(before);
       await writeFile(file, after, "utf8");
       const deck = parse(after, { filepath: file });
