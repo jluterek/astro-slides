@@ -175,4 +175,28 @@ test.describe("deck runtime", () => {
     expect(Number(scale)).toBeGreaterThan(0);
     expect(Number(scale)).toBeLessThanOrEqual(1);
   });
+
+  test("Magic Move renders its first step visibly, with whitespace intact", async ({ page }) => {
+    await page.goto("/slides/1");
+    // Locate the magic-move slide dynamically so content edits don't renumber the test.
+    const slideNo = await page
+      .locator(".as-magic-move")
+      .first()
+      .evaluate((el) => el.closest(".as-slide")?.getAttribute("data-slide-no"));
+    expect(slideNo).toBeTruthy();
+    await page.goto(`/slides/${slideNo}`);
+
+    const mm = page.locator(`.as-slide[data-slide-no="${slideNo}"] .as-magic-move`);
+    // Step 0 must render immediately — the island's data-click is step accounting,
+    // not a reveal; a regression here blanks the block until the last click.
+    await expect
+      .poll(() => mm.evaluate((el) => el.textContent?.trim().length ?? 0))
+      .toBeGreaterThan(0);
+    expect(await mm.evaluate((el) => getComputedStyle(el).opacity)).toBe("1");
+    // The container class carries `white-space: pre` — without it whitespace tokens
+    // collapse and `const total` renders as `consttotal`.
+    await expect(mm).toHaveClass(/shiki-magic-move-container/);
+    expect(await mm.evaluate((el) => getComputedStyle(el).whiteSpace)).toBe("pre");
+    expect(await mm.textContent()).toContain("const total = ");
+  });
 });

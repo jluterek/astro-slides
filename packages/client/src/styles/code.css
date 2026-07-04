@@ -4,6 +4,12 @@
  * scheme picks the theme here — no inline colors, no `!important`.
  */
 
+/* Magic Move's own stylesheet — `white-space: pre` on the container (whitespace tokens
+   collapse to nothing without it) plus the enter/leave/move transition classes the
+   MagicMoveRenderer toggles. Imported here because the client owns the dep; the core
+   routes that import this file can't resolve it. */
+@import "@shikijs/magic-move/style.css";
+
 /* --- Dual-theme color selection ------------------------------------------- */
 .shiki,
 .shiki span {

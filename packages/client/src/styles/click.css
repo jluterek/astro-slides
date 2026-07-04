@@ -16,6 +16,14 @@
   transform: none;
 }
 
+/* Magic Move islands carry `data-click` only as step accounting (the last click their
+   internal code steps consume) — the island renders its first step immediately and
+   drives its own visuals off the store. Without this exemption the generic hide above
+   blanks the whole code block until the final click. */
+.as-slide .as-magic-move[data-click] {
+  opacity: 1;
+}
+
 /* Directional enter offsets (applied while hidden). */
 .as-slide .as-anim-up:not(.as-click-shown) {
   transform: translateY(0.6em);

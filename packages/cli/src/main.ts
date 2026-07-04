@@ -587,6 +587,11 @@ export async function exportDeckPng(
       waitUntil: "networkidle",
     });
     await waitForRenderReady(page);
+    // Embed mode strips the deck background (transparent, for embedding in a host
+    // page), so a plain screenshot of a dark deck lands on Playwright's white
+    // default. Restore the theme background unless the caller asked for transparency.
+    if (!options.omitBackground)
+      await page.addStyleTag({ content: ".as-deck.as-embed { background: var(--as-bg); }" });
     const path = join(
       options.outDir,
       slideFileName(options.deck, no, options.total, "png", options.withClicks ? step : 0),
@@ -1000,6 +1005,9 @@ export async function exportDeckPptx(
     for (const no of options.slides) {
       await page.goto(slideUrl(options.baseUrl, options.deck, no), { waitUntil: "networkidle" });
       await waitForRenderReady(page);
+      // Embed mode strips the deck background; restore it so rasterized slides and
+      // code-block shots match the presented deck (same fix as exportDeckPng).
+      await page.addStyleTag({ content: ".as-deck.as-embed { background: var(--as-bg); }" });
       // A slide can opt into rasterization via `exportAs: image` frontmatter.
       const slideRasterize =
         options.rasterizeAll ||
@@ -1101,7 +1109,27 @@ export async function exportDeckPptx(
 }
 
 interface AstroExportModule extends AstroModule {
-  preview(config: { root: string }): Promise<AstroPreviewServer>;
+  preview(config: { root: string; server?: { port?: number } }): Promise<AstroPreviewServer>;
+}
+
+/**
+ * Reserve a genuinely free port for the export preview server. Astro's preview binds
+ * its default port with SO_REUSEPORT, so if `astro-slides dev` is already listening
+ * there the OS silently load-balances requests between the two servers — and the
+ * export screenshots the dev server (dev toolbar, HMR chrome) instead of the built
+ * deck. Binding port 0 lets the kernel hand us a port nothing else holds.
+ */
+async function freePort(): Promise<number> {
+  const { createServer } = await import("node:net");
+  return new Promise((resolve, reject) => {
+    const srv = createServer();
+    srv.once("error", reject);
+    srv.listen(0, "127.0.0.1", () => {
+      const addr = srv.address();
+      const port = typeof addr === "object" && addr ? addr.port : 0;
+      srv.close(() => resolve(port));
+    });
+  });
 }
 
 const exportCommand = defineCommand({
@@ -1173,7 +1201,9 @@ const exportCommand = defineCommand({
         {
           title: "Start preview server",
           task: async () => {
-            ctx.preview = await astro.preview({ root });
+            // An explicit free port — never the default — so a running dev server on
+            // 4321 can't share the socket and serve the export its pages (see freePort).
+            ctx.preview = await astro.preview({ root, server: { port: await freePort() } });
             const host = ctx.preview.host === "::" ? "localhost" : ctx.preview.host;
             ctx.baseUrl = `http://${host}:${ctx.preview.port}`;
           },

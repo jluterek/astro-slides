@@ -39,6 +39,10 @@ function mount(el: HTMLElement): MagicMoveInstance | null {
     return null;
   }
   if (!steps.length) return null;
+  // The framework wrappers (react/vue) stamp this class in their templates; the raw
+  // renderer does not. It carries `white-space: pre` (whitespace tokens collapse to
+  // zero width without it) and the `position: relative` context the anchor needs.
+  el.classList.add("shiki-magic-move-container");
   const renderer = new MagicMoveRenderer(el);
   renderer.setCssVariables();
   const first = steps[0];
