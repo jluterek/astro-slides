@@ -3,7 +3,7 @@
   "version": "0.1.1",
   "private": false,
   "type": "module",
-  "description": "Scaffold a new astro-slides deck project — pnpm create astro-slides <target>.",
+  "description": "Scaffold a new astro-slides deck project \u2014 pnpm create astro-slides <target>.",
   "license": "MIT",
   "author": "James Luterek",
   "bin": {
@@ -28,6 +28,7 @@
     "picocolors": "catalog:prod"
   },
   "devDependencies": {
+    "@astro-slides/parser": "workspace:*",
     "@types/node": "catalog:dev"
   },
   "homepage": "https://jluterek.github.io/astro-slides/",

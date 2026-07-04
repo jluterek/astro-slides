@@ -20,12 +20,14 @@ import pc from "picocolors";
  * the interactive `run` flow.
  */
 
-// Workspace packages are unpublished until the v1 release (Phase 18); a scaffolded project
-// depends on the published range once it exists. Kept as one constant so it's easy to bump.
+// Published range for the @astro-slides packages (live on npm since 0.1.0). Caret on a
+// 0.x version resolves >=0.1.0 <0.2.0, so scaffolded projects pick up patches. Kept as
+// one constant so it's easy to bump.
 const DEP_RANGE = "^0.1.0";
 const ASTRO_RANGE = "^5.0.0";
 
-export type ThemeChoice = "starter" | "cosmic";
+export const THEMES = ["cosmic", "starter", "marp-default", "marp-gaia", "marp-uncover"] as const;
+export type ThemeChoice = (typeof THEMES)[number];
 
 export interface ScaffoldOptions {
   /** Project directory name (used as the package name and shown in the deck title). */
@@ -74,6 +76,11 @@ function renderPackageJson(name: string): string {
       "@astro-slides/cli": DEP_RANGE,
       "@astro-slides/client": DEP_RANGE,
       "@astro-slides/core": DEP_RANGE,
+      // The integration injects these renderers, but under pnpm's isolated
+      // node_modules the PROJECT must be able to resolve them — without the explicit
+      // deps `astro build` fails on "@astrojs/react/server.js" (matches examples/*).
+      "@astrojs/mdx": "^4.3.0",
+      "@astrojs/react": "^4.3.0",
       astro: ASTRO_RANGE,
       // Peer deps of @astro-slides/client — explicit so the project also installs
       // under strict peer settings (auto-install-peers=false).
@@ -109,7 +116,7 @@ theme: ${theme}
 Built with **astro-slides** — a web-native presentation framework.
 
 <!--
-Speaker notes live in a trailing HTML comment. Press ? in the dev terminal for shortcuts.
+Speaker notes live in a trailing HTML comment. Press ? in the deck for shortcuts.
 -->
 
 ---
@@ -122,10 +129,48 @@ layout: section
 
 ## What you get
 
-- Slides authored in MDX (Marp/Slidev-compatible \`.md\` too)
-- Click-stepped reveals and view-transition slide changes
-- A live presenter view, drawing, and a phone remote
-- Export to PDF, PNG, HTML, and editable PowerPoint
+<Click>Slides authored in MDX (Marp/Slidev-compatible \`.md\` too)</Click>
+
+<Click>Click-stepped reveals — you are watching one now</Click>
+
+<Click>Morph transitions, a live presenter view, drawing, a phone remote</Click>
+
+<Click>Export to PDF, PNG, HTML, and editable PowerPoint</Click>
+
+<!--
+Advance to reveal each line. [click] MDX authoring. [click] this reveal.
+[click] presenting features. [click] exports.
+-->
+
+---
+
+## Watch this number
+
+<Morph id="stat" as="span">**64×**</Morph> faster to first slide than a video edit.
+
+---
+layout: fact
+---
+
+<Morph id="stat" as="div">**64×**</Morph>
+
+The number you just read didn't fade — it **morphed** here. Same element, one \`id\`.
+
+---
+
+## Code that refactors itself
+
+Advance to watch the tokens move — Shiki Magic Move.
+
+\`\`\`\`md magic-move
+\`\`\`ts
+const greet = (name: string) => \`Hello \${name}\`
+\`\`\`
+\`\`\`ts
+const greet = (name: string, emoji = "👋") =>
+  \`Hello \${name} \${emoji}\`
+\`\`\`
+\`\`\`\`
 
 ---
 layout: two-cols
@@ -145,14 +190,6 @@ pnpm dev
 \`\`\`bash
 pnpm export
 \`\`\`
-
----
-layout: fact
----
-
-**100%**
-
-web-native
 
 ---
 layout: end
@@ -282,8 +319,8 @@ export async function run(argv: string[]): Promise<void> {
 
   const flagTheme = readFlag(argv, "theme");
   let theme: ThemeChoice;
-  if (flagTheme === "cosmic" || flagTheme === "starter") {
-    theme = flagTheme;
+  if (flagTheme && (THEMES as readonly string[]).includes(flagTheme)) {
+    theme = flagTheme as ThemeChoice;
   } else if (skipPrompts) {
     // `--yes` must be fully non-interactive: take the default theme instead of hanging
     // scripted/CI runs on a select prompt.
@@ -294,6 +331,9 @@ export async function run(argv: string[]): Promise<void> {
       options: [
         { value: "cosmic", label: "Cosmic", hint: "flagship dark-primary space theme" },
         { value: "starter", label: "Starter", hint: "the minimal default" },
+        { value: "marp-default", label: "Marp default", hint: "Marp-compatible" },
+        { value: "marp-gaia", label: "Marp Gaia", hint: "Marp-compatible" },
+        { value: "marp-uncover", label: "Marp Uncover", hint: "Marp-compatible" },
       ],
       initialValue: "cosmic" as ThemeChoice,
     });
