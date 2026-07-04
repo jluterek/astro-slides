@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { guard, ok, type ServerContext } from "../context.js";
+import { loadDeck, resolveDeckFile } from "../deck-loader.js";
 
 const SYNC_PATH = "/__astro-slides/sync";
 
@@ -87,6 +88,12 @@ async function withSocket<T>(
   }
 }
 
+/** Clamp a requested slide number to the deck's real range (1..slideCount). */
+function clampNo(root: string, deckId: string, no: number): number {
+  const { deck } = loadDeck(root, resolveDeckFile(root, deckId));
+  return Math.max(1, Math.min(no, deck.slides.length || 1));
+}
+
 export function registerNavigateTools(server: McpServer, ctx: ServerContext): void {
   const deckArg = z.string().describe("Deck id of the running presentation.");
 
@@ -101,8 +108,9 @@ export function registerNavigateTools(server: McpServer, ctx: ServerContext): vo
     ({ deck, no }) =>
       guard(() =>
         withSocket(ctx, deck, async (send) => {
-          send({ type: "goto", no, step: 0 });
-          return ok({ ok: true, no });
+          const target = clampNo(ctx.root, deck, no);
+          send({ type: "goto", no: target, step: 0 });
+          return ok({ ok: true, no: target });
         }),
       ),
   );
@@ -119,8 +127,9 @@ export function registerNavigateTools(server: McpServer, ctx: ServerContext): vo
       guard(() =>
         withSocket(ctx, deck, async (send, currentState) => {
           const { no } = await currentState();
-          send({ type: "goto", no: no + 1, step: 0 });
-          return ok({ no: no + 1 });
+          const target = clampNo(ctx.root, deck, no + 1);
+          send({ type: "goto", no: target, step: 0 });
+          return ok({ no: target });
         }),
       ),
   );
@@ -159,8 +168,9 @@ export function registerNavigateTools(server: McpServer, ctx: ServerContext): vo
     ({ deck, no, step }) =>
       guard(() =>
         withSocket(ctx, deck, async (send) => {
-          send({ type: "goto", no, step });
-          return ok({ ok: true, no, step });
+          const target = clampNo(ctx.root, deck, no);
+          send({ type: "goto", no: target, step });
+          return ok({ ok: true, no: target, step });
         }),
       ),
   );

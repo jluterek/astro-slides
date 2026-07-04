@@ -10,7 +10,9 @@ import { addSlide, deleteSlide, setFrontmatter, slideCount, updateSlide } from "
 const WRITE = { readOnlyHint: false, destructiveHint: false, idempotentHint: false } as const;
 const frontmatterArg = z
   .record(z.string(), z.unknown())
-  .describe("Frontmatter key/values (merged shallowly into existing).");
+  .describe(
+    "Frontmatter key/values, merged shallowly into existing. Set a key to null to remove it.",
+  );
 
 /**
  * Single-writer queue. Every mutation runs to completion before the next starts, so two

@@ -58,7 +58,10 @@ export function registerReadTools(server: McpServer, ctx: ServerContext): void {
       guard(() => {
         const { deck: parsed } = loadDeck(ctx.root, resolveDeckFile(ctx.root, deck));
         const slide = parsed.slides.find((s) => s.no === no);
-        if (!slide) throw new Error(`Slide ${no} not found in deck "${deck}".`);
+        if (!slide)
+          throw new Error(
+            `Slide ${no} not found in deck "${deck}" (deck has ${parsed.slides.length} slides).`,
+          );
         return ok({ slide });
       }),
   );
@@ -78,7 +81,10 @@ export function registerReadTools(server: McpServer, ctx: ServerContext): void {
       guard(() => {
         const { deck: parsed } = loadDeck(ctx.root, resolveDeckFile(ctx.root, deck));
         const slide = parsed.slides.find((s) => s.no === no);
-        if (!slide) throw new Error(`Slide ${no} not found in deck "${deck}".`);
+        if (!slide)
+          throw new Error(
+            `Slide ${no} not found in deck "${deck}" (deck has ${parsed.slides.length} slides).`,
+          );
         return ok({ notes: slide.notes ?? "" });
       }),
   );
