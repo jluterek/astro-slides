@@ -1322,10 +1322,20 @@ const mcpServerCommand = defineCommand({
   },
 });
 
+/** Read this package's version from its package.json (adjacent to src/ and dist/), so the
+ * CLI banner tracks the published version instead of a hardcoded string that drifts. */
+function packageVersion(): string {
+  try {
+    return JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")).version;
+  } catch {
+    return "0.0.0";
+  }
+}
+
 export const main = defineCommand({
   meta: {
     name: "astro-slides",
-    version: "0.0.0",
+    version: packageVersion(),
     description: "Author, present, and export web-native slide decks.",
   },
   subCommands: {
