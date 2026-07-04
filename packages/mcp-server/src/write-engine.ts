@@ -36,6 +36,12 @@ export function fromBlocks(blocks: string[]): string {
   return blocks.join("\n");
 }
 
+/** Re-emit a freshly-serialized block with the source file's line endings — an LF-only
+ * block spliced into a CRLF deck leaves the file with mixed endings and noisy diffs. */
+function crlfMatch(source: string, block: string): string {
+  return source.includes("\r\n") ? block.replace(/(?<!\r)\n/g, "\r\n") : block;
+}
+
 /** Count the literal (unexpanded) slides in a source. */
 export function slideCount(source: string): number {
   return toBlocks(source).length;
@@ -105,7 +111,7 @@ export function addSlide(source: string, input: AddSlideInput): { source: string
   // Every block after the first must open with a `---` boundary; makeBlock only emits one
   // when it has frontmatter, so prepend a separator for a plain body inserted after slide 1.
   if (idx > 0 && !block.startsWith("---")) block = `---\n\n${block}`;
-  blocks.splice(idx, 0, block);
+  blocks.splice(idx, 0, crlfMatch(source, block));
   const next = fromBlocks(blocks);
   return { source: verify(next, count + 1), no: idx + 1 };
 }
@@ -116,18 +122,21 @@ export interface UpdateSlideInput {
   frontmatter?: Record<string, unknown>;
 }
 
-/** Replace a slide's body and/or merge frontmatter (1-based). */
+/** Replace a slide's body and/or merge frontmatter (1-based). A key merged with an
+ * explicit `null` value is REMOVED — the only way to unset e.g. `layout` over MCP. */
 export function updateSlide(source: string, no: number, input: UpdateSlideInput): string {
   const blocks = toBlocks(source);
   assertSlideExists(blocks.length, no);
   const current = splitBlock(blocks[no - 1] ?? "");
   const body = input.content ?? current.body;
-  const frontmatter = input.frontmatter
-    ? { ...current.frontmatter, ...input.frontmatter }
-    : current.frontmatter;
+  let frontmatter = current.frontmatter;
+  if (input.frontmatter) {
+    frontmatter = { ...current.frontmatter, ...input.frontmatter };
+    for (const [k, v] of Object.entries(input.frontmatter)) if (v === null) delete frontmatter[k];
+  }
   let block = makeBlock(body, frontmatter);
   if (no > 1 && !block.startsWith("---")) block = `---\n\n${block}`;
-  blocks[no - 1] = block;
+  blocks[no - 1] = crlfMatch(source, block);
   return verify(fromBlocks(blocks), blocks.length);
 }
 

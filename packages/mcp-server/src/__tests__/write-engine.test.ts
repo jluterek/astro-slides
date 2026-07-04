@@ -187,3 +187,19 @@ describe("pre-1.0 review regressions", () => {
     expect(parse(out).slides).toHaveLength(2);
   });
 });
+
+describe("crlf + null-delete polish", () => {
+  it("re-emits an edited block with CRLF in a CRLF deck", () => {
+    const src = "# One\r\n\r\n---\r\n\r\n# Two\r\n";
+    const out = updateSlide(src, 2, { content: "# Two edited\n\nbody" });
+    expect(out).not.toMatch(/(?<!\r)\n---/); // the new block's separator carries \r\n
+    expect(out).toContain("# Two edited\r\n");
+  });
+
+  it("removes a frontmatter key when merged with null", () => {
+    const src = "---\nlayout: center\ntitle: T\n---\n\n# One\n";
+    const out = updateSlide(src, 1, { frontmatter: { layout: null } });
+    expect(out).not.toContain("layout:");
+    expect(out).toContain("title: T");
+  });
+});

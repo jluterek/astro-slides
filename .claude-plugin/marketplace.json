@@ -1,6 +1,8 @@
 {
   "name": "astro-slides",
-  "owner": { "name": "James Luterek" },
+  "owner": {
+    "name": "James Luterek"
+  },
   "metadata": {
     "description": "The astro-slides plugin: a skill bundle plus the deck MCP server."
   },
@@ -9,7 +11,7 @@
       "name": "astro-slides",
       "source": "./",
       "description": "Author, present, and export web-native slide decks (Astro + MDX), with a first-class MCP server for AI-driven authoring.",
-      "version": "0.0.0",
+      "version": "0.1.2",
       "category": "productivity",
       "keywords": ["slides", "presentation", "astro", "mdx", "mcp"]
     }
