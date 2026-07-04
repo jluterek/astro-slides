@@ -5,7 +5,7 @@ import { promisify } from "node:util";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { guard, ok, type ServerContext } from "../context.js";
-import { loadDeck, resolveDeckFile } from "../deck-loader.js";
+import { discoverDeckFiles, loadDeck, resolveDeckFile } from "../deck-loader.js";
 
 const run = promisify(execFile);
 
@@ -37,12 +37,20 @@ export function buildExportArgs(opts: ExportArgOptions): string[] {
 
 /** Resolve a tool-supplied output path, CONTAINED to the project root. Tool arguments
  * are model-controlled input on a network-reachable surface — an absolute or
- * `../`-escaping path must never become an arbitrary filesystem write. */
-function resolveOut(root: string, output: string): string {
+ * `../`-escaping path must never become an arbitrary filesystem write. `ext` pins the
+ * expected artifact extension (or a directory, when empty): without it, a stray
+ * `output: "slides.mdx"` would overwrite the deck source with export bytes. */
+function resolveOut(root: string, output: string, ext?: string): string {
   const abs = resolve(root, output);
   const base = resolve(root);
   if (abs !== base && !abs.startsWith(base + sep))
     throw new Error(`Output path "${output}" escapes the project root.`);
+  if (ext && !abs.toLowerCase().endsWith(ext)) {
+    throw new Error(
+      `Output path "${output}" must end in "${ext}" — refusing to write ${ext.slice(1)} bytes ` +
+        `over a file with a different extension (this protects deck sources from being overwritten).`,
+    );
+  }
   return abs;
 }
 
@@ -77,7 +85,7 @@ export function registerMediaTools(server: McpServer, ctx: ServerContext): void 
       guard(async () => {
         resolveDeckFile(ctx.root, deck); // validate deck exists
         // Contain BEFORE spawning — the CLI writes wherever --output points.
-        const out = resolveOut(ctx.root, output ?? `${deck}.pdf`);
+        const out = resolveOut(ctx.root, output ?? `${deck}.pdf`, ".pdf");
         await runExport({
           root: ctx.root,
           format: "pdf",
@@ -105,7 +113,7 @@ export function registerMediaTools(server: McpServer, ctx: ServerContext): void 
     ({ deck, output, rasterize }) =>
       guard(async () => {
         resolveDeckFile(ctx.root, deck);
-        const out = resolveOut(ctx.root, output ?? `${deck}.pptx`);
+        const out = resolveOut(ctx.root, output ?? `${deck}.pptx`, ".pptx");
         await runExport({
           root: ctx.root,
           format: "pptx",
@@ -199,6 +207,9 @@ export function registerMediaTools(server: McpServer, ctx: ServerContext): void 
         // write the literal deck source, which is already Markdown/MDX.
         loadDeck(ctx.root, file);
         const out = resolveOut(ctx.root, output ?? `${deck}.md`);
+        // A .md/.mdx output could still name ANOTHER deck's source — never clobber one.
+        if (out !== file && discoverDeckFiles(ctx.root).includes(out))
+          throw new Error(`Output path "${output}" is another deck's source file.`);
         await writeFile(out, await readFile(file, "utf8"), "utf8");
         return ok({ path: out });
       }),
