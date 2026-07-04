@@ -143,9 +143,10 @@ free of UI chrome. `?embed=1` is also handy for embedding a live slide in an
 `<iframe>`.
 
 :::note
-`--dark` currently sets the `ASTRO_SLIDES_COLOR_SCHEME=dark` environment variable
-for the build. Full dark-mode export depends on the theme reading that value, so
-treat dark export as best-effort until your theme wires it up.
+`--dark` forces `data-color-scheme="dark"` for the export's build, overriding the
+deck's `colorSchema` and the OS preference — every bundled theme honors it. Without
+the flag, a deck that pins `colorSchema: dark` (or `light`) exports that scheme;
+decks on `auto` export light, since headless Chromium defaults to a light OS scheme.
 :::
 
 ## Source
