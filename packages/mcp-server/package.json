@@ -1,6 +1,6 @@
 {
   "name": "@astro-slides/mcp-server",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": false,
   "type": "module",
   "description": "Model Context Protocol tool surface for reading, writing, presenting, and exporting decks.",
