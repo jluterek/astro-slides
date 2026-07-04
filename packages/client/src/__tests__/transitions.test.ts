@@ -1,9 +1,12 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createAnnouncer } from "../a11y.js";
+import { DeckController } from "../navigation.js";
 import { initDeck } from "../runtime.js";
+import { createDeckStore } from "../store.js";
 import { getStartViewTransition, prefersReducedMotion } from "../transitions/detect.js";
 import { matchMorphs } from "../transitions/flip.js";
-import { createSlideTransition } from "../transitions/index.js";
+import { createSlideTransition, type SlideTransition } from "../transitions/index.js";
 
 function slide(html: string): HTMLElement {
   const el = document.createElement("section");
@@ -128,5 +131,53 @@ describe("controller wiring", () => {
     expect(root.dataset.current).toBe("2");
     const present = root.querySelector<HTMLElement>('[data-slide-no="2"]');
     expect(present?.classList.contains("present")).toBe(true);
+  });
+});
+
+describe("remote applies animate (audience/presenter followers)", () => {
+  function controllerWith(transition: SlideTransition): {
+    controller: DeckController;
+    root: HTMLElement;
+  } {
+    const root = document.createElement("div");
+    root.innerHTML = `
+      <section class="as-slide present" data-slide-no="1"></section>
+      <section class="as-slide future" data-slide-no="2"></section>`;
+    const sections = [...root.querySelectorAll<HTMLElement>(".as-slide")];
+    const region = document.createElement("div");
+    const controller = new DeckController({
+      root,
+      sections,
+      slides: [
+        { no: 1, steps: 0, title: "One" },
+        { no: 2, steps: 0, title: "Two" },
+      ],
+      store: createDeckStore({ deck: "talk", total: 2, slide: 1, step: 0 }),
+      announcer: createAnnouncer(region),
+      transition,
+    });
+    return { controller, root };
+  }
+
+  beforeEach(() => {
+    history.replaceState(null, "", "/talk/1");
+    vi.spyOn(globalThis, "matchMedia").mockReturnValue({ matches: false } as MediaQueryList);
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  it("applyRemote runs the slide transition — synced windows must morph", () => {
+    const transition = vi.fn<SlideTransition>((apply) => apply());
+    const { controller, root } = controllerWith(transition);
+    controller.applyRemote(2);
+    expect(transition).toHaveBeenCalledOnce();
+    expect(root.dataset.current).toBe("2");
+  });
+
+  it("start() applies the initial state instantly (no transition from nothing)", () => {
+    const transition = vi.fn<SlideTransition>((apply) => apply());
+    const { controller } = controllerWith(transition);
+    history.replaceState(null, "", "/talk/2");
+    controller.start();
+    expect(transition).not.toHaveBeenCalled();
   });
 });

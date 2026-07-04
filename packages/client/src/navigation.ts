@@ -80,7 +80,8 @@ export class DeckController {
   /** Apply the initial URL-derived state without adding a history entry. */
   start(): void {
     const loc = parseLocation(location.pathname, location.search);
-    this.apply(gotoState(loc.slide, this.opts.slides, loc.step), "replace");
+    // The initial paint must be instant — never a transition from nothing.
+    this.apply(gotoState(loc.slide, this.opts.slides, loc.step), "replace", false);
   }
 
   next(): void {
@@ -107,10 +108,13 @@ export class DeckController {
 
   /**
    * Apply state pushed from another window (BroadcastChannel sync, Phase 10). Mirrors
-   * the URL without adding a history entry so a follower doesn't accrue history noise.
+   * the URL without adding a history entry so a follower doesn't accrue history noise —
+   * but still runs the slide transition: the audience screen and presenter panes are
+   * driven exclusively through this path, so skipping it would silently downgrade
+   * every `<Morph>` / view-transition to a plain fade for the people watching.
    */
   applyRemote(slide: number, step = 0): void {
-    this.apply(gotoState(slide, this.opts.slides, step), "replace");
+    this.apply(gotoState(slide, this.opts.slides, step), "replace", true);
   }
 
   /** Re-derive state from the current URL (browser back/forward). */
@@ -123,7 +127,7 @@ export class DeckController {
     return this.opts.sections.find((s) => Number(s.dataset.slideNo) === slide) ?? null;
   }
 
-  private apply(next: NavState, url: UrlMode): void {
+  private apply(next: NavState, url: UrlMode, animate = true): void {
     const slideChanged = next.slide !== this.state.slide;
     const changed = slideChanged || next.step !== this.state.step;
     const fromSlide = this.state.slide;
@@ -136,9 +140,10 @@ export class DeckController {
       this.applyStepReveal(next);
     };
 
-    // Slide changes run through the transition (VTA/FLIP); step-only changes and
-    // the initial `replace` apply instantly.
-    if (slideChanged && this.opts.transition && url !== "replace") {
+    // Slide changes run through the transition (VTA/FLIP); step-only changes apply
+    // instantly, as does the initial paint (`animate: false` — URL mode and animation
+    // are separate concerns: remote applies use `replace` yet must still animate).
+    if (slideChanged && this.opts.transition && animate) {
       this.opts.transition(mutate, {
         from: this.sectionFor(fromSlide),
         to: this.sectionFor(next.slide),
