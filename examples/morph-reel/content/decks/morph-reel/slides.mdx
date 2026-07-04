@@ -30,6 +30,43 @@ transition: view-transition
                 0 0 26px 6px color-mix(in oklch, var(--c) 55%, transparent);
   }
 
+  /* Staggered choreography — the swarm settles as a wave, not in lockstep. */
+  html[data-as-morphing="vt"]::view-transition-group(as-morph-0) { animation-delay: 0ms; }
+  html[data-as-morphing="vt"]::view-transition-group(as-morph-1) { animation-delay: 18ms; }
+  html[data-as-morphing="vt"]::view-transition-group(as-morph-2) { animation-delay: 36ms; }
+  html[data-as-morphing="vt"]::view-transition-group(as-morph-3) { animation-delay: 54ms; }
+  html[data-as-morphing="vt"]::view-transition-group(as-morph-4) { animation-delay: 72ms; }
+  html[data-as-morphing="vt"]::view-transition-group(as-morph-5) { animation-delay: 90ms; }
+  html[data-as-morphing="vt"]::view-transition-group(as-morph-6) { animation-delay: 108ms; }
+  html[data-as-morphing="vt"]::view-transition-group(as-morph-7) { animation-delay: 126ms; }
+  html[data-as-morphing="vt"]::view-transition-group(as-morph-8) { animation-delay: 144ms; }
+  html[data-as-morphing="vt"]::view-transition-group(as-morph-9) { animation-delay: 162ms; }
+  html[data-as-morphing="vt"]::view-transition-group(as-morph-10) { animation-delay: 180ms; }
+  html[data-as-morphing="vt"]::view-transition-group(as-morph-11) { animation-delay: 198ms; }
+
+  /* Live-code card that the dots frame on slide 6. */
+  .reel-code {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 620px;
+    max-width: 62vw;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #0b1021;
+    border: 1px solid color-mix(in oklch, #a78bfa 30%, transparent);
+    box-shadow: 0 24px 70px rgba(0,0,0,0.5);
+    text-align: left;
+  }
+  .reel-code .as-magic-move {
+    margin: 0;
+    padding: 20px 24px;
+    font-size: clamp(0.9rem, 1.5vw, 1.25rem);
+    line-height: 1.6;
+    background: transparent !important;
+  }
+
   /* Caption pill that travels between slides. */
   .reel-cap {
     justify-self: center;
@@ -114,8 +151,8 @@ Cold open: twelve glowing dots, loosely clustered. Say nothing for a beat.
 <div data-morph="cap" class="reel-cap">They never leave&hellip;</div>
 
 <!--
-The cluster opened into a perfect ring. Nothing faded — each dot GLIDED to its
-new seat. That is the View Transitions API tracking twelve objects by id.
+The cluster opened into a perfect ring. Nothing faded — each dot GLIDED, and
+they arrive in a wave. That is the View Transitions API tracking them by id.
 -->
 
 ---
@@ -145,6 +182,30 @@ This is what PowerPoint Morph does — native, in the browser, from Markdown.
 ---
 
 <div class="particle-stage">
+  <div data-morph="p0" class="dot" style="left:300px;top:560px;--c:#c4b5fd"></div>
+  <div data-morph="p1" class="dot" style="left:300px;top:482px;--c:#a78bfa"></div>
+  <div data-morph="p2" class="dot" style="left:500px;top:560px;--c:#8b5cf6"></div>
+  <div data-morph="p3" class="dot" style="left:500px;top:482px;--c:#7c3aed"></div>
+  <div data-morph="p4" class="dot" style="left:500px;top:404px;--c:#d946ef"></div>
+  <div data-morph="p5" class="dot" style="left:700px;top:560px;--c:#f0abfc"></div>
+  <div data-morph="p6" class="dot" style="left:700px;top:482px;--c:#38bdf8"></div>
+  <div data-morph="p7" class="dot" style="left:700px;top:404px;--c:#0ea5e9"></div>
+  <div data-morph="p8" class="dot" style="left:700px;top:326px;--c:#22d3ee"></div>
+  <div data-morph="p9" class="dot" style="left:900px;top:560px;--c:#2dd4bf"></div>
+  <div data-morph="p10" class="dot" style="left:900px;top:482px;--c:#34d399"></div>
+  <div data-morph="p11" class="dot" style="left:900px;top:404px;--c:#6ee7b7"></div>
+</div>
+
+<div data-morph="cap" class="reel-cap">Into a <b>chart</b>&hellip;</div>
+
+<!--
+The line stacked into a bar chart. Point out: the dots did not become bars,
+they ARE the bars — same objects, new arrangement.
+-->
+
+---
+
+<div class="particle-stage">
   <div data-morph="p0" class="dot" style="left:600px;top:150px;--c:#c4b5fd"></div>
   <div data-morph="p1" class="dot" style="left:530px;top:220px;--c:#a78bfa"></div>
   <div data-morph="p2" class="dot" style="left:460px;top:290px;--c:#8b5cf6"></div>
@@ -159,11 +220,55 @@ This is what PowerPoint Morph does — native, in the browser, from Markdown.
   <div data-morph="p11" class="dot" style="left:600px;top:510px;--c:#6ee7b7"></div>
 </div>
 
-<div data-morph="cap" class="reel-cap">No fades. Pure motion.</div>
+<div data-morph="cap" class="reel-cap">&hellip;an arrow&hellip;</div>
 
 <!--
-The line snapped into an arrow. Point out: boxes stay boxes, dots stay dots —
-they travel, they never dissolve. That is the whole trick.
+The bars snapped into an arrow. Boxes stay boxes, dots stay dots — they
+travel, they never dissolve. That is the whole trick.
+-->
+
+---
+
+<div class="particle-stage">
+  <div data-morph="p0" class="dot" style="left:200px;top:150px;--c:#c4b5fd"></div>
+  <div data-morph="p1" class="dot" style="left:466px;top:150px;--c:#a78bfa"></div>
+  <div data-morph="p2" class="dot" style="left:733px;top:150px;--c:#8b5cf6"></div>
+  <div data-morph="p3" class="dot" style="left:1000px;top:150px;--c:#7c3aed"></div>
+  <div data-morph="p4" class="dot" style="left:1000px;top:276px;--c:#d946ef"></div>
+  <div data-morph="p5" class="dot" style="left:1000px;top:403px;--c:#f0abfc"></div>
+  <div data-morph="p6" class="dot" style="left:1000px;top:530px;--c:#38bdf8"></div>
+  <div data-morph="p7" class="dot" style="left:733px;top:530px;--c:#0ea5e9"></div>
+  <div data-morph="p8" class="dot" style="left:466px;top:530px;--c:#22d3ee"></div>
+  <div data-morph="p9" class="dot" style="left:200px;top:530px;--c:#2dd4bf"></div>
+  <div data-morph="p10" class="dot" style="left:200px;top:403px;--c:#34d399"></div>
+  <div data-morph="p11" class="dot" style="left:200px;top:276px;--c:#6ee7b7"></div>
+
+
+<div class="reel-code">
+
+````md magic-move
+```ts
+const dots = 12
+```
+```ts
+const dots = 12
+const morph = "one id each"
+```
+```ts
+const dots = 12
+const morph = "one id each"
+// the browser does the rest
+```
+````
+
+</div>
+</div>
+
+<div data-morph="cap" class="reel-cap">&hellip;or a <b>frame</b> around live code</div>
+
+<!--
+The dots gathered into a frame and live code appeared inside. CLICK to refactor —
+Shiki Magic Move. The same twelve objects can wrap real content.
 -->
 
 ---
@@ -183,10 +288,10 @@ they travel, they never dissolve. That is the whole trick.
   <div data-morph="p11" class="dot" style="left:820px;top:560px;--c:#6ee7b7"></div>
 </div>
 
-<div data-morph="cap" class="reel-cap">This is <b>object continuity</b>.</div>
+<div data-morph="cap" class="reel-cap">No fades. <b>Pure motion.</b></div>
 
 <!--
-The arrow scattered into a constellation. Land the line: object continuity.
+The frame scattered into a constellation. Land the line: object continuity.
 Every frame you have seen is the same twelve elements, morphing.
 -->
 
