@@ -58,6 +58,29 @@ describe("scaffold", () => {
     expect(files.get("astro.config.mjs")).toContain("astroSlides()");
   });
 
+  it("scaffolds a deck that showcases the flagship features", () => {
+    const slides = scaffold({ name: "showcase", theme: "cosmic" }).get("slides.mdx") ?? "";
+    // The starter deck is a new user's first impression — it must DEMONSTRATE the
+    // features it advertises, not just list them. Guard against template staleness.
+    expect(slides).toContain("<Click>");
+    expect(slides).toContain("md magic-move");
+    // Morph object continuity: the same id must appear on (at least) two slides.
+    const morphs = slides.match(/<Morph id="stat"/g) ?? [];
+    expect(morphs.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("scaffolded deck parses cleanly with the workspace parser", async () => {
+    const { parse } = await import("@astro-slides/parser");
+    const slides = scaffold({ name: "parse-check", theme: "cosmic" }).get("slides.mdx") ?? "";
+    const deck = parse(slides);
+    expect(deck.slides.length).toBeGreaterThanOrEqual(7);
+    // Clicks resolve at MDX compile time (ADR-0008), so here we assert structure:
+    // the feature slides survived slide splitting intact.
+    expect(deck.slides.some((sl) => sl.content.includes("<Click>"))).toBe(true);
+    expect(deck.slides.some((sl) => sl.content.includes("magic-move"))).toBe(true);
+    expect(deck.slides.filter((sl) => sl.content.includes('<Morph id="stat"'))).toHaveLength(2);
+  });
+
   it("uses the starter theme when chosen", () => {
     const slides = scaffold({ name: "d", theme: "starter" }).get("slides.mdx") ?? "";
     expect(slides).toContain("theme: starter");
