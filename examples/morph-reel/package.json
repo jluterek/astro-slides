@@ -1,6 +1,6 @@
 {
   "name": "@astro-slides/example-morph-reel",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "type": "module",
   "description": "The Morph Reel — a showcase deck demonstrating object-continuity morph transitions.",

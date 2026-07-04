@@ -1,9 +1,9 @@
 {
   "name": "create-astro-slides",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": false,
   "type": "module",
-  "description": "Scaffold a new astro-slides deck project \u2014 pnpm create astro-slides <target>.",
+  "description": "Scaffold a new astro-slides deck project — pnpm create astro-slides <target>.",
   "license": "MIT",
   "author": "James Luterek",
   "bin": {
