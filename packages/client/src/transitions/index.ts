@@ -24,11 +24,22 @@ export interface TransitionOptions {
   easing?: string;
 }
 
-function setNames(pairs: MorphPair[]): void {
+// Same-document morph naming (ADR-0006). Both slides live in one DOM, so a shared
+// `view-transition-name` may sit on only ONE element per capture: naming the outgoing
+// AND incoming element at once makes the old-state capture see two elements with the
+// same name, which trips Chromium's "duplicate view-transition-name" guard and aborts
+// the whole transition. So we name the outgoing element for the old-state capture, then
+// hand each name off to the incoming element inside the update callback — before the
+// new-state capture — so the browser morphs old→new instead of erroring out.
+function nameFrom(pairs: MorphPair[]): void {
   pairs.forEach((pair, i) => {
-    const name = `as-morph-${i}`;
-    pair.from.style.viewTransitionName = name;
-    pair.to.style.viewTransitionName = name;
+    pair.from.style.viewTransitionName = `as-morph-${i}`;
+  });
+}
+function handOffToTarget(pairs: MorphPair[]): void {
+  pairs.forEach((pair, i) => {
+    pair.from.style.viewTransitionName = "";
+    pair.to.style.viewTransitionName = `as-morph-${i}`;
   });
 }
 function clearNames(pairs: MorphPair[]): void {
@@ -54,9 +65,12 @@ export function createSlideTransition(
     const startViewTransition = getStartViewTransition();
 
     if (startViewTransition && (pairs.length > 0 || wantsRootVT)) {
-      setNames(pairs);
+      nameFrom(pairs);
       root.dataset.morphing = pairs.length > 0 ? "vt" : "root";
-      const transition = startViewTransition(apply);
+      const transition = startViewTransition(() => {
+        apply();
+        handOffToTarget(pairs);
+      });
       transition.finished.finally(() => {
         clearNames(pairs);
         delete root.dataset.morphing;
