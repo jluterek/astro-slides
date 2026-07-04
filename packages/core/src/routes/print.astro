@@ -142,5 +142,16 @@ const fallbackLayout = layouts.default ?? layouts["404"];
         );
       })
     }
+    <script>
+      import { initMermaid, renderMagicMoveFinal } from "@astro-slides/client";
+      // The print route runs no deck runtime, so client-rendered islands must be
+      // mounted here: Magic Move blocks at their final step (print reveals all click
+      // state) and Mermaid diagrams (lazy-imported only when the page has any).
+      const root = document.querySelector<HTMLElement>(".as-print");
+      if (root) {
+        renderMagicMoveFinal(root);
+        initMermaid(root);
+      }
+    </script>
   </body>
 </html>

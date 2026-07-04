@@ -10,6 +10,13 @@ interface Props {
 const { code, options } = Astro.props;
 ---
 
-<div class="as-mermaid" data-mermaid={code} data-mermaid-options={options}>
+<!-- `data-waitfor` tells the export pipeline to wait for the async render before
+     shooting; Playwright selectors pierce the shadow root the SVG mounts into. -->
+<div
+  class="as-mermaid"
+  data-mermaid={code}
+  data-mermaid-options={options}
+  data-waitfor=".as-mermaid svg"
+>
   <div class="as-mermaid-fallback" aria-hidden="true">Rendering diagram…</div>
 </div>

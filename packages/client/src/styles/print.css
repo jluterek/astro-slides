@@ -2,13 +2,17 @@
 
 .as-print {
   margin: 0;
-  background: #fff;
+  /* The theme background, not paper-white — a dark deck exports dark (the PDF
+     pipeline passes printBackground). Themes scope their tokens under the
+     `data-theme` attribute this element carries, so the var resolves here. */
+  background: var(--slide-bg, #fff);
 }
 
 /* One slide per page. Fixed to the design size so it maps 1:1 onto `@page size`. */
 .as-print-slide {
   position: relative;
   inset: auto;
+  background: var(--slide-bg, #fff);
   width: var(--as-design-w);
   height: var(--as-design-h);
   overflow: hidden;
