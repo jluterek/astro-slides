@@ -19,6 +19,8 @@ export const SHORTCUTS: ReadonlyArray<{ keys: string; label: string }> = [
   { keys: "Home / End", label: "First / last slide" },
   { keys: "O", label: "Toggle overview" },
   { keys: "P", label: "Open presenter view" },
+  { keys: "L", label: "Toggle laser pointer" },
+  { keys: "D", label: "Toggle drawing (decks with drawings enabled)" },
   { keys: "?", label: "Toggle this help" },
   { keys: "Esc", label: "Close overview / help" },
 ];

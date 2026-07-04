@@ -25,7 +25,10 @@ for (const s of ordered) {
 const decks = [...byDeck.entries()].map(([name, list]) => {
   const cfg = (configs[name] ?? {}) as { title?: string; theme?: string };
   const title = cfg.title ?? list.find((s) => s.title)?.title ?? name;
-  return { name, title, count: list.length, theme: cfg.theme ?? "starter" };
+  // First BUILT slide number — hide:true drops slides from the routed set, so a deck
+  // whose first slide is hidden starts at no 2 and a hardcoded /1 would 404.
+  const firstNo = list[0]?.no ?? 1;
+  return { name, title, count: list.length, theme: cfg.theme ?? "starter", firstNo };
 });
 
 const single = decks.length <= 1;
@@ -100,14 +103,14 @@ const deckUrl = (deck: string): string => `${base}${encodeURIComponent(deck)}`;
             {decks.map((d) => (
               <article class="card">
                 <h2>
-                  <a href={`${deckUrl(d.name)}/1`}>{d.title}</a>
+                  <a href={`${deckUrl(d.name)}/${d.firstNo}`}>{d.title}</a>
                 </h2>
                 <p class="meta">{`${d.count} ${d.count === 1 ? "slide" : "slides"} · ${d.theme}`}</p>
                 <div class="actions">
-                  <a class="primary" href={`${deckUrl(d.name)}/1`}>
+                  <a class="primary" href={`${deckUrl(d.name)}/${d.firstNo}`}>
                     Open
                   </a>
-                  <a href={`${base}presenter/${encodeURIComponent(d.name)}/1`} target="_blank" rel="noopener">
+                  <a href={`${base}presenter/${encodeURIComponent(d.name)}/${d.firstNo}`} target="_blank" rel="noopener">
                     Present
                   </a>
                   <a href={`${base}print/${encodeURIComponent(d.name)}`}>Print</a>
