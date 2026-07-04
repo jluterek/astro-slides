@@ -59,6 +59,9 @@ captured as an image and placed on the slide:
 - **Code blocks** — syntax highlighting doesn't round-trip to OOXML text runs, so
   each code block is screenshotted and placed as an image.
 - **Slides marked `exportAs: image`** — the whole slide is rasterized (see below).
+- **Slides with no mappable content** — a slide built purely from visual composition
+  (absolutely-positioned elements, SVG art) that yields no editable block is
+  automatically rasterized instead of exporting blank.
 - **Every slide, when `--rasterize` is passed** — see below.
 
 ### `--rasterize`

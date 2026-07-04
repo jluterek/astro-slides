@@ -97,8 +97,15 @@ const [aw, ah] = String(config.aspectRatio ?? "16:9").split(":").map(Number);
 const designWidth = Number(config.canvasWidth ?? 1920);
 const designHeight = Math.round(designWidth * (aw && ah ? ah / aw : 9 / 16));
 
+// The export CLI's `--dark` flag sets ASTRO_SLIDES_COLOR_SCHEME for its build; an
+// explicit force wins over the deck's own colorSchema, which wins over auto (OS).
+const envScheme = process.env.ASTRO_SLIDES_COLOR_SCHEME;
 const scheme =
-  config.colorSchema === "light" || config.colorSchema === "dark" ? config.colorSchema : undefined;
+  envScheme === "dark" || envScheme === "light"
+    ? envScheme
+    : config.colorSchema === "light" || config.colorSchema === "dark"
+      ? config.colorSchema
+      : undefined;
 
 const isImageRef = (v: string): boolean =>
   /^(https?:|\/|\.|data:)/.test(v) || /\.(png|jpe?g|gif|webp|avif|svg)$/i.test(v);

@@ -840,26 +840,32 @@ const DOM_WALKER = async (no: number): Promise<RawSlide> => {
     w: r.width / scale,
     h: r.height / scale,
   });
-  // Normalize ANY computed CSS color (Chromium serializes oklch() colors as oklch —
-  // the Cosmic theme would otherwise lose every color) via canvas fillStyle, which
-  // round-trips to `#rrggbb` / `rgba(…)` in sRGB. Fully transparent → "" (no shape
-  // color / no background — the default `rgba(0, 0, 0, 0)` must NOT become black).
-  const colorCtx = document.createElement("canvas").getContext("2d");
+  // Normalize ANY computed CSS color to `RRGGBB` by painting a 1×1 canvas and reading
+  // the pixel back — getImageData always yields sRGB bytes regardless of the input
+  // color space. (Reading `fillStyle` back as a string no longer works: modern Chromium
+  // serializes oklch() as oklch, so the Cosmic theme lost every color to a failed hex
+  // parse.) Fully transparent → "" (no shape color / no background — the default
+  // `rgba(0, 0, 0, 0)` must NOT become black); translucent colors composite over white.
+  const colorCtx = document.createElement("canvas").getContext("2d", {
+    willReadFrequently: true,
+  });
   const hex = (css: string): string => {
-    if (!css || css === "transparent") return "";
-    let n = css;
-    if (colorCtx) {
-      colorCtx.fillStyle = "#000";
-      colorCtx.fillStyle = css;
-      n = String(colorCtx.fillStyle);
-    }
-    const hx = n.match(/^#([0-9a-f]{6})$/i);
-    if (hx) return (hx[1] as string).toUpperCase();
-    const m = n.match(/rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:[,\s/]+([\d.]+))?/);
-    if (!m) return "";
-    if (m[4] !== undefined && Number.parseFloat(m[4]) === 0) return "";
-    const h = (v: string) => Math.round(Number(v)).toString(16).padStart(2, "0");
-    return `${h(m[1] as string)}${h(m[2] as string)}${h(m[3] as string)}`.toUpperCase();
+    if (!css || css === "transparent" || !colorCtx) return "";
+    // Pass 1 on a cleared canvas: detect fully-transparent (and invalid) colors.
+    colorCtx.clearRect(0, 0, 1, 1);
+    colorCtx.fillStyle = "#000";
+    colorCtx.fillStyle = css;
+    colorCtx.fillRect(0, 0, 1, 1);
+    const probe = colorCtx.getImageData(0, 0, 1, 1).data;
+    if (probe[3] === 0) return "";
+    // Pass 2 over white: PPTX has no alpha, so translucent colors flatten as on paper.
+    colorCtx.fillStyle = "#fff";
+    colorCtx.fillRect(0, 0, 1, 1);
+    colorCtx.fillStyle = css;
+    colorCtx.fillRect(0, 0, 1, 1);
+    const [r, g, b] = colorCtx.getImageData(0, 0, 1, 1).data;
+    const h = (v: number | undefined) => (v ?? 0).toString(16).padStart(2, "0");
+    return `${h(r)}${h(g)}${h(b)}`.toUpperCase();
   };
   const runsOf = (el: Element): PptxRun[] => {
     const runs: PptxRun[] = [];
@@ -963,8 +969,19 @@ const DOM_WALKER = async (no: number): Promise<RawSlide> => {
         });
     }
   }
-  const bg = present ? hex(getComputedStyle(present).backgroundColor) : "";
-  return { designW, designH, notes: notesMap[String(no)] ?? "", background: bg, blocks };
+  // Slide background: the section itself is usually transparent (the deck element
+  // paints the theme background), so fall back to the deck's computed background —
+  // the export pipeline restores it in embed mode before this walker runs.
+  const slideBg = present ? hex(getComputedStyle(present).backgroundColor) : "";
+  const deckEl = document.querySelector(".as-deck");
+  const deckBg = deckEl ? hex(getComputedStyle(deckEl).backgroundColor) : "";
+  return {
+    designW,
+    designH,
+    notes: notesMap[String(no)] ?? "",
+    background: slideBg || deckBg,
+    blocks,
+  };
 };
 /* c8 ignore stop */
 
@@ -1088,6 +1105,22 @@ export async function exportDeckPptx(
               data: `data:image/png;base64,${shot.toString("base64")}`,
             });
         }
+      }
+      // A slide whose content maps to no editable block (pure visual composition —
+      // absolutely-positioned divs, SVG art) would otherwise export as a blank page.
+      // Fall back to rasterizing it, same as `exportAs: image`.
+      if (elements.length === 0) {
+        const shot = await page
+          .locator(".as-viewport")
+          .first()
+          .screenshot()
+          .catch(() => null);
+        if (shot)
+          elements.push({
+            kind: "image",
+            box: { x: 0, y: 0, w: widthIn, h: heightIn },
+            data: `data:image/png;base64,${shot.toString("base64")}`,
+          });
       }
       models.push({
         no,
