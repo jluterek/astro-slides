@@ -65,8 +65,14 @@ export function createSlideTransition(
     const startViewTransition = getStartViewTransition();
 
     if (startViewTransition && (pairs.length > 0 || wantsRootVT)) {
+      const mode = pairs.length > 0 ? "vt" : "root";
       nameFrom(pairs);
-      root.dataset.morphing = pairs.length > 0 ? "vt" : "root";
+      root.dataset.morphing = mode;
+      // The `::view-transition-*` pseudo-elements are generated on the document root,
+      // outside `.as-deck`, so a matching flag rides on <html> to let transitions.css
+      // give the morph its eased timing (see `html[data-as-morphing]` there).
+      const docEl = root.ownerDocument.documentElement;
+      docEl.dataset.asMorphing = mode;
       const transition = startViewTransition(() => {
         apply();
         handOffToTarget(pairs);
@@ -74,6 +80,7 @@ export function createSlideTransition(
       transition.finished.finally(() => {
         clearNames(pairs);
         delete root.dataset.morphing;
+        delete docEl.dataset.asMorphing;
       });
       return;
     }

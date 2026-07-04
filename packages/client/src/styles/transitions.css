@@ -53,5 +53,22 @@
   transition: none;
 }
 
+/* View-Transitions morph timing. The browser default (~250ms, near-linear) makes
+   object-continuity morphs snap — especially elements travelling a long way. Match
+   the eased ~440ms of the FLIP fallback (transitions/flip.ts) so both paths feel the
+   same. The runtime flags <html data-as-morphing="vt"> for the morph's duration; the
+   pseudo group tree lives on the document root, so it is scoped there rather than on
+   the deck. `(*)` covers every morph pair plus the root snapshot, keeping them in sync. */
+html[data-as-morphing="vt"]::view-transition-group(*) {
+  animation-duration: 440ms;
+  animation-timing-function: cubic-bezier(0.26, 0.86, 0.44, 0.985);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-as-morphing="vt"]::view-transition-group(*) {
+    animation-duration: 1ms;
+  }
+}
+
 /* Reduced motion (`.as-slide { transition: none }`) is handled in deck.css; the
    runtime also short-circuits to an instant apply via `prefersReducedMotion()`. */
