@@ -11,6 +11,7 @@ Presentations live on the web now. They get shared in chats, embedded in blog po
 - **Author with the web.** Markdown, MDX, React, and Astro components — the same tools you already use. Compatible with Marp and Slidev syntax, so existing decks work unchanged.
 - **Share with a link.** Every deck is a website. Every slide has its own URL. Embed a single slide into a blog post with one tag.
 - **Animate like Keynote.** Object continuity between slides via the View Transitions API, with a FLIP-based fallback for older browsers. Code animates with Shiki Magic Move. Lists step. Diffs morph.
+- **Ask the room.** Live polls (`<Poll>`), moderated Q&A, and emoji reactions — the audience joins by QR over the same sync gateway as the phone remote (`dev --remote`). No Slido or Mentimeter subscription beside your deck tool.
 - **Built for code.** Syntax highlighting (Shiki + Twoslash), animated code diffs (Magic Move), Mermaid, KaTeX, PlantUML. Out of the box, not bolt-ons.
 - **AI-native authoring.** Ships with a real MCP server — not just a skill bundle. Claude, Cursor, and any MCP-aware client can read, write, present, and export your decks programmatically.
 - **Honest exports.** PDF, PNG, and real editable PPTX (via PptxGenJS, not image rasterization). What survives the export is what an OOXML file can actually express; we tell you up front when something won't.
@@ -142,7 +143,6 @@ A curated skill bundle ships alongside, so models without MCP support still get 
 
 What's next after 1.0, in order:
 
-- **Audience engagement** — polls, Q&A, and emoji reactions, live on the slide. The audience joins by QR code over the sync gateway that already powers the phone remote. See [`todo/19-audience-engagement`](./todo/19-audience-engagement/README.md).
 - **VS Code extension** — slide preview and navigation in the editor.
 
 ## Software details
