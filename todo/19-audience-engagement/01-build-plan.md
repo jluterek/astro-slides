@@ -94,3 +94,18 @@ fail?); (b) if pre-existing, fix the upgrade-handler conflict (injectWebSocket m
 handle upgrades for /__astro-slides/sync, letting Vite's HMR upgrades through) as part
 of this phase; (c) re-run the live vote test (script pattern in git history of this
 plan's sibling probes).
+
+## LIVE VERIFICATION PASSED (2026-07-05)
+
+Root cause of the earlier failures: @hono/node-ws injectWebSocket attaches a blanket
+`upgrade` listener that corrupted Vite's HMR websocket → the HMR client lost its
+connection and every page RELOAD-LOOPED under `dev --remote` (latent Phase 11 bug).
+Fixed in gateway.ts with a shim EventEmitter forwarding only SYNC_PATH upgrades.
+
+Verified end-to-end with two browser contexts against `dev --remote`:
+deck joins gateway (global set) → phone sees active poll ("How are you presenting
+today?") → vote lands live (deck tally [0,1,0,0], "1 vote") → reaction sprite renders →
+audience goto attempt BLOCKED server-side (deck stays on slide 2) → zero HMR errors.
+
+REMAINING: examples/README row, docs-site page, readme feature sync, e2e join-flow
+test, changeset (minor: client+core+cli), phase Outcome + distill + archive + PR.

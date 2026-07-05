@@ -1,3 +1,4 @@
+import { EventEmitter } from "node:events";
 import type { Server as HttpServer } from "node:http";
 import type { Http2SecureServer, Http2Server } from "node:http2";
 import { createNodeWebSocket } from "@hono/node-ws";
@@ -47,7 +48,23 @@ export interface Gateway {
 export function createSyncGateway(options: GatewayOptions): Gateway {
   const app = new Hono();
   const hub = new SyncHub();
-  const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
+  const { injectWebSocket: honoInject, upgradeWebSocket } = createNodeWebSocket({ app });
+
+  /**
+   * @hono/node-ws attaches a blanket `upgrade` listener that assumes it owns every
+   * WebSocket on the server — but the dev server's http server ALSO carries Vite's
+   * HMR socket. Handling that upgrade corrupts it ("Invalid frame header"), Vite's
+   * client loses its connection, and every page reload-loops under `--remote`.
+   * Attach hono's listener to a shim emitter and forward ONLY sync-path upgrades.
+   */
+  const injectWebSocket: Gateway["injectWebSocket"] = (server) => {
+    const shim = new EventEmitter();
+    honoInject(shim as unknown as HttpServer);
+    (server as HttpServer).on("upgrade", (request, socket, head) => {
+      const path = (request.url ?? "").split("?")[0];
+      if (path === SYNC_PATH) shim.emit("upgrade", request, socket, head);
+    });
+  };
 
   const authOk = (token: string | undefined): boolean => !options.token || token === options.token;
 
