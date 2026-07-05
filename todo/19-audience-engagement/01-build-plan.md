@@ -34,16 +34,16 @@ status: in-progress
 ## Task order
 
 1. [x] Bookkeeping (ROADMAP, phase status) — done.
-2. [ ] `sync/types.ts`: PollState/QaQuestion types + actions + reducer cases; unit tests.
-3. [ ] `sync/store.ts`: action-listener API (for reactions overlay) + engagement seed hydration.
-4. [ ] Gateway: `?role=audience` scoped relay in `gateway.ts` (+ hub tests), engagement
+2. [x] `sync/types.ts`: PollState/QaQuestion types + actions + reducer cases; unit tests.
+3. [x] `sync/store.ts`: action-listener API (for reactions overlay) + engagement seed hydration.
+4. [x] Gateway: `?role=audience` scoped relay in `gateway.ts` (+ hub tests), engagement
    persistence endpoint + load, `/audience` page in `server/audience-page.ts`.
-5. [ ] `<Poll>` component (`packages/client/components/Poll.astro`) + `initPolls` runtime module
+5. [x] `<Poll>` component (`packages/client/components/Poll.astro`) + `initPolls` runtime module
    (dispatch `poll/open` on present; render live tally bars) + CSS. Register in slide.astro AND
    print.astro COMPONENTS maps (print shows a static tally).
-6. [ ] Reactions overlay runtime module (`packages/client/src/engagement/reactions.ts`) —
+6. [x] Reactions overlay runtime module (`packages/client/src/engagement/reactions.ts`) —
    floats emoji, caps concurrent sprites, no-op in embed/preview/export.
-7. [ ] Q&A: presenter panel (React, in presenter island) + shown-question banner in the deck
+7. [x] Q&A: presenter panel (React, in presenter island) + shown-question banner in the deck
    runtime.
 8. [ ] Example deck (`examples/audience-engagement/` or extend conference-talk) + docs-site page
    + readme *Roadmap* sync (move feature from Roadmap to features).
@@ -54,3 +54,16 @@ status: in-progress
 
 - Rate limiting reactions: client-side min-interval on the audience page (300ms) AND the
   overlay caps concurrent sprites (drop excess) — the gateway stays dumb about rates.
+
+## Progress checkpoint (2026-07-05)
+
+Committed on `feat/phase-19-audience-engagement` (pushed): tasks 2–7 done — state model
++ reducer + onAction (22 sync tests), gateway role scoping + /audience page + persistence
+(7 server tests), <Poll> + engagement runtime + CSS, presenter Q&A panel, audience QR in
+the CLI. Typecheck/lint/344-test suite green.
+
+REMAINING: (a) live two-browser verification via `dev --remote` — vote from /audience,
+watch the tally on the deck; (b) example deck + docs-site page + readme feature-section
+sync; (c) e2e join-flow test (spec spawns dev --remote); (d) changeset (minor:
+client+core+cli), phase Outcome, distill to docs/built/19-audience-engagement.md,
+archive folder, ROADMAP done-row, open the phase PR.
