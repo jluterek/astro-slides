@@ -4,13 +4,13 @@ The phase index. Always current. Update when a phase starts or ends.
 
 ## Active
 
-_No phase is active. Next up: Phase 19._
+- **Phase 19 — Audience engagement** ([`19-audience-engagement`](./19-audience-engagement/README.md)) — _in progress (started 2026-07-05)._ Polls, Q&A, and emoji reactions live on the slide, joined by QR over the Phase 11 sync gateway.
 
 ## Planned
 
 Phases are listed in dependency order. They can be re-sequenced if a later phase becomes a higher priority, but dependencies must be honored.
 
-- **Phase 19 — Audience engagement** ([`19-audience-engagement`](./19-audience-engagement/README.md)) — polls, Q&A, and emoji reactions live on the slide, joined by QR over the Phase 11 sync gateway. First post-release phase.
+_Nothing further sketched. Post-19 candidates: VS Code extension; the deliberate 1.0.0 cut._
 
 ## Done
 

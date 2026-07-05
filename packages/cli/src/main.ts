@@ -166,8 +166,14 @@ export function buildRemoteUrl({ host, port, token }: RemoteUrlOptions): string 
   return `http://${host}:${port}/entry${query}`;
 }
 
+/** Build the `/audience` URL spectators open (Phase 19: vote / ask / react). */
+export function buildAudienceUrl({ host, port, token }: RemoteUrlOptions): string {
+  const query = token ? `?token=${encodeURIComponent(token)}` : "";
+  return `http://${host}:${port}/audience${query}`;
+}
+
 /** Print the QR code + URL + a one-line security note to the terminal. */
-export function printRemote(url: string, hasPassword: boolean): void {
+export function printRemote(url: string, hasPassword: boolean, audienceUrl?: string): void {
   const lines = [
     "",
     pc.bold(pc.cyan("Mobile remote")),
@@ -178,6 +184,15 @@ export function printRemote(url: string, hasPassword: boolean): void {
         ? "  Password protected — the URL includes the access token."
         : "  Open on your LAN — anyone with this URL can drive the deck.",
     ),
+    ...(audienceUrl
+      ? [
+          "",
+          pc.bold(pc.cyan("Audience (vote / ask / react)")),
+          renderUnicodeCompact(audienceUrl),
+          `  ${pc.bold(audienceUrl)}`,
+          pc.dim("  Audience phones can vote, ask, and react — never navigate or draw."),
+        ]
+      : []),
     "",
   ];
   console.log(lines.join("\n"));
@@ -229,7 +244,11 @@ const devCommand = defineCommand({
     if (remote) {
       const host = lanAddress() ?? "localhost";
       const port = server.address?.port ?? DEFAULT_PORT;
-      printRemote(buildRemoteUrl({ host, port, token: token || undefined }), !!password);
+      printRemote(
+        buildRemoteUrl({ host, port, token: token || undefined }),
+        !!password,
+        buildAudienceUrl({ host, port, token: token || undefined }),
+      );
     }
 
     // Wire the in-TTY shortcuts (SHORTCUTS map) to real actions. `open`/`edit` shell out to the

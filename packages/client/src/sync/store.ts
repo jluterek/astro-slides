@@ -16,6 +16,9 @@ import { reduce, type SharedState, type SyncAction } from "./types.js";
 export interface SyncStore {
   state: ReadableAtom<SharedState>;
   dispatch(action: SyncAction): void;
+  /** Observe every applied action (local and remote) — for transient effects like the
+   * reactions overlay, which respond to events rather than state. Returns unsubscribe. */
+  onAction(listener: (action: SyncAction) => void): () => void;
   close(): void;
 }
 
@@ -44,6 +47,11 @@ export function createSyncStore(
     for (const channel of channels) channel.post(action);
   };
 
+  const actionListeners = new Set<(action: SyncAction) => void>();
+  const notify = (action: SyncAction): void => {
+    for (const l of actionListeners) l(action);
+  };
+
   const unsubscribes = channels.map((channel) =>
     channel.subscribe((action) => {
       if (action.type === "hello") {
@@ -52,12 +60,14 @@ export function createSyncStore(
         return;
       }
       state.set(reduce(state.get(), action));
+      notify(action);
     }),
   );
 
   function dispatch(action: SyncAction): void {
     state.set(reduce(state.get(), action));
     post(action);
+    notify(action);
   }
 
   // Ask peers for the current state on join.
@@ -66,6 +76,10 @@ export function createSyncStore(
   return {
     state,
     dispatch,
+    onAction: (listener) => {
+      actionListeners.add(listener);
+      return () => actionListeners.delete(listener);
+    },
     close: () => {
       for (const unsub of unsubscribes) unsub();
       for (const channel of channels) channel.close();

@@ -1,7 +1,7 @@
 ---
 title: Phase 19 — Audience engagement
-status: pending
-started:
+status: in-progress
+started: 2026-07-05
 ended:
 ---
 

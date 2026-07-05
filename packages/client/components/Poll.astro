@@ -1,0 +1,40 @@
+---
+// Live audience poll (Phase 19). Options are declared here in MDX — the deck island
+// publishes them over the sync gateway (`poll/open`) when this slide becomes present,
+// audience phones vote from `/audience`, and the bars below tally live. Requires
+// `dev --remote` (a running gateway); in static builds it renders the options with
+// zero counts. One vote per audience device, revisable until the poll is closed.
+interface Props {
+  /** Stable poll id — votes persist under it across refreshes. */
+  id: string;
+  question: string;
+  options: string[];
+}
+const { id, question, options } = Astro.props;
+---
+
+<div
+  class="as-poll"
+  data-poll-id={id}
+  data-poll-question={question}
+  data-poll-options={JSON.stringify(options)}
+>
+  <div class="as-poll-question">{question}</div>
+  <ol class="as-poll-options">
+    {
+      options.map((label) => (
+        <li class="as-poll-option">
+          <span class="as-poll-label">{label}</span>
+          <span class="as-poll-bar">
+            <span class="as-poll-bar-fill" />
+          </span>
+          <span class="as-poll-count">0</span>
+        </li>
+      ))
+    }
+  </ol>
+  <div class="as-poll-footer">
+    <span class="as-poll-total">0 votes</span>
+    <button type="button" class="as-poll-close" hidden>Close voting</button>
+  </div>
+</div>

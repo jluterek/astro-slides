@@ -1,0 +1,127 @@
+/* Audience engagement (Phase 19): <Poll> tallies, reactions overlay, Q&A banner.
+   Token-driven like everything else — themes restyle via --slide-* custom props. */
+
+.as-poll {
+  width: 100%;
+  max-width: 720px;
+  display: grid;
+  gap: var(--slide-space-3, 12px);
+}
+.as-poll-question {
+  font-family: var(--slide-font-heading, inherit);
+  font-weight: var(--slide-heading-weight, 700);
+  font-size: var(--slide-text-lg, 1.3em);
+}
+.as-poll-options {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--slide-space-2, 8px);
+}
+.as-poll-option {
+  display: grid;
+  grid-template-columns: minmax(6em, 0.35fr) 1fr 2.5em;
+  align-items: center;
+  gap: var(--slide-space-2, 8px);
+}
+.as-poll-bar {
+  height: 1.1em;
+  border-radius: 999px;
+  background: var(--slide-surface, rgba(128, 128, 128, 0.15));
+  overflow: hidden;
+}
+.as-poll-bar-fill {
+  display: block;
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: var(--slide-accent, #7c3aed);
+  transition: width 0.4s cubic-bezier(0.26, 0.86, 0.44, 0.985);
+}
+.as-poll-count {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--slide-muted, inherit);
+}
+.as-poll-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--slide-text-sm, 0.85em);
+  color: var(--slide-muted, inherit);
+}
+.as-poll-close {
+  font: inherit;
+  padding: 0.3em 0.9em;
+  border-radius: 999px;
+  border: 1px solid var(--slide-border, currentColor);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.as-poll-closed .as-poll-close {
+  display: none;
+}
+
+/* Floating audience reactions. Fixed to the deck, above slides, below help overlay. */
+.as-reactions {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 40;
+}
+.as-reaction {
+  position: absolute;
+  bottom: -1.5em;
+  font-size: 2.2rem;
+  animation: as-reaction-float 3.2s ease-out forwards;
+}
+@keyframes as-reaction-float {
+  0% {
+    transform: translate(0, 0) scale(0.7);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--drift, 0px), -85vh) scale(1.15);
+    opacity: 0;
+  }
+}
+
+/* The moderated ("shown") audience question. */
+.as-qa-banner {
+  position: absolute;
+  left: 50%;
+  bottom: 4%;
+  transform: translateX(-50%);
+  max-width: 80%;
+  padding: 0.6em 1.4em;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--slide-surface, #222) 85%, transparent);
+  border: 1px solid var(--slide-border, rgba(128, 128, 128, 0.4));
+  color: var(--slide-fg, inherit);
+  font-size: var(--slide-text-md, 1em);
+  z-index: 35;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+/* Chrome that only makes sense live never prints or embeds. */
+.as-print .as-reactions,
+.as-print .as-qa-banner,
+.as-print .as-poll-close,
+.as-deck.as-embed .as-poll-close {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .as-reaction {
+    animation-duration: 0.6s;
+  }
+  .as-poll-bar-fill {
+    transition: none;
+  }
+}

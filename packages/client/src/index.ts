@@ -10,6 +10,7 @@ export {
   type LaserHandle,
   normalizePointer,
 } from "./drawing/index.js";
+export { type EngagementOptions, initEngagement } from "./engagement/index.js";
 export { initFitText } from "./fit-text.js";
 export { bindKeyboard, type NavActions, SHORTCUTS } from "./keyboard.js";
 export { fmString, type LayoutProps } from "./layout-types.js";
