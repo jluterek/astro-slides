@@ -7,9 +7,11 @@ on:
     branches: [main]
   pull_request:
 
+# Queue rather than cancel: cancelling a run mid-deploy can leave a superseded Pages
+# deployment behind. Builds take ~30s, so queued runs cost little.
 concurrency:
   group: docs-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -39,7 +41,19 @@ jobs:
       id-token: write
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.retry.outputs.page_url }}
     steps:
       - id: deployment
+        uses: actions/deploy-pages@v4
+        # The Pages service intermittently rejects a fresh deployment with
+        # "Deployment failed, try again later." — the same artifact deploys cleanly
+        # minutes later (verified: byte-identical artifacts, one failed, one served).
+        # Take the service at its word: pause and retry once before failing the job.
+        continue-on-error: true
+      - name: Wait before retrying the deployment
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 30
+      - id: retry
+        name: Retry Pages deployment
+        if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v4
