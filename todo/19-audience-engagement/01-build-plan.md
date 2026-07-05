@@ -67,3 +67,30 @@ watch the tally on the deck; (b) example deck + docs-site page + readme feature-
 sync; (c) e2e join-flow test (spec spawns dev --remote); (d) changeset (minor:
 client+core+cli), phase Outcome, distill to docs/built/19-audience-engagement.md,
 archive folder, ROADMAP done-row, open the phase PR.
+
+## Live-verification debugging state (2026-07-05, in progress)
+
+`examples/audience-engagement` created (builds: 10 pages; UNCOMMITTED yet with the
+runtime init-order fix). Live two-browser test via `dev --remote` FAILS so far:
+
+1. FIXED: initEngagement ran before controller.start() so no slide was `present` and
+   poll/open never published — moved after start() in runtime.ts (uncommitted).
+2. OPEN: on the deck page under `--remote`, `window.__ASTRO_SLIDES_SYNC__` is null even
+   though the runtime-config virtual module correctly serves the gateway path AND the
+   compiled slide.astro script (curl /@fs/...slide.astro?astro&type=script) contains the
+   assignment. The script's module graph appears to never execute.
+3. OPEN: Vite's own HMR websocket fails repeatedly under --remote ("Invalid frame
+   header" on ws://localhost:4321/) — the gateway's injectWebSocket (@hono/node-ws)
+   likely intercepts ALL http-server upgrades including Vite's HMR path. Suspect this is
+   PRE-EXISTING from Phase 11 (needs a main-branch probe to confirm — my main probe
+   timed out inconclusively; conference-talk cold-start under --remote may just exceed
+   60s due to mermaid optimize).
+4. Later probes saw the page stall before domcontentloaded under --remote — possibly
+   accumulated zombie dev servers during probing (pkill'd); retry cleanly.
+
+NEXT DEBUG STEPS: (a) clean single dev --remote run on examples/minimal from MAIN to
+establish the pre-existing baseline (does __ASTRO_SLIDES_SYNC__ get set? does HMR ws
+fail?); (b) if pre-existing, fix the upgrade-handler conflict (injectWebSocket must only
+handle upgrades for /__astro-slides/sync, letting Vite's HMR upgrades through) as part
+of this phase; (c) re-run the live vote test (script pattern in git history of this
+plan's sibling probes).

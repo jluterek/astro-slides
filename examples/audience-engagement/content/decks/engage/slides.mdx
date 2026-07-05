@@ -1,0 +1,54 @@
+---
+title: Audience Engagement
+theme: cosmic
+colorSchema: dark
+---
+
+# Ask the room
+
+Polls, Q&A, and reactions — live on the slide.
+
+Run this deck with `astro-slides dev --remote` and scan the **Audience** QR
+from the terminal to join.
+
+<!--
+Point the audience at the QR. Their phones get vote / ask / react — never
+navigation. Everything rides the same sync gateway as the phone remote.
+-->
+
+---
+layout: center
+---
+
+## Warm-up poll
+
+<Poll
+  id="warmup"
+  question="How are you presenting today?"
+  options={["Keynote/PowerPoint", "A web framework", "PDF and prayers", "Reading the room"]}
+/>
+
+<!--
+Votes land live as the bars fill. One vote per device, revisable until you
+press "Close voting". Results persist across a refresh.
+-->
+
+---
+
+## Ask me anything
+
+Your questions appear in my presenter view — I'll bring the best ones up on
+screen.
+
+<!--
+Open the presenter view (P) to see the Q&A panel: Show puts a question on
+this screen as a banner; Dismiss clears it.
+-->
+
+---
+layout: end
+---
+
+## Thanks for playing
+
+React with an emoji on your way out. 🎉

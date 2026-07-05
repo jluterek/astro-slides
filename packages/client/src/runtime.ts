@@ -252,15 +252,6 @@ export function initDeck(root: HTMLElement): DeckHandle {
     });
   }
 
-  // --- Audience engagement (Phase 19): polls, reactions, Q&A banner ---------
-  const stopEngagement = initEngagement(root, {
-    sync,
-    deckId,
-    preview,
-    embedded,
-    gatewayPath,
-  });
-
   // Publish local navigation to peers (audience + presenter follow). The preview
   // window is follow-only. `applyingRemote` guards against echoing a remote change.
   const publishNav = (): void => {
@@ -272,6 +263,17 @@ export function initDeck(root: HTMLElement): DeckHandle {
   const unsyncStep = store.step.listen(publishNav);
 
   controller.start();
+
+  // --- Audience engagement (Phase 19): polls, reactions, Q&A banner ---------
+  // AFTER start(): initPolls checks which slide is `present` to publish the active
+  // poll, and the state classes only exist once the controller has applied them.
+  const stopEngagement = initEngagement(root, {
+    sync,
+    deckId,
+    preview,
+    embedded,
+    gatewayPath,
+  });
 
   return {
     controller,

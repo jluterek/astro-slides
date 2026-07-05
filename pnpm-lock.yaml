@@ -272,6 +272,33 @@ importers:
         specifier: catalog:frontend
         version: 0.34.5
 
+  examples/audience-engagement:
+    dependencies:
+      '@astro-slides/cli':
+        specifier: workspace:*
+        version: link:../../packages/cli
+      '@astro-slides/client':
+        specifier: workspace:*
+        version: link:../../packages/client
+      '@astro-slides/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@astrojs/mdx':
+        specifier: catalog:frontend
+        version: 4.3.14(astro@5.18.2(@types/node@24.13.2)(rollup@4.62.2)(typescript@5.9.3)(yaml@2.9.0))
+      '@astrojs/react':
+        specifier: catalog:frontend
+        version: 4.4.2(@types/node@24.13.2)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(yaml@2.9.0)
+      astro:
+        specifier: catalog:frontend
+        version: 5.18.2(@types/node@24.13.2)(rollup@4.62.2)(typescript@5.9.3)(yaml@2.9.0)
+      react:
+        specifier: catalog:frontend
+        version: 19.2.7
+      react-dom:
+        specifier: catalog:frontend
+        version: 19.2.7(react@19.2.7)
+
   examples/blog-post-embed:
     dependencies:
       '@astro-slides/cli':
