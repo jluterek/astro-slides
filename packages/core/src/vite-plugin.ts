@@ -4,10 +4,12 @@ import { discoverDeckFiles, loadAllDecks } from "./deck-loader.js";
 import { loadDrawings } from "./drawing/persistence.js";
 import { resolveLayouts, userLayoutsDir } from "./layout-resolver.js";
 import { emitSlideModules } from "./mdx-emit.js";
+import { loadEngagement } from "./server/engagement.js";
 import { createSyncGateway } from "./server/gateway.js";
 import {
   configsModuleSource,
   drawingsModuleSource,
+  engagementModuleSource,
   layoutsModuleSource,
   runtimeConfigModuleSource,
   slidesModuleSource,
@@ -67,7 +69,13 @@ export function astroSlidesVitePlugin(options: VitePluginOptions): Plugin {
    * it, and Astro would 404 `/entry` first).
    */
   function mountGateway(server: ViteDevServer, root: string): void {
-    const gatewayPaths = ["/entry", "/__astro-slides/drawings", "/__astro-slides/sync"];
+    const gatewayPaths = [
+      "/entry",
+      "/audience",
+      "/__astro-slides/drawings",
+      "/__astro-slides/engagement",
+      "/__astro-slides/sync",
+    ];
     const isGatewayPath = (url: string | undefined): boolean => {
       const path = (url ?? "").split("?")[0] ?? "";
       return gatewayPaths.some((p) => path === p || path.startsWith(`${p}/`));
@@ -113,6 +121,13 @@ export function astroSlidesVitePlugin(options: VitePluginOptions): Plugin {
           data().decks.map((d) => [d.name, loadDrawings(options.root, d.name)]),
         );
         return drawingsModuleSource(map);
+      }
+      if (id === resolvedId(VIRTUAL_IDS.engagement)) {
+        // Read fresh so poll results survive a reload (Phase 19, mirrors drawings).
+        const map = Object.fromEntries(
+          data().decks.map((d) => [d.name, loadEngagement(options.root, d.name)]),
+        );
+        return engagementModuleSource(map);
       }
       if (id === resolvedId(VIRTUAL_IDS.runtimeConfig)) {
         // Advertise the sync gateway only when the dev server runs with --remote

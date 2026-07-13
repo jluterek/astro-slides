@@ -43,6 +43,48 @@ function useNow(active: boolean): number {
   return now;
 }
 
+/** Q&A moderation (Phase 19): audience questions with show / dismiss controls.
+ * `shown` puts the question on the audience-facing deck window as a banner. */
+function QaPanel({
+  questions,
+  moderate,
+}: {
+  questions: SharedState["questions"];
+  moderate: (id: string, status: "shown" | "dismissed" | "new") => void;
+}) {
+  const open = questions.filter((q) => q.status !== "dismissed");
+  if (open.length === 0) return null;
+  return (
+    <div className="as-qa-panel">
+      <header className="as-pane-label">Audience Q&A ({open.length})</header>
+      <ul>
+        {open
+          .slice()
+          .sort((a, b) => a.at - b.at)
+          .map((q) => (
+            <li key={q.id} className={q.status === "shown" ? "is-shown" : ""}>
+              <span className="as-qa-text">{q.text}</span>
+              <span className="as-qa-actions">
+                {q.status === "shown" ? (
+                  <button type="button" onClick={() => moderate(q.id, "new")}>
+                    Hide
+                  </button>
+                ) : (
+                  <button type="button" onClick={() => moderate(q.id, "shown")}>
+                    Show
+                  </button>
+                )}
+                <button type="button" onClick={() => moderate(q.id, "dismissed")}>
+                  Dismiss
+                </button>
+              </span>
+            </li>
+          ))}
+      </ul>
+    </div>
+  );
+}
+
 export default function PresenterApp({
   deckId,
   slides,
@@ -97,6 +139,8 @@ export default function PresenterApp({
   const timerStart = (): void => mainRef.current?.dispatch({ type: "timer/start", at: Date.now() });
   const timerPause = (): void => mainRef.current?.dispatch({ type: "timer/pause", at: Date.now() });
   const timerReset = (): void => mainRef.current?.dispatch({ type: "timer/reset" });
+  const moderate = (id: string, status: "shown" | "dismissed" | "new"): void =>
+    mainRef.current?.dispatch({ type: "qa/moderate", id, status });
   const toggleFullscreen = (): void => {
     if (document.fullscreenElement) void document.exitFullscreen();
     else void document.documentElement.requestFullscreen();
@@ -189,6 +233,7 @@ export default function PresenterApp({
                     Black
                   </button>
                 </div>
+                <QaPanel questions={state.questions} moderate={moderate} />
                 <Notes html={currentSlide?.notesHtml ?? ""} step={state.step} />
                 {record && <RecordingControls nameStem={deckId} />}
               </section>

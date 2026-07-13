@@ -1,0 +1,21 @@
+{
+  "name": "@astro-slides/example-audience-engagement",
+  "version": "0.0.2",
+  "private": true,
+  "type": "module",
+  "description": "Audience engagement showcase — polls, Q&A, and reactions over the sync gateway.",
+  "scripts": {
+    "dev": "astro-slides dev",
+    "build": "astro build"
+  },
+  "dependencies": {
+    "@astro-slides/cli": "workspace:*",
+    "@astro-slides/client": "workspace:*",
+    "@astro-slides/core": "workspace:*",
+    "@astrojs/mdx": "catalog:frontend",
+    "@astrojs/react": "catalog:frontend",
+    "astro": "catalog:frontend",
+    "react": "catalog:frontend",
+    "react-dom": "catalog:frontend"
+  }
+}

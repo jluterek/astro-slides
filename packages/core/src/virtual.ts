@@ -14,6 +14,7 @@ export const VIRTUAL_IDS = {
   layouts: "@astro-slides/layouts",
   titles: "@astro-slides/titles",
   drawings: "@astro-slides/drawings",
+  engagement: "@astro-slides/engagement",
   runtimeConfig: "@astro-slides/runtime-config",
 } as const;
 
@@ -35,6 +36,15 @@ export function runtimeConfigModuleSource(syncGateway: string | null, routePrefi
  */
 export function drawingsModuleSource(map: Record<string, Record<string, string>>): string {
   return `export const drawings = ${json(map)};\nexport default drawings;\n`;
+}
+
+/**
+ * Emit the persisted-engagement manifest (Phase 19): `{ <deck>: { polls, questions } }`.
+ * The deck route seeds these into the runtime's initial shared state so poll results
+ * and questions survive a refresh (like drawings).
+ */
+export function engagementModuleSource(map: Record<string, unknown>): string {
+  return `export const engagement = ${json(map)};\nexport default engagement;\n`;
 }
 
 /**

@@ -1,8 +1,8 @@
 ---
 title: Phase 19 — Audience engagement
-status: pending
-started:
-ended:
+status: done
+started: 2026-07-05
+ended: 2026-07-13
 ---
 
 ## Goal
@@ -64,9 +64,20 @@ Audience engagement is structurally the same wire with more participants and new
 
 ## Outcome
 
-_Fill in when the phase closes._
-
-- **What shipped:**
-- **Key decisions:**
-- **Follow-ups:**
+- **What shipped:** `<Poll>` with live tally bars (one revisable vote per anonymous
+  device, closable, persisted under `.astro-slides/engagement/`), the `/audience`
+  mobile page (vote / ask / react) with its QR printed beside the remote QR, a
+  server-side audience-role allowlist on the gateway relay, a Q&A moderation panel in
+  the presenter view (show → on-deck banner / dismiss), a sprite-capped reactions
+  overlay, the `examples/audience-engagement` deck, a docs page, and an e2e join-flow
+  test that drives a real `dev --remote` gateway (deck + phone contexts).
+- **Key decisions:** engagement state lives in the same `SharedState` reducer
+  (idempotent actions; reactions are transient events observed via a new store
+  `onAction` API, not state); poll OPTIONS stay in MDX — the deck island publishes
+  `poll/open` so phones never need the deck bundle; scoping is enforced server-side
+  (client-side alone fails the threat model); persistence mirrors drawings.
+- **Follow-ups:** found and fixed a latent Phase 11 bug — @hono/node-ws's blanket
+  upgrade listener corrupted Vite's HMR socket, reload-looping every page under
+  `dev --remote` (now path-filtered). `dev` gained `--port`. Descoped as planned:
+  accounts/auth, moderation beyond show/dismiss, cross-network tunneling.
 - **Distilled doc:** `docs/built/19-audience-engagement.md`

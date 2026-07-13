@@ -226,3 +226,44 @@
 .as-recording-clips a {
   color: #7dd3fc;
 }
+
+/* --- Audience Q&A moderation (Phase 19) ------------------------------------- */
+.as-qa-panel {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.4rem 0;
+  max-height: 30%;
+  overflow-y: auto;
+}
+.as-qa-panel ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+.as-qa-panel li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.85rem;
+}
+.as-qa-panel li.is-shown {
+  outline: 1px solid rgba(167, 139, 250, 0.7);
+}
+.as-qa-text {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+.as-qa-actions {
+  display: flex;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+.as-qa-actions button {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.6rem;
+}

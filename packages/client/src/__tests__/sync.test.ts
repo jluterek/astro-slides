@@ -13,6 +13,7 @@ import {
 } from "../sync/index.js";
 import { createSyncStore } from "../sync/store.js";
 import { formatDuration, parseTimeString } from "../sync/time.js";
+import { tallyVotes } from "../sync/types.js";
 
 describe("parseTimeString", () => {
   it("parses unit suffixes", () => {
@@ -158,5 +159,82 @@ describe("createSyncStore", () => {
     expect(posted).toContainEqual({ type: "goto", no: 5, step: 0 });
     expect(posted.some((a) => a.type === "hello")).toBe(true);
     store.close();
+  });
+});
+
+// --- Audience engagement (Phase 19) ------------------------------------------------
+
+describe("engagement reducer", () => {
+  const open = (s = initialState()) =>
+    reduce(s, {
+      type: "poll/open",
+      poll: { id: "p1", question: "Best fruit?", options: ["apple", "kiwi"] },
+    });
+
+  it("poll/open sets the active poll idempotently and seeds vote state", () => {
+    const s1 = open();
+    expect(s1.activePoll?.id).toBe("p1");
+    expect(s1.polls.p1).toEqual({ votes: {} });
+    const again = s1.activePoll ?? { id: "p1", question: "", options: [] };
+    expect(reduce(s1, { type: "poll/open", poll: again })).toBe(s1); // no-op repeat
+  });
+
+  it("vote is one-per-client, revisable, idempotent, and rejected when closed", () => {
+    let s = open();
+    s = reduce(s, { type: "vote", poll: "p1", client: "c1", option: 0 });
+    expect(s.polls.p1?.votes).toEqual({ c1: 0 });
+    // Idempotent repeat (double-delivery) — same state object back.
+    expect(reduce(s, { type: "vote", poll: "p1", client: "c1", option: 0 })).toBe(s);
+    // Revision replaces, never double-counts.
+    s = reduce(s, { type: "vote", poll: "p1", client: "c1", option: 1 });
+    expect(s.polls.p1?.votes).toEqual({ c1: 1 });
+    // Closed poll rejects further votes.
+    s = reduce(s, { type: "poll/close", id: "p1" });
+    expect(s.activePoll).toBeNull();
+    expect(reduce(s, { type: "vote", poll: "p1", client: "c2", option: 0 })).toBe(s);
+  });
+
+  it("tallyVotes counts per option and ignores out-of-range votes", () => {
+    const poll = { votes: { a: 0, b: 1, c: 1, d: 9 } };
+    expect(tallyVotes(poll, 2)).toEqual([1, 2]);
+    expect(tallyVotes(undefined, 3)).toEqual([0, 0, 0]);
+  });
+
+  it("qa/ask is idempotent by id; qa/moderate keeps at most one question shown", () => {
+    let s = initialState();
+    s = reduce(s, { type: "qa/ask", id: "q1", text: "Why?", at: 1 });
+    expect(reduce(s, { type: "qa/ask", id: "q1", text: "Why?", at: 1 })).toBe(s); // dedup
+    s = reduce(s, { type: "qa/ask", id: "q2", text: "How?", at: 2 });
+    s = reduce(s, { type: "qa/moderate", id: "q1", status: "shown" });
+    s = reduce(s, { type: "qa/moderate", id: "q2", status: "shown" });
+    expect(s.questions.map((q) => [q.id, q.status])).toEqual([
+      ["q1", "new"], // demoted when q2 was shown
+      ["q2", "shown"],
+    ]);
+  });
+
+  it("react is a state no-op but reaches action listeners on the store", () => {
+    let seen: SyncAction | null = null;
+    const channel: SyncChannel = { post: () => {}, subscribe: () => () => {}, close: () => {} };
+    const store = createSyncStore("talk", initialState(), { channel });
+    store.onAction((a) => {
+      seen = a;
+    });
+    const before = store.state.get();
+    store.dispatch({ type: "react", id: "r1", emoji: "🎉" });
+    expect(store.state.get()).toBe(before);
+    expect(seen).toEqual({ type: "react", id: "r1", emoji: "🎉" });
+    store.close();
+  });
+
+  it("state snapshots from older peers backfill engagement fields", () => {
+    const legacy = { ...initialState() } as Record<string, unknown>;
+    delete legacy.polls;
+    delete legacy.activePoll;
+    delete legacy.questions;
+    const s = reduce(initialState(), { type: "state", state: legacy as unknown as SharedState });
+    expect(s.polls).toEqual({});
+    expect(s.activePoll).toBeNull();
+    expect(s.questions).toEqual([]);
   });
 });

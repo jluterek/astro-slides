@@ -12,6 +12,7 @@ import FitText from "@astro-slides/client/components/FitText.astro";
 import Grid from "@astro-slides/client/components/Grid.astro";
 import HStack from "@astro-slides/client/components/HStack.astro";
 import Morph from "@astro-slides/client/components/Morph.astro";
+import Poll from "@astro-slides/client/components/Poll.astro";
 import RenderWhen from "@astro-slides/client/components/RenderWhen.astro";
 import Stack from "@astro-slides/client/components/Stack.astro";
 import Wrap from "@astro-slides/client/components/Wrap.astro";
@@ -25,6 +26,7 @@ import VDrag from "@astro-slides/client/components/VDrag.astro";
 import Youtube from "@astro-slides/client/components/Youtube.astro";
 import { configs, features } from "@astro-slides/configs";
 import { drawings as persistedDrawings } from "@astro-slides/drawings";
+import { engagement as persistedEngagement } from "@astro-slides/engagement";
 import { routePrefix } from "@astro-slides/runtime-config";
 import { layouts } from "@astro-slides/layouts";
 import { slides } from "@astro-slides/slides";
@@ -44,6 +46,7 @@ import "@astro-slides/client/styles/base.css";
 import "@astro-slides/client/styles/layouts.css";
 import "@astro-slides/client/styles/primitives.css";
 import "@astro-slides/client/styles/click.css";
+import "@astro-slides/client/styles/engagement.css";
 import "@astro-slides/client/styles/transitions.css";
 import "@astro-slides/client/styles/code.css";
 import "@astro-slides/client/styles/diagrams.css";
@@ -72,6 +75,7 @@ const COMPONENTS = {
   FlexBlock,
   FitText,
   Morph,
+  Poll,
   RenderWhen,
   // Slidev-compat shims.
   Youtube,
@@ -103,6 +107,11 @@ const config = configs[current.deck] ?? {};
 const drawingsCfg = (config.drawings ?? {}) as { persist?: boolean };
 const drawingsEnabled = config.drawings != null;
 const deckDrawings = persistedDrawings[current.deck] ?? {};
+// Engagement seed (Phase 19): persisted poll votes + questions survive a refresh.
+const deckEngagement = persistedEngagement[current.deck] ?? { polls: {}, questions: [] };
+const hasEngagement =
+  Object.keys(deckEngagement.polls ?? {}).length > 0 ||
+  (deckEngagement.questions ?? []).length > 0;
 // Speaker notes per slide (Phase 13): embedded so the PPTX exporter can read them from
 // the rendered page (the exporter has no access to the parser AST at runtime).
 const deckNotes = Object.fromEntries(deckSlides.map((s) => [s.no, s.notes ?? ""]));
@@ -214,6 +223,15 @@ const fallbackLayout = layouts.default ?? layouts["404"];
         }
       </div>
       <div class="as-status" aria-live="polite" aria-atomic="true"></div>
+      {
+        hasEngagement && (
+          <script
+            type="application/json"
+            class="as-engagement-data"
+            set:html={jsonForScript(deckEngagement)}
+          />
+        )
+      }
       {
         drawingsEnabled && (
           <script

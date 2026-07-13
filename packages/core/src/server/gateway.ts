@@ -1,8 +1,11 @@
+import { EventEmitter } from "node:events";
 import type { Server as HttpServer } from "node:http";
 import type { Http2SecureServer, Http2Server } from "node:http2";
 import { createNodeWebSocket } from "@hono/node-ws";
 import { Hono } from "hono";
 import { saveDrawing } from "../drawing/persistence.js";
+import { renderAudiencePage } from "./audience-page.js";
+import { audienceAllowed, type EngagementSnapshot, saveEngagement } from "./engagement.js";
 import { renderEntryPage } from "./entry-page.js";
 import { type HubClient, roomKey, SyncHub } from "./hub.js";
 
@@ -19,7 +22,9 @@ import { type HubClient, roomKey, SyncHub } from "./hub.js";
 
 export const SYNC_PATH = "/__astro-slides/sync";
 export const DRAWINGS_PATH = "/__astro-slides/drawings";
+export const ENGAGEMENT_PATH = "/__astro-slides/engagement";
 export const ENTRY_PATH = "/entry";
+export const AUDIENCE_PATH = "/audience";
 
 export interface GatewayOptions {
   /** Project root — where drawings persist. */
@@ -43,7 +48,23 @@ export interface Gateway {
 export function createSyncGateway(options: GatewayOptions): Gateway {
   const app = new Hono();
   const hub = new SyncHub();
-  const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
+  const { injectWebSocket: honoInject, upgradeWebSocket } = createNodeWebSocket({ app });
+
+  /**
+   * @hono/node-ws attaches a blanket `upgrade` listener that assumes it owns every
+   * WebSocket on the server — but the dev server's http server ALSO carries Vite's
+   * HMR socket. Handling that upgrade corrupts it ("Invalid frame header"), Vite's
+   * client loses its connection, and every page reload-loops under `--remote`.
+   * Attach hono's listener to a shim emitter and forward ONLY sync-path upgrades.
+   */
+  const injectWebSocket: Gateway["injectWebSocket"] = (server) => {
+    const shim = new EventEmitter();
+    honoInject(shim as unknown as HttpServer);
+    (server as HttpServer).on("upgrade", (request, socket, head) => {
+      const path = (request.url ?? "").split("?")[0];
+      if (path === SYNC_PATH) shim.emit("upgrade", request, socket, head);
+    });
+  };
 
   const authOk = (token: string | undefined): boolean => !options.token || token === options.token;
 
@@ -53,6 +74,28 @@ export function createSyncGateway(options: GatewayOptions): Gateway {
     const deck = c.req.query("deck") || options.defaultDeck();
     const total = options.deckTotals()[deck] ?? 1;
     return c.html(renderEntryPage({ deck, wsPath: SYNC_PATH, total, token: options.token }));
+  });
+
+  // Audience page (Phase 19): vote / ask / react, joined by QR. Same auth as /entry.
+  app.get(AUDIENCE_PATH, (c) => {
+    if (!authOk(c.req.query("token"))) return c.text("Forbidden", 403);
+    const deck = c.req.query("deck") || options.defaultDeck();
+    return c.html(renderAudiencePage({ deck, wsPath: SYNC_PATH, token: options.token }));
+  });
+
+  // Engagement persistence (Phase 19): the publisher deck window debounce-POSTs its
+  // poll + question state; results survive a refresh, like drawings.
+  app.post(ENGAGEMENT_PATH, async (c) => {
+    if (!authOk(c.req.query("token"))) return c.text("Forbidden", 403);
+    const body = (await c.req.json().catch(() => null)) as
+      | ({ deck?: string } & Partial<EngagementSnapshot>)
+      | null;
+    if (!body?.deck) return c.json({ ok: false }, 400);
+    const ok = saveEngagement(options.root, body.deck, {
+      polls: body.polls ?? {},
+      questions: body.questions ?? [],
+    });
+    return c.json({ ok }, ok ? 200 : 400);
   });
 
   // Drawing persistence.
@@ -73,6 +116,9 @@ export function createSyncGateway(options: GatewayOptions): Gateway {
     SYNC_PATH,
     upgradeWebSocket((c) => {
       const authorized = authOk(c.req.query("token"));
+      // Audience-role connections (Phase 19) get a server-side action allowlist —
+      // client-side scoping alone would let a modified page drive the deck.
+      const audience = c.req.query("role") === "audience";
       const room = roomKey(
         c.req.query("deck") || options.defaultDeck(),
         c.req.query("suffix") || "",
@@ -90,6 +136,7 @@ export function createSyncGateway(options: GatewayOptions): Gateway {
         },
         onMessage(evt) {
           if (!client || typeof evt.data !== "string") return;
+          if (audience && !audienceAllowed(evt.data)) return;
           hub.broadcast(room, client, evt.data);
         },
         onClose() {

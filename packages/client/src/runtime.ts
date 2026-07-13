@@ -4,13 +4,14 @@ import { initMagicMove } from "./code/magic-move.js";
 import { initMermaid } from "./diagrams/mermaid.js";
 import { initLaser } from "./drawing/laser.js";
 import { type DrawingHandle, initDrawing } from "./drawing/overlay.js";
+import { initEngagement } from "./engagement/index.js";
 import { bindKeyboard, type NavActions } from "./keyboard.js";
 import { DeckController, type SlideMeta } from "./navigation.js";
 import { applyScale, type Size } from "./scaling.js";
 import { createDeckStore, type DeckStore } from "./store.js";
 import type { SyncChannel } from "./sync/channel.js";
 import { createSyncStore } from "./sync/store.js";
-import { initialState } from "./sync/types.js";
+import { initialState, type SharedState } from "./sync/types.js";
 import { createWebSocketTransport } from "./sync/websocket.js";
 import { bindTouch } from "./touch.js";
 import { createSlideTransition } from "./transitions/index.js";
@@ -48,6 +49,23 @@ function ensureBlackout(root: HTMLElement): HTMLElement {
   el.hidden = true;
   root.append(el);
   return el;
+}
+
+/** Read the build-embedded persisted engagement snapshot (Phase 19). */
+function readPersistedEngagement(
+  root: HTMLElement,
+): { polls: SharedState["polls"]; questions: SharedState["questions"] } | null {
+  const el = root.querySelector<HTMLElement>(".as-engagement-data");
+  if (!el?.textContent) return null;
+  try {
+    const parsed = JSON.parse(el.textContent) as {
+      polls?: SharedState["polls"];
+      questions?: SharedState["questions"];
+    };
+    return { polls: parsed.polls ?? {}, questions: parsed.questions ?? [] };
+  } catch {
+    return null;
+  }
 }
 
 /** Read the build-embedded persisted drawings (Phase 11), keyed `"<no>:<step>"`. */
@@ -196,6 +214,11 @@ export function initDeck(root: HTMLElement): DeckHandle {
     gatewayPath && !preview ? [createWebSocketTransport(deckId, { path: gatewayPath })] : [];
   const initial = initialState(start.slide, start.step);
   initial.drawings = readPersistedDrawings(root);
+  const persistedEngagement = readPersistedEngagement(root);
+  if (persistedEngagement) {
+    initial.polls = persistedEngagement.polls;
+    initial.questions = persistedEngagement.questions;
+  }
   const sync = createSyncStore(deckId, initial, {
     suffix: preview ? "preview" : "",
     // Embeds are passive: two iframes of the same deck on one docs page (same origin,
@@ -245,6 +268,17 @@ export function initDeck(root: HTMLElement): DeckHandle {
 
   controller.start();
 
+  // --- Audience engagement (Phase 19): polls, reactions, Q&A banner ---------
+  // AFTER start(): initPolls checks which slide is `present` to publish the active
+  // poll, and the state classes only exist once the controller has applied them.
+  const stopEngagement = initEngagement(root, {
+    sync,
+    deckId,
+    preview,
+    embedded,
+    gatewayPath,
+  });
+
   return {
     controller,
     store,
@@ -260,6 +294,7 @@ export function initDeck(root: HTMLElement): DeckHandle {
       unsyncStep();
       laser?.destroy();
       drawing?.destroy();
+      stopEngagement();
       sync.close();
       window.removeEventListener("resize", onResize);
       window.removeEventListener("popstate", onPopState);

@@ -4,13 +4,13 @@ The phase index. Always current. Update when a phase starts or ends.
 
 ## Active
 
-_No phase is active. Next up: Phase 19._
+_No phase is active._
 
 ## Planned
 
 Phases are listed in dependency order. They can be re-sequenced if a later phase becomes a higher priority, but dependencies must be honored.
 
-- **Phase 19 — Audience engagement** ([`19-audience-engagement`](./19-audience-engagement/README.md)) — polls, Q&A, and emoji reactions live on the slide, joined by QR over the Phase 11 sync gateway. First post-release phase.
+_Nothing further sketched. Post-19 candidates: VS Code extension; the deliberate 1.0.0 cut._
 
 ## Done
 
@@ -33,6 +33,7 @@ Phases are listed in dependency order. They can be re-sequenced if a later phase
 | 15 | `15-marp-slidev-compatibility` | [`docs/built/15-marp-slidev-compatibility.md`](../docs/built/15-marp-slidev-compatibility.md) — `v-click` remark aliases, Marp image shorthand (`![bg]`/`![w:N]`), 6 Slidev component shims, 3 Marp theme ports; documented gaps (closed 2026-07-01) |
 | 16 | `16-default-theme` | [`docs/built/16-default-theme.md`](../docs/built/16-default-theme.md) — "Cosmic" flagship theme (oklch dark/light palette, self-hosted Space Grotesk + Inter, 8px rhythm, FlexBlock cards, CSS starfield) + theme-by-name switching via `[data-theme]` scoping (closed 2026-07-01) |
 | 17 | `17-docs-and-examples` | [`docs/built/17-docs-and-examples.md`](../docs/built/17-docs-and-examples.md) — Starlight docs site (17 source-linked pages, GH Pages workflow), 4 new example decks, `create-astro-slides` scaffolder, wired `dev` in-TTY shortcuts, CI apps job (closed 2026-07-01) |
+| 19 | `19-audience-engagement` | [`docs/built/19-audience-engagement.md`](../docs/built/19-audience-engagement.md) — live polls (`<Poll>`, one revisable vote/device, persisted), `/audience` QR page with server-side role scoping, Q&A moderation panel + on-deck banner, reactions overlay; fixed the Phase 11 gateway/Vite-HMR upgrade conflict (closed 2026-07-13) |
 | 18 | `18-v1-release` | [`docs/built/18-v1-release.md`](../docs/built/18-v1-release.md) — first public release: Changesets + OIDC publish automation, all 7 packages live on npm at 0.1.0/0.1.1 with provenance, clean-room install verified, GitHub release, open-source meta files; shipped 0.1.0 (not 1.0.0) deliberately (closed 2026-07-04) |
 
 ---
