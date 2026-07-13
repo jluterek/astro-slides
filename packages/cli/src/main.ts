@@ -221,10 +221,12 @@ const devCommand = defineCommand({
       type: "string",
       description: "Serve a phone remote on the LAN (optionally --remote=<password>).",
     },
+    port: { type: "string", description: "Dev server port (default 4321)." },
   },
   async run({ args }) {
     const astro = (await import("astro")) as unknown as AstroModule;
     const root = args.root ?? process.cwd();
+    const port = args.port ? Number(args.port) : undefined;
 
     // --remote (Phase 11): bind 0.0.0.0 and stand up the sync gateway. `--remote` alone
     // is open on the LAN; `--remote=<password>` derives an access token. The integration
@@ -237,7 +239,11 @@ const devCommand = defineCommand({
       if (token) process.env.ASTRO_SLIDES_REMOTE_TOKEN = token;
     }
 
-    const devOptions = remote ? { server: { host: true } } : {};
+    const devOptions = {
+      ...(remote || port
+        ? { server: { ...(remote ? { host: true } : {}), ...(port ? { port } : {}) } }
+        : {}),
+    };
     let server = await astro.dev({ root, ...devOptions });
     console.log(shortcutHelp());
 

@@ -60,6 +60,7 @@ export default defineConfig({
           items: [
             { label: "Presenter mode", slug: "presenting/presenter-mode" },
             { label: "Drawing, recording & remote", slug: "presenting/drawing-and-remote" },
+            { label: "Audience engagement", slug: "presenting/audience-engagement" },
           ],
         },
         {
