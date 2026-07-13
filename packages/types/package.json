@@ -1,6 +1,6 @@
 {
   "name": "@astro-slides/types",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "private": false,
   "type": "module",
   "description": "Shared TypeScript types for astro-slides, inferred from Zod schemas.",

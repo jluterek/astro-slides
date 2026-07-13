@@ -1,6 +1,6 @@
 {
   "name": "@astro-slides/parser",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "private": false,
   "type": "module",
   "description": "MDX/Markdown → slide AST. Frontmatter, separators, slot sugar, snippet and slide imports.",
