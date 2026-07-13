@@ -16,6 +16,8 @@ import {
 } from "./virtual.js";
 
 export interface VitePluginOptions {
+  /** Normalized route prefix ("" or "/seg") — advertised to routes/runtime. */
+  routePrefix?: string;
   root: string;
   decks?: string[];
   /** Extra layout override folders (e.g. a theme's `layouts/`), low-to-high priority. */
@@ -116,7 +118,7 @@ export function astroSlidesVitePlugin(options: VitePluginOptions): Plugin {
         // Advertise the sync gateway only when the dev server runs with --remote
         // (the CLI sets ASTRO_SLIDES_REMOTE); static builds get null.
         const remote = process.env.ASTRO_SLIDES_REMOTE ? "/__astro-slides/sync" : null;
-        return runtimeConfigModuleSource(remote);
+        return runtimeConfigModuleSource(remote, options.routePrefix ?? "");
       }
       return null;
     },

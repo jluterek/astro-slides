@@ -72,6 +72,7 @@ export default defineConfig({
         {
           label: "Integrations",
           items: [
+            { label: "Embedding in a site", slug: "integrations/embedding" },
             { label: "MCP server", slug: "integrations/mcp-server" },
             { label: "Marp & Slidev compatibility", slug: "integrations/marp-slidev" },
           ],

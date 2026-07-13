@@ -22,6 +22,34 @@ export interface AstroSlidesOptions {
   decks?: string[];
   /** PlantUML server base URL (default the public plantuml.com). */
   plantumlServer?: string;
+  /**
+   * Route prefix for every injected route, e.g. `"/slides"` →
+   * `/slides/[deck]/[slide]`, `/slides/presenter/…`, `/slides/print/…`, and the
+   * root redirect/dashboard at `/slides/`. Lets decks live inside an existing site
+   * without claiming its top-level namespace. Default: no prefix.
+   */
+  prefix?: string;
+  /**
+   * Inject the root route (redirect for a single deck, dashboard for several) at
+   * `/` — or at `<prefix>/` when a prefix is set. Turn off when the host site owns
+   * its homepage and you only want the deck/presenter/print routes. Default: true.
+   */
+  injectRoot?: boolean;
+  /**
+   * Scope the bundled React renderer to astro-slides' own components. Set this when
+   * the host site uses another JSX framework (Solid, Preact, Vue-JSX) whose renderer
+   * would otherwise fight React over `.jsx`/`.tsx` files. With scoping on, YOUR
+   * `.tsx` files are ignored by astro-slides' React — register your own renderer
+   * for them. Default: false (React claims JSX project-wide, as before).
+   */
+  scopedReact?: boolean;
+}
+
+/** Normalize a route prefix to `""` or `"/seg(/seg)*"` — leading slash, no trailing. */
+export function normalizePrefix(prefix: string | undefined): string {
+  if (!prefix) return "";
+  const trimmed = prefix.trim().replace(/\/+$/, "").replace(/^\/+/, "");
+  return trimmed ? `/${trimmed}` : "";
 }
 
 /**
@@ -34,6 +62,8 @@ export function astroSlides(options: AstroSlidesOptions = {}): AstroIntegration 
     hooks: {
       "astro:config:setup": ({ config, updateConfig, injectRoute, logger }) => {
         const root = fileURLToPath(config.root);
+        const prefix = normalizePrefix(options.prefix);
+        const injectRoot = options.injectRoot !== false;
 
         // Code rendering (Phase 08). remark-code lazily loads `setup/shiki.ts` and
         // boots the highlighter on first render (not here — the config-load module
@@ -54,6 +84,7 @@ export function astroSlides(options: AstroSlidesOptions = {}): AstroIntegration 
           },
         };
         if (options.decks) pluginOptions.decks = options.decks;
+        pluginOptions.routePrefix = prefix;
         updateConfig({
           // Our own Shiki pipeline highlights code (dual themes, click lines, Magic
           // Move); disable Astro's built-in highlighter so it doesn't also run.
@@ -64,7 +95,12 @@ export function astroSlides(options: AstroSlidesOptions = {}): AstroIntegration 
           // components, so remark-code skips them) -> code (highlights the rest,
           // appends code-line clicks). katex + code both bump the shared totalClicks.
           integrations: [
-            react(),
+            // Scoped mode (embedding, issue #41): limit the React renderer to
+            // astro-slides' own island sources so a host site's Solid/Preact/etc.
+            // renderer keeps `.jsx`/`.tsx` for its files.
+            options.scopedReact
+              ? react({ include: ["**/@astro-slides/**", "**/packages/client/**"] })
+              : react(),
             mdx({
               remarkPlugins: [
                 [remarkSnippets, { root, onFile: onSnippetFile }],
@@ -91,37 +127,47 @@ export function astroSlides(options: AstroSlidesOptions = {}): AstroIntegration 
           },
         });
         injectRoute({
-          pattern: "/[deck]/[slide]",
+          pattern: `${prefix}/[deck]/[slide]`,
           entrypoint: fileURLToPath(new URL("./routes/slide.astro", import.meta.url)),
           prerender: true,
         });
         // Presenter view (Phase 10) — a hydrated React island at /presenter/<deck>/<n>.
         injectRoute({
-          pattern: "/presenter/[deck]/[slide]",
+          pattern: `${prefix}/presenter/[deck]/[slide]`,
           entrypoint: fileURLToPath(new URL("./routes/presenter.astro", import.meta.url)),
           prerender: true,
         });
         // Print route (Phase 12) — all slides stacked for `window.print()` / PDF export.
         injectRoute({
-          pattern: "/print/[deck]",
+          pattern: `${prefix}/print/[deck]`,
           entrypoint: fileURLToPath(new URL("./routes/print.astro", import.meta.url)),
           prerender: true,
         });
-        // SPA entry (Phase 12) — `/` redirects to the first deck's first slide.
-        injectRoute({
-          pattern: "/",
-          entrypoint: fileURLToPath(new URL("./routes/index.astro", import.meta.url)),
-          prerender: true,
-        });
-        logger.info("Registered virtual modules and the deck + presenter + print routes.");
+        // SPA entry (Phase 12) — redirect (single deck) / dashboard (several). Under a
+        // prefix it lives at `<prefix>/`, out of the host homepage's way; `injectRoot:
+        // false` skips it entirely (issue #40).
+        if (injectRoot) {
+          injectRoute({
+            pattern: prefix || "/",
+            entrypoint: fileURLToPath(new URL("./routes/index.astro", import.meta.url)),
+            prerender: true,
+          });
+        }
+        logger.info(
+          `Registered virtual modules and the deck + presenter + print routes${prefix ? ` under ${prefix}` : ""}.`,
+        );
       },
       // GitHub Pages fallback (Phase 12): copy the SPA entry to 404.html so deep links
       // (e.g. /slides/7 refreshed on a static host) resolve to the app instead of a 404.
+      // Standalone only: when embedding (prefix set / root not injected) the host owns
+      // `/` and its own 404 — clobbering dist/404.html would overwrite the host's page.
       "astro:build:done": ({ dir, logger }) => {
+        if (normalizePrefix(options.prefix) || options.injectRoot === false) return;
         const out = fileURLToPath(dir);
         const index = `${out}/index.html`;
-        if (existsSync(index)) {
-          copyFileSync(index, `${out}/404.html`);
+        const notFound = `${out}/404.html`;
+        if (existsSync(index) && !existsSync(notFound)) {
+          copyFileSync(index, notFound);
           logger.info("Copied index.html → 404.html for static-host deep links.");
         }
       },

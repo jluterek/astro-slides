@@ -24,8 +24,8 @@ const json = (value: unknown): string => JSON.stringify(value);
  * WebSocket path when the dev server is running with `--remote`, else null — so a static
  * build never advertises a gateway and the runtime stays BroadcastChannel-only.
  */
-export function runtimeConfigModuleSource(syncGateway: string | null): string {
-  return `export const syncGateway = ${json(syncGateway)};\nexport default { syncGateway };\n`;
+export function runtimeConfigModuleSource(syncGateway: string | null, routePrefix = ""): string {
+  return `export const syncGateway = ${json(syncGateway)};\nexport const routePrefix = ${json(routePrefix)};\nexport default { syncGateway, routePrefix };\n`;
 }
 
 /**

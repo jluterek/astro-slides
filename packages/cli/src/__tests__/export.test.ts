@@ -5,6 +5,7 @@ import JSZip from "jszip";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   discoverDecks,
+  discoverRoutePrefix,
   listFiles,
   padNo,
   parseRange,
@@ -88,5 +89,29 @@ describe("discoverDecks", () => {
 
   it("returns nothing when there is no print output", () => {
     expect(discoverDecks(mkdtempSync(join(tmpdir(), "as-empty-")))).toEqual([]);
+  });
+});
+
+describe("discoverRoutePrefix", () => {
+  it("returns '' when print/ sits at the dist root", () => {
+    const dist = mkdtempSync(join(tmpdir(), "as-pfx-"));
+    mkdirSync(join(dist, "print", "talk"), { recursive: true });
+    expect(discoverRoutePrefix(dist)).toBe("");
+    rmSync(dist, { recursive: true, force: true });
+  });
+
+  it("finds decks namespaced under an integration prefix (issue #39)", () => {
+    const dist = mkdtempSync(join(tmpdir(), "as-pfx-"));
+    mkdirSync(join(dist, "slides", "print", "talk"), { recursive: true });
+    mkdirSync(join(dist, "blog", "post"), { recursive: true }); // host content ignored
+    expect(discoverRoutePrefix(dist)).toBe("/slides");
+    rmSync(dist, { recursive: true, force: true });
+  });
+
+  it("returns '' when no print marker exists at all", () => {
+    const dist = mkdtempSync(join(tmpdir(), "as-pfx-"));
+    mkdirSync(join(dist, "about"), { recursive: true });
+    expect(discoverRoutePrefix(dist)).toBe("");
+    rmSync(dist, { recursive: true, force: true });
   });
 });
