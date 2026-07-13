@@ -27,6 +27,7 @@ import Youtube from "@astro-slides/client/components/Youtube.astro";
 import { configs, features } from "@astro-slides/configs";
 import { drawings as persistedDrawings } from "@astro-slides/drawings";
 import { engagement as persistedEngagement } from "@astro-slides/engagement";
+import { routePrefix } from "@astro-slides/runtime-config";
 import { layouts } from "@astro-slides/layouts";
 import { slides } from "@astro-slides/slides";
 // KaTeX CSS as a URL asset — linked only when the deck uses math (conditional include).
@@ -178,6 +179,7 @@ const fallbackLayout = layouts.default ?? layouts["404"];
     <div
       class="as-deck"
       data-deck={current.deck}
+      data-route-prefix={routePrefix || undefined}
       data-theme={config.theme ?? "starter"}
       data-current={current.no}
       data-total={deckSlides.length}

@@ -145,7 +145,11 @@ export function initDeck(root: HTMLElement): DeckHandle {
     // pull in vite/client types, so read it through a cast rather than widening the config.
     // BASE_URL keeps the configured form (`/talks` has no trailing slash) — normalize.
     const raw = (import.meta as ImportMeta & { env?: { BASE_URL?: string } }).env?.BASE_URL || "/";
-    const base = raw.endsWith("/") ? raw : `${raw}/`;
+    const siteBase = raw.endsWith("/") ? raw : `${raw}/`;
+    // Deck routes may live under the integration's route prefix (issue #39) — the
+    // deck route stamps it so this window can address its presenter sibling.
+    const prefix = root.dataset.routePrefix ?? "";
+    const base = prefix ? `${siteBase}${prefix.slice(1)}/` : siteBase;
     const url = `${base}presenter/${encodeURIComponent(deck)}/${controller.current.slide}`;
     window.open(url, "_blank", "noopener");
   };

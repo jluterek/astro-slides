@@ -425,6 +425,31 @@ export async function zipDirectory(dir: string): Promise<Buffer> {
 }
 
 /** Discover built decks + slide counts + titles by scanning the dist output. */
+/**
+ * Locate the deck routes' URL prefix inside a built dist (issue #39): the integration
+ * can inject routes under `astroSlides({ prefix: "/slides" })`, in which case the
+ * `print/` marker directory lives at `dist/slides/print` rather than `dist/print`.
+ * Returns "" for top-level decks, else "/seg(/seg)*" — shallowest match wins.
+ */
+export function discoverRoutePrefix(dist: string, maxDepth = 3): string {
+  const queue: { dir: string; rel: string[] }[] = [{ dir: dist, rel: [] }];
+  while (queue.length > 0) {
+    const item = queue.shift();
+    if (!item) break;
+    const { dir, rel } = item;
+    if (existsSync(join(dir, "print")) && statSync(join(dir, "print")).isDirectory()) {
+      return rel.length ? `/${rel.join("/")}` : "";
+    }
+    if (rel.length >= maxDepth) continue;
+    for (const name of readdirSync(dir)) {
+      if (name.startsWith("_") || name === "print") continue;
+      const child = join(dir, name);
+      if (statSync(child).isDirectory()) queue.push({ dir: child, rel: [...rel, name] });
+    }
+  }
+  return "";
+}
+
 export function discoverDecks(dist: string): { deck: string; total: number; titles: string[] }[] {
   const printDir = join(dist, "print");
   if (!existsSync(printDir)) return [];
@@ -1270,7 +1295,11 @@ const exportCommand = defineCommand({
               return;
             }
             ctx.browser = await launchChromium(args["executable-path"] || undefined);
-            const decks = discoverDecks(ctx.dist);
+            // Prefixed routes (issue #39): fold the detected prefix into the base URL
+            // so every exporter's /print/… and /<deck>/<no> URLs resolve unchanged.
+            const routePrefix = discoverRoutePrefix(ctx.dist);
+            if (routePrefix) ctx.baseUrl = `${ctx.baseUrl}${routePrefix}`;
+            const decks = discoverDecks(join(ctx.dist, ...routePrefix.split("/").filter(Boolean)));
             if (!decks.length) throw new Error("No built decks found under dist/.");
             // With several decks, a single --output file would be overwritten by each
             // deck in turn — suffix the deck name (talk.pdf → talk.slides-a.pdf).

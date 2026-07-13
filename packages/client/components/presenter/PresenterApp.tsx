@@ -29,6 +29,8 @@ export interface PresenterProps {
   durationMs: number | null;
   /** Show the recording controls (deck `record:` is not `false`). */
   record?: boolean;
+  /** Integration route prefix ("" or "/seg") — deck routes live under it (issue #39). */
+  routePrefix?: string;
 }
 
 function useNow(active: boolean): number {
@@ -89,6 +91,7 @@ export default function PresenterApp({
   start,
   durationMs,
   record = false,
+  routePrefix = "",
 }: PresenterProps) {
   const navSlides = useMemo<SlideMeta[]>(
     () => slides.map((s) => ({ no: s.no, steps: s.totalClicks, title: s.title })),
@@ -172,7 +175,8 @@ export default function PresenterApp({
   const rawBase =
     (import.meta as ImportMeta & { env?: { BASE_URL?: string } }).env?.BASE_URL || "/";
   const siteBase = rawBase.endsWith("/") ? rawBase : `${rawBase}/`;
-  const base = `${siteBase}${encodeURIComponent(deckId)}`;
+  const prefixed = routePrefix ? `${siteBase}${routePrefix.slice(1)}/` : siteBase;
+  const base = `${prefixed}${encodeURIComponent(deckId)}`;
 
   return (
     <div className="as-presenter">

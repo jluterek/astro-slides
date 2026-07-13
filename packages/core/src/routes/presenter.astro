@@ -1,4 +1,5 @@
 ---
+import { routePrefix } from "@astro-slides/runtime-config";
 import PresenterApp from "@astro-slides/client/components/presenter/PresenterApp.tsx";
 import { parseTimeString } from "@astro-slides/client";
 import { configs } from "@astro-slides/configs";
@@ -46,6 +47,7 @@ const deckSlides = slides
     <PresenterApp
       client:load
       deckId={deck}
+      routePrefix={routePrefix}
       slides={deckSlides}
       start={start}
       durationMs={durationMs}
