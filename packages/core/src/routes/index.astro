@@ -11,8 +11,13 @@ import { slides } from "@astro-slides/slides";
  */
 // BASE_URL keeps the configured form — `base: "/talks"` has no trailing slash
 // (trailingSlash "ignore"/"never"), so normalize before concatenating segments.
+import { routePrefix } from "@astro-slides/runtime-config";
+
 const rawBase = import.meta.env.BASE_URL;
-const base = rawBase.endsWith("/") ? rawBase : `${rawBase}/`;
+const siteBase = rawBase.endsWith("/") ? rawBase : `${rawBase}/`;
+// Deck routes live under the integration's route prefix (issue #39), inside any
+// site-wide Astro `base` — e.g. base "/talks" + prefix "/slides" → "/talks/slides/…".
+const base = routePrefix ? `${siteBase}${routePrefix.slice(1)}/` : siteBase;
 
 const ordered = [...slides].sort((a, b) => a.no - b.no);
 const byDeck = new Map<string, typeof slides>();
