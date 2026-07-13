@@ -1,5 +1,18 @@
 # @astro-slides/client
 
+## 0.2.0
+
+### Minor Changes
+
+- [#44](https://github.com/jluterek/astro-slides/pull/44) [`b01e701`](https://github.com/jluterek/astro-slides/commit/b01e70109dd89aaaf7dafb646b773a521a281318) Thanks [@jluterek](https://github.com/jluterek)! - Audience engagement (Phase 19): live polls, moderated Q&A, and emoji reactions. Declare a `<Poll id question options>` in MDX and the results tally live on the slide as the audience votes from their phones — one revisable vote per device, closable by the presenter, persisted across refreshes like drawings. Spectators join via the new `/audience` page (printed as a QR beside the remote QR under `dev --remote`), scoped server-side to vote/ask/react — audience connections can never navigate or draw. Questions land in a presenter-view moderation panel (show/dismiss; a shown question banners on the deck), and reactions float over the slides with a sprite cap. Also fixes a latent Phase 11 bug: the gateway's WebSocket handler corrupted Vite's HMR socket, reload-looping every page under `dev --remote`.
+
+- [#42](https://github.com/jluterek/astro-slides/pull/42) [`eccd7c3`](https://github.com/jluterek/astro-slides/commit/eccd7c366c98ba6079adeb98bcac05cb9ab6ba0f) Thanks [@jluterek](https://github.com/jluterek)! - Embedding into an existing Astro site is now first-class ([#39](https://github.com/jluterek/astro-slides/issues/39), [#40](https://github.com/jluterek/astro-slides/issues/40), [#41](https://github.com/jluterek/astro-slides/issues/41)). `astroSlides({ prefix: "/slides" })` namespaces every injected route — deck viewer, presenter, print, and the redirect/dashboard (which moves to `<prefix>/`) — so decks live inside a host site without claiming its top-level namespace; navigation, the presenter-launch shortcut, dashboard links, and `astro-slides export` all understand the prefix (export auto-detects it in the built output). `injectRoot: false` skips the root route entirely for hosts that own their homepage, and the 404.html static-host fallback no longer runs (or clobbers the host's 404) when embedding. `scopedReact: true` confines the bundled React renderer to astro-slides' own islands so a host's Solid/Preact/Vue-JSX renderer keeps `.jsx`/`.tsx` for its files. A new docs page ("Embedding in an existing Astro site") plus the runnable `examples/embedded-site` cover the setup, including `@astrojs/mdx` coexistence.
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @astro-slides/types@0.2.0
+
 ## 0.1.2
 
 ### Patch Changes

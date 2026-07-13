@@ -1,6 +1,6 @@
 {
   "name": "@astro-slides/core",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "private": false,
   "type": "module",
   "description": "Astro integration, Vite plugins, and the slide compilation pipeline.",
