@@ -50,7 +50,7 @@ export function ensureHelpOverlay(
   if (onRead) {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "as-help-present as-help-read";
+    button.className = "as-help-read";
     button.textContent = "Open reading view →";
     button.addEventListener("click", onRead);
     panel.append(button);
