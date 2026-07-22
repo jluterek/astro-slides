@@ -58,6 +58,7 @@ describe("embedding options (issues #39/#40)", () => {
     expect(runSetup({ prefix: "/slides" })).toEqual([
       "/slides/[deck]/[slide]",
       "/slides/presenter/[deck]/[slide]",
+      "/slides/read/[deck]",
       "/slides/print/[deck]",
       "/slides",
     ]);
@@ -67,6 +68,7 @@ describe("embedding options (issues #39/#40)", () => {
     expect(runSetup({ injectRoot: false })).toEqual([
       "/[deck]/[slide]",
       "/presenter/[deck]/[slide]",
+      "/read/[deck]",
       "/print/[deck]",
     ]);
   });

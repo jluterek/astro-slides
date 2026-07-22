@@ -153,7 +153,17 @@ export function initDeck(root: HTMLElement): DeckHandle {
     const url = `${base}presenter/${encodeURIComponent(deck)}/${controller.current.slide}`;
     window.open(url, "_blank", "noopener");
   };
-  const help = ensureHelpOverlay(root, openPresenter);
+  const openRead = (): void => {
+    if (root.classList.contains("as-embed")) return;
+    if (new URLSearchParams(location.search).has("as-preview")) return;
+    const deck = root.dataset.deck ?? "";
+    const raw = (import.meta as ImportMeta & { env?: { BASE_URL?: string } }).env?.BASE_URL || "/";
+    const siteBase = raw.endsWith("/") ? raw : `${raw}/`;
+    const prefix = root.dataset.routePrefix ?? "";
+    const base = prefix ? `${siteBase}${prefix.slice(1)}/` : siteBase;
+    window.open(`${base}read/${encodeURIComponent(deck)}`, "_blank", "noopener");
+  };
+  const help = ensureHelpOverlay(root, openPresenter, openRead);
   const setOverview = (on: boolean): void => {
     root.classList.toggle("as-overview", on);
     store.overview.set(on);

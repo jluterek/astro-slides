@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { parse } from "../index.js";
 import { hasSlots, parseSlots } from "../slots.js";
 
 const lines = (...l: string[]) => l.join("\n");
@@ -29,5 +30,19 @@ describe("parseSlots", () => {
   it("hasSlots reflects presence of named slots", () => {
     expect(hasSlots(lines("a", "::b::", "c"))).toBe(true);
     expect(hasSlots("plain")).toBe(false);
+  });
+});
+
+describe("::read:: slot (issue #45)", () => {
+  it("captures read prose as a named slot, with trailing speaker notes still extracted", () => {
+    const deck = parse(
+      "---\ntitle: T\n---\n\n# Slide\n\nBody.\n\n::read::\n\nCompanion prose with a [link](https://x.test).\n\n<!-- private delivery cue -->\n",
+    );
+    const slide = deck.slides[0];
+    expect(slide?.slots.read).toContain("Companion prose");
+    expect(slide?.slots.default).toContain("Body.");
+    expect(slide?.slots.default).not.toContain("Companion prose");
+    expect(slide?.notes).toBe("private delivery cue");
+    expect(slide?.slots.read).not.toContain("private delivery cue");
   });
 });

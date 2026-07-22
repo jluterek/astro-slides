@@ -8,6 +8,14 @@ duration: 20min
 
 A web-native presentation framework — this deck exercises the built-in layouts.
 
+
+::read::
+
+This paragraph is **companion prose** for the reading view (`/read/<deck>`): it never
+renders in the live deck, presenter view, print, or any export — only on the annotated
+read page, beneath a static render of this slide. Author it before the speaker-notes
+comment, which must stay last in the slide.
+
 <!--
 Welcome the audience. [click] Mention the web-native angle. [click:2] Then move on.
 -->
