@@ -1,0 +1,207 @@
+---
+import Click from "@astro-slides/client/components/Click.tsx";
+import After from "@astro-slides/client/components/After.tsx";
+import Clicks from "@astro-slides/client/components/Clicks.tsx";
+import CodeBlock from "@astro-slides/client/components/CodeBlock.astro";
+import ShikiMagicMove from "@astro-slides/client/components/ShikiMagicMove.astro";
+import KaTeX from "@astro-slides/client/components/KaTeX.astro";
+import Mermaid from "@astro-slides/client/components/Mermaid.astro";
+import PlantUml from "@astro-slides/client/components/PlantUml.astro";
+import FlexBlock from "@astro-slides/client/components/FlexBlock.astro";
+import FitText from "@astro-slides/client/components/FitText.astro";
+import Grid from "@astro-slides/client/components/Grid.astro";
+import HStack from "@astro-slides/client/components/HStack.astro";
+import Morph from "@astro-slides/client/components/Morph.astro";
+import Poll from "@astro-slides/client/components/Poll.astro";
+import RenderWhen from "@astro-slides/client/components/RenderWhen.astro";
+import Stack from "@astro-slides/client/components/Stack.astro";
+import Wrap from "@astro-slides/client/components/Wrap.astro";
+// Slidev-compat shims (Phase 15) — kept in sync with slide.astro's component set.
+import AutoFitText from "@astro-slides/client/components/AutoFitText.astro";
+import LightOrDark from "@astro-slides/client/components/LightOrDark.astro";
+import Toc from "@astro-slides/client/components/Toc.astro";
+import Tweet from "@astro-slides/client/components/Tweet.astro";
+import VDrag from "@astro-slides/client/components/VDrag.astro";
+import Youtube from "@astro-slides/client/components/Youtube.astro";
+import { configs, features } from "@astro-slides/configs";
+import { routePrefix } from "@astro-slides/runtime-config";
+import { layouts } from "@astro-slides/layouts";
+import { slides } from "@astro-slides/slides";
+import katexHref from "katex/dist/katex.min.css?url";
+// Bundled themes (Phase 16) — same set as the deck route so print matches the theme.
+// Cosmic @imports its own self-hosted fonts from the client package.
+import "@astro-slides/client/themes/starter/theme.css";
+import "@astro-slides/client/themes/cosmic/theme.css";
+import "@astro-slides/client/themes/marp-default/theme.css";
+import "@astro-slides/client/themes/marp-gaia/theme.css";
+import "@astro-slides/client/themes/marp-uncover/theme.css";
+import "@astro-slides/client/styles/deck.css";
+import "@astro-slides/client/styles/base.css";
+import "@astro-slides/client/styles/layouts.css";
+import "@astro-slides/client/styles/primitives.css";
+import "@astro-slides/client/styles/click.css";
+import "@astro-slides/client/styles/engagement.css";
+import "@astro-slides/client/styles/code.css";
+import "@astro-slides/client/styles/diagrams.css";
+import "@astro-slides/client/styles/read.css";
+import "@shikijs/magic-move/style.css";
+
+/**
+ * Read route (issue #45): the annotated-presentation format. Every slide renders as a
+ * static block (all click steps revealed, print-style) at article width, with the
+ * slide's `::read::` slot — companion prose that no other output renders — flowing
+ * beneath it. Per-slide anchors (#slide-N) make individual annotations linkable.
+ * Prerendered; the only script is a tiny inline scaler (no deck runtime).
+ */
+const COMPONENTS = {
+  Click,
+  After,
+  Clicks,
+  CodeBlock,
+  ShikiMagicMove,
+  KaTeX,
+  Mermaid,
+  PlantUml,
+  Stack,
+  HStack,
+  Grid,
+  Wrap,
+  FlexBlock,
+  FitText,
+  Morph,
+  Poll,
+  RenderWhen,
+  // Slidev-compat shims.
+  Youtube,
+  Tweet,
+  Toc,
+  VDrag,
+  AutoFitText,
+  LightOrDark,
+};
+
+export function getStaticPaths() {
+  const decks = new Map<string, typeof slides>();
+  for (const s of slides) {
+    const list = decks.get(s.deck) ?? [];
+    list.push(s);
+    decks.set(s.deck, list);
+  }
+  return [...decks.entries()].map(([deck, deckSlides]) => ({
+    params: { deck },
+    props: { deck, deckSlides: [...deckSlides].sort((a, b) => a.no - b.no) },
+  }));
+}
+
+const { deck, deckSlides } = Astro.props;
+const config = configs[deck] ?? {};
+const deckFeatures = features[deck] ?? {};
+const usesKatex = deckFeatures.katex === true;
+
+const [aw, ah] = String(config.aspectRatio ?? "16:9").split(":").map(Number);
+const designWidth = Number(config.canvasWidth ?? 1920);
+const designHeight = Math.round(designWidth * (aw && ah ? ah / aw : 9 / 16));
+
+// The export CLI's `--dark` flag sets ASTRO_SLIDES_COLOR_SCHEME for its build; an
+// explicit force wins over the deck's own colorSchema, which wins over auto (OS).
+const envScheme = process.env.ASTRO_SLIDES_COLOR_SCHEME;
+const scheme =
+  envScheme === "dark" || envScheme === "light"
+    ? envScheme
+    : config.colorSchema === "light" || config.colorSchema === "dark"
+      ? config.colorSchema
+      : undefined;
+
+const isImageRef = (v: string): boolean =>
+  /^(https?:|\/|\.|data:)/.test(v) || /\.(png|jpe?g|gif|webp|avif|svg)$/i.test(v);
+const backgroundStyle = (v: string | null): string | undefined => {
+  if (!v) return undefined;
+  return isImageRef(v) ? `background-image:url('${v}')` : `background:${v}`;
+};
+
+const fallbackLayout = layouts.default ?? layouts["404"];
+
+// Links back to the live deck respect any site base AND the integration prefix.
+const rawBase = import.meta.env.BASE_URL;
+const siteBase = rawBase.endsWith("/") ? rawBase : `${rawBase}/`;
+const base = routePrefix ? `${siteBase}${routePrefix.slice(1)}/` : siteBase;
+const firstNo = deckSlides[0]?.no ?? 1;
+const deckTitle = String(config.title ?? deck);
+const hasRead = deckSlides.some((s) => s.slots.read);
+---
+
+<html lang="en" data-color-scheme={scheme}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{deckTitle} — read</title>
+    {usesKatex && <link rel="stylesheet" href={katexHref} />}
+  </head>
+  <body
+    class="as-read"
+    data-deck={deck}
+    data-theme={config.theme ?? "starter"}
+    style={`--as-design-w:${designWidth}px;--as-design-h:${designHeight}px;--read-ar:${designWidth}/${designHeight}`}
+  >
+    <header class="as-read-header">
+      <h1>{deckTitle}</h1>
+      <nav>
+        <a href={`${base}${encodeURIComponent(deck)}/${firstNo}`}>Present ↗</a>
+        <a href={`${base}print/${encodeURIComponent(deck)}`}>Print</a>
+      </nav>
+      {!hasRead && <p class="as-read-note">This deck has no annotations yet — slides only.</p>}
+    </header>
+    <main>
+      {
+        deckSlides.map((s) => {
+          const Layout = layouts[s.layout] ?? fallbackLayout;
+          const Default = s.slots.default;
+          const Left = s.slots.left;
+          const Right = s.slots.right;
+          const Read = s.slots.read;
+          const style = backgroundStyle(s.background);
+          return (
+            <article class="as-read-entry" id={`slide-${s.no}`}>
+              <a class="as-read-anchor" href={`#slide-${s.no}`} aria-label={`Link to slide ${s.no}`}>
+                {s.no}
+              </a>
+              <div class="as-read-frame">
+                <section
+                  class:list={["as-read-slide", "as-slide", "present", s.class]}
+                  data-slide-no={s.no}
+                  data-layout={s.layout}
+                  style={style || undefined}
+                >
+                  <Layout no={s.no} title={s.title} layout={s.layout} frontmatter={s.frontmatter}>
+                    {Default && <Default components={COMPONENTS} />}
+                    {Left && <Left slot="left" components={COMPONENTS} />}
+                    {Right && <Right slot="right" components={COMPONENTS} />}
+                  </Layout>
+                </section>
+              </div>
+              {Read && (
+                <div class="as-read-prose">
+                  <Read components={COMPONENTS} />
+                </div>
+              )}
+            </article>
+          );
+        })
+      }
+    </main>
+    <script is:inline>
+      // Scale each fixed-design-size slide block to its container width. This is the
+      // page's only script — a scaler, not a runtime (CSS alone can't divide lengths).
+      (function () {
+        var w = Number(getComputedStyle(document.body).getPropertyValue("--as-design-w").replace("px", "")) || 1920;
+        function fit() {
+          document.querySelectorAll(".as-read-frame").forEach(function (frame) {
+            frame.style.setProperty("--read-scale", String(frame.clientWidth / w));
+          });
+        }
+        fit();
+        addEventListener("resize", fit);
+      })();
+    </script>
+  </body>
+</html>

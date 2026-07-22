@@ -65,7 +65,9 @@ export function slidesModuleSource(metas: SlideModuleMeta[]): string {
       const ns = `N_${i}_${j}`;
       imports.push(`import ${comp}, * as ${ns} from ${json(file)};`);
       slotPairs.push(`${json(slot)}: ${comp}`);
-      clickTerms.push(`(${ns}.totalClicks || 0)`);
+      // The `read` slot (issue #45) is companion prose for the /read route — it is
+      // never stepped in the live deck, so its clicks must not widen the slide total.
+      if (slot !== "read") clickTerms.push(`(${ns}.totalClicks || 0)`);
     });
     const meta = {
       deck: m.deck,

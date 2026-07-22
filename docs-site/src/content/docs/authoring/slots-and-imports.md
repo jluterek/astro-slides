@@ -145,6 +145,12 @@ Imports can nest, but cycles are rejected and there's a maximum import depth —
 (directly or indirectly) imports itself raises a "circular `src:` import" error.
 :::
 
+## Reserved slots
+
+`::read::` is reserved for [read mode](/astro-slides/presenting/read-mode/): companion
+prose rendered only on the annotated `/read/<deck>` page, never in the live deck or
+any export. Author it before the trailing speaker-notes comment.
+
 ## Source
 
 - `packages/parser/src/slots.ts` — the `::name::` slot parser (default + named, fence-aware).

@@ -1,0 +1,156 @@
+/* Read route (issue #45): annotated-presentation layout. Slides render as scaled
+   static blocks at article width with `::read::` prose flowing beneath. Theme-token
+   driven, responsive, print-friendly (browser-print of this page ≈ a handout). */
+
+.as-read {
+  margin: 0;
+  background: var(--slide-bg, #fff);
+  color: var(--slide-fg, #111);
+  font-family: var(--slide-font-body, system-ui, sans-serif);
+  line-height: var(--slide-line-height, 1.6);
+}
+
+.as-read-header,
+.as-read main {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 32px);
+}
+.as-read-header {
+  padding-top: clamp(24px, 6vh, 56px);
+  padding-bottom: 8px;
+}
+.as-read-header h1 {
+  font-family: var(--slide-font-heading, inherit);
+  font-weight: var(--slide-heading-weight, 700);
+  margin: 0 0 0.3em;
+}
+.as-read-header nav {
+  display: flex;
+  gap: 1.2em;
+  font-size: 0.95rem;
+}
+.as-read-header nav a {
+  color: var(--slide-link, var(--slide-accent, inherit));
+  text-decoration: none;
+}
+.as-read-header nav a:hover {
+  text-decoration: underline;
+}
+.as-read-note {
+  color: var(--slide-muted, inherit);
+  font-size: 0.9rem;
+}
+
+.as-read-entry {
+  position: relative;
+  margin: clamp(32px, 7vh, 64px) 0;
+  scroll-margin-top: 24px;
+}
+.as-read-anchor {
+  position: absolute;
+  top: 0;
+  left: -2.4em;
+  width: 1.8em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+  color: var(--slide-muted, inherit);
+  text-decoration: none;
+  opacity: 0.6;
+}
+.as-read-anchor:hover {
+  opacity: 1;
+  color: var(--slide-accent, inherit);
+}
+@media (max-width: 900px) {
+  .as-read-anchor {
+    position: static;
+    display: inline-block;
+    margin-bottom: 0.3em;
+  }
+}
+
+/* The slide block: fixed design size scaled to the article column. The inline
+   scaler sets --read-scale = containerWidth / designWidth. */
+.as-read-frame {
+  position: relative;
+  width: 100%;
+  /* Unitless ratio var — aspect-ratio takes numbers, not the px design vars. */
+  aspect-ratio: var(--read-ar, 16 / 9);
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid var(--slide-border, rgba(128, 128, 128, 0.25));
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+/* `.as-read .as-read-slide` (0,2,0): the deck state machine's `.as-slide.present`
+   sets `transform: none` at equal specificity — this file loads later AND matches
+   deeper, so the scale transform reliably wins. */
+.as-read .as-read-slide {
+  position: absolute;
+  inset: auto;
+  top: 0;
+  left: 0;
+  width: var(--as-design-w);
+  height: var(--as-design-h);
+  transform: scale(var(--read-scale, 0.4));
+  transform-origin: top left;
+  overflow: hidden;
+  background: var(--slide-bg, transparent);
+  /* Override the deck's stacked-overlay visibility — every slide paints in flow. */
+  opacity: 1;
+  visibility: visible;
+  transition: none;
+}
+
+/* Reveal all click-stepped content (no runtime to step it) — same specificity
+   approach as print.css: (0,3,0) outranks the `.as-slide [data-click]` hide. */
+.as-read .as-read-slide [data-click],
+.as-read .as-read-slide .as-click,
+.as-read .as-read-slide .as-code-line,
+.as-read .as-read-slide .as-math-row {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  filter: none;
+}
+
+/* Companion prose. */
+.as-read-prose {
+  margin-top: clamp(14px, 2.5vh, 22px);
+  font-size: 1.02rem;
+  max-width: 68ch;
+}
+.as-read .as-read-prose a {
+  color: var(--slide-link, var(--slide-accent, inherit));
+}
+.as-read-prose :is(h1, h2, h3) {
+  font-family: var(--slide-font-heading, inherit);
+}
+.as-read-prose pre {
+  overflow-x: auto;
+  border-radius: 8px;
+}
+.as-read-prose img {
+  max-width: 100%;
+}
+
+/* Live-only chrome never renders here. */
+.as-read .as-reactions,
+.as-read .as-qa-banner,
+.as-read .as-poll-close,
+.as-read .as-help,
+.as-read .as-status,
+.as-read .as-drawing-toolbar {
+  display: none;
+}
+
+@media print {
+  .as-read-header nav {
+    display: none;
+  }
+  .as-read-frame {
+    box-shadow: none;
+    break-inside: avoid;
+  }
+}

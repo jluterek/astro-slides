@@ -40,6 +40,13 @@ The browser you're presenting on right now can do things we used to reach for a 
 - **Import maps** and ES modules — real modules, no bundler required
 - Streaming HTML — first paint before the data lands
 
+::read::
+
+Support status for everything on this slide, checked at authoring time: same-document
+View Transitions ship in Chromium and Safari 18+; container queries and `oklch()` are
+Baseline widely available; import maps work in all evergreen browsers. Re-verify on
+MDN's Baseline pages if you fork this deck — browser support moves.
+
 <!--
 Emphasize: none of these needed a build step ten years ago and now they ship in every evergreen browser.
 The point isn't "no tools" — it's "tools that get out of the way."
@@ -83,6 +90,14 @@ layout: fact
 **90%**
 
 less JavaScript when you hydrate islands instead of the whole page
+
+::read::
+
+The 90% figure is the islands-architecture claim: hydrating only the interactive
+islands of a content-heavy page ships a small fraction of the JavaScript a
+fully-hydrated SPA build sends for the same UI. The honest version is "an order of
+magnitude less on content-heavy pages" — measure your own. This block only renders on
+the `/read` page: sparse slide live, receipts here.
 
 ---
 layout: two-cols

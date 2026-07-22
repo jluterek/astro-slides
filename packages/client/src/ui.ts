@@ -9,7 +9,11 @@ import { SHORTCUTS } from "./keyboard.js";
 /** Build (once) the help overlay listing keyboard shortcuts. An optional `onPresenter`
  * handler adds an "Open presenter view" button to the panel (a clickable alternative to
  * the `P` shortcut). */
-export function ensureHelpOverlay(root: HTMLElement, onPresenter?: () => void): HTMLElement {
+export function ensureHelpOverlay(
+  root: HTMLElement,
+  onPresenter?: () => void,
+  onRead?: () => void,
+): HTMLElement {
   const existing = root.querySelector<HTMLElement>(".as-help");
   if (existing) return existing;
 
@@ -41,6 +45,14 @@ export function ensureHelpOverlay(root: HTMLElement, onPresenter?: () => void): 
     button.className = "as-help-present";
     button.textContent = "Open presenter view →";
     button.addEventListener("click", onPresenter);
+    panel.append(button);
+  }
+  if (onRead) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "as-help-read";
+    button.textContent = "Open reading view →";
+    button.addEventListener("click", onRead);
     panel.append(button);
   }
 

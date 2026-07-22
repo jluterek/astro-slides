@@ -170,7 +170,8 @@
 .as-help-panel dd {
   margin: 0;
 }
-.as-help-present {
+.as-help-present,
+.as-help-read {
   margin-top: 1.25rem;
   width: 100%;
   padding: 0.5rem 0.75rem;
@@ -181,7 +182,8 @@
   border-radius: 8px;
   cursor: pointer;
 }
-.as-help-present:hover {
+.as-help-present:hover,
+.as-help-read:hover {
   filter: brightness(1.08);
 }
 

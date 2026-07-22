@@ -137,6 +137,12 @@ export function astroSlides(options: AstroSlidesOptions = {}): AstroIntegration 
           entrypoint: fileURLToPath(new URL("./routes/presenter.astro", import.meta.url)),
           prerender: true,
         });
+        // Read route (issue #45) — annotated deck view: slides + ::read:: prose.
+        injectRoute({
+          pattern: `${prefix}/read/[deck]`,
+          entrypoint: fileURLToPath(new URL("./routes/read.astro", import.meta.url)),
+          prerender: true,
+        });
         // Print route (Phase 12) — all slides stacked for `window.print()` / PDF export.
         injectRoute({
           pattern: `${prefix}/print/[deck]`,

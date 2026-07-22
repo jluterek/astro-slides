@@ -118,6 +118,7 @@ const deckUrl = (deck: string): string => `${base}${encodeURIComponent(deck)}`;
                   <a href={`${base}presenter/${encodeURIComponent(d.name)}/${d.firstNo}`} target="_blank" rel="noopener">
                     Present
                   </a>
+                  <a href={`${base}read/${encodeURIComponent(d.name)}`}>Read</a>
                   <a href={`${base}print/${encodeURIComponent(d.name)}`}>Print</a>
                 </div>
               </article>
