@@ -1,5 +1,13 @@
 # @astro-slides/mcp-server
 
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @astro-slides/types@0.3.1
+  - @astro-slides/parser@0.3.1
+
 ## 0.3.0
 
 ### Patch Changes

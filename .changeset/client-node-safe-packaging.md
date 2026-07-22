@@ -1,5 +1,0 @@
----
-"@astro-slides/client": patch
----
-
-Fix `astro dev` wedging on Node >= 22.18 in embedded host sites (#48). The published package's runtime entries pointed at raw TypeScript; Vite SSR-externalizes bare node_modules imports and loads them with Node's native ESM loader, which refuses to type-strip under node_modules — every deck-route render errored, retried, reload-looped the open pages, and eventually hung the dev server. Published entrypoints (`.` and `./fit-text`) now ship compiled JS + declarations for every consumer (one module graph — serving Node dist while browsers got source made Vite's optimizer disagree with itself about CJS interop); styles/themes/components stay as source under Vite. The CJS deps (`lz-string`, `recordrtc`, `@fix-webm-duration/fix`) are now imported interop-tolerantly, fixing a second latent bug where Magic Move's decompressor crashed the deck runtime in published dev installs. Verified against a Node 24 host: zero errors across dashboard/deck/read/presenter, stable presenter (was reload-looping 142×/15s), working navigation.
