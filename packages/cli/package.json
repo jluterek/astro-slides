@@ -1,6 +1,6 @@
 {
   "name": "@astro-slides/cli",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": false,
   "type": "module",
   "description": "The astro-slides command — dev server, build, export, and MCP server entry points.",

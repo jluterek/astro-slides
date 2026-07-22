@@ -1,6 +1,6 @@
 {
   "name": "@astro-slides/example-audience-engagement",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "private": true,
   "type": "module",
   "description": "Audience engagement showcase — polls, Q&A, and reactions over the sync gateway.",
