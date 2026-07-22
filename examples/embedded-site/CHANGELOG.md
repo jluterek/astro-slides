@@ -1,5 +1,14 @@
 # @astro-slides/example-embedded-site
 
+## 0.0.4
+
+### Patch Changes
+
+- Updated dependencies [[`f6d4623`](https://github.com/jluterek/astro-slides/commit/f6d46233c71af45216b91d25b44c3ef8ab2b9421)]:
+  - @astro-slides/core@0.3.0
+  - @astro-slides/client@0.3.0
+  - @astro-slides/cli@0.3.0
+
 ## 0.0.3
 
 ### Patch Changes
