@@ -1,8 +1,21 @@
 import { MagicMoveRenderer } from "@shikijs/magic-move/renderer";
-import lzString from "lz-string";
+import * as lzStringModule from "lz-string";
 import type { DeckStore } from "../store.js";
 
-const { decompressFromBase64 } = lzString;
+// lz-string is CJS; depending on which pipeline serves us (workspace source through
+// Vite, the published dist through Vite's prebundle, or a double-wrapped interop) the
+// callable surface is the namespace, its `default`, or `default.default`. Probe for
+// the function instead of trusting any one shape (issue #48).
+type LzModule = { decompressFromBase64: (raw: string) => string | null };
+function pickLz(mod: unknown): LzModule | null {
+  for (let i = 0, cur = mod; i < 3 && cur; i++) {
+    if (typeof (cur as LzModule).decompressFromBase64 === "function") return cur as LzModule;
+    cur = (cur as { default?: unknown }).default;
+  }
+  return null;
+}
+const lzString = pickLz(lzStringModule);
+const decompressFromBase64 = (raw: string): string => lzString?.decompressFromBase64(raw) ?? "";
 
 /**
  * Magic Move runtime (Phase 08). Each `.as-magic-move` island carries the
