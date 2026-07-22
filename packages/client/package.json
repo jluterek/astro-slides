@@ -3,7 +3,7 @@
   "version": "0.3.0",
   "private": false,
   "type": "module",
-  "description": "Runtime UI — layouts, click runtime, transitions, and presenter mode.",
+  "description": "Runtime UI \u2014 layouts, click runtime, transitions, and presenter mode.",
   "license": "MIT",
   "author": "James Luterek",
   "exports": {
@@ -69,15 +69,31 @@
     "presenter"
   ],
   "files": [
+    "dist",
     "src",
     "components",
     "layouts",
     "!**/__tests__",
-    "!**/*.test.ts"
+    "!**/*.test.ts",
+    "!dist/**/__tests__"
   ],
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      },
+      "./fit-text": {
+        "types": "./dist/fit-text.d.ts",
+        "import": "./dist/fit-text.js"
+      },
+      "./styles/*": "./src/styles/*",
+      "./themes/*": "./src/themes/*",
+      "./components/*": "./components/*",
+      "./layouts/*": "./layouts/*"
+    }
   },
   "engines": {
     "node": ">=22.18.0"

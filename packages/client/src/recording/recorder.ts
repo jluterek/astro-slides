@@ -95,7 +95,12 @@ export async function startRecording(
 
   const mime = pickVideoMime(options.mimeCandidates);
   // Lazy: recorder code loads only now, on first record.
-  const { RecordRTCPromisesHandler } = (await import("recordrtc")) as unknown as {
+  // recordrtc is CJS — the callable surface may sit on the namespace or `default`
+  // depending on which pipeline served it (see magic-move.ts / issue #48).
+  const recordrtcModule = (await import("recordrtc")) as unknown as Record<string, unknown>;
+  const { RecordRTCPromisesHandler } = ((recordrtcModule.RecordRTCPromisesHandler
+    ? recordrtcModule
+    : recordrtcModule.default) ?? recordrtcModule) as unknown as {
     RecordRTCPromisesHandler: new (
       stream: MediaStream,
       config: { type: "video"; mimeType?: string },
@@ -140,7 +145,15 @@ export async function startRecording(
           let blob = await track.handler.getBlob();
           const effectiveMime = mime ?? blob.type ?? "video/webm";
           if (needsWebmDurationFix(effectiveMime)) {
-            const { fixWebmDuration } = await import("@fix-webm-duration/fix");
+            const webmModule = (await import("@fix-webm-duration/fix")) as unknown as Record<
+              string,
+              unknown
+            >;
+            const { fixWebmDuration } = ((webmModule.fixWebmDuration
+              ? webmModule
+              : webmModule.default) ?? webmModule) as unknown as {
+              fixWebmDuration: (blob: Blob, duration: number) => Promise<Blob>;
+            };
             blob = await fixWebmDuration(blob, elapsed);
           }
           clips.push({
