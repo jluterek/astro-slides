@@ -161,8 +161,9 @@ panel appears in the notes pane. See
 
 The **Slides** button in the toolbar (or `G`) opens a full-screen grid of every slide
 as a real, scaled thumbnail — numbered, titled, with the current slide highlighted.
-Click any slide to jump straight to it; the jump lands at **step 0**, skipping click
-steps and animations (the PowerPoint "see all slides" gesture). `Esc` closes.
+Click any slide to jump straight to it; the jump lands **fully revealed** — every
+click step already shown — so you get the finished slide instead of replaying its
+reveals (the PowerPoint "see all slides" gesture). `Esc` closes.
 
 Thumbnails are prerendered slide content, not screenshots — code, math, and diagrams
 all render, and there is no capture step.
