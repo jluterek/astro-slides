@@ -1,5 +1,12 @@
 # @astro-slides/parser
 
+## 0.4.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @astro-slides/types@0.4.1
+
 ## 0.4.0
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @astro-slides/client
 
+## 0.4.1
+
+### Patch Changes
+
+- [#57](https://github.com/jluterek/astro-slides/pull/57) [`c0dba39`](https://github.com/jluterek/astro-slides/commit/c0dba39ca945c2a769387cfb1ff6e510b077e348) Thanks [@jluterek](https://github.com/jluterek)! - The presenter slide grid now jumps to a slide **fully revealed** (its final click step) instead of step 0 — when you jump around during a talk you want the finished slide, not to replay its five reveals.
+
+- Updated dependencies []:
+  - @astro-slides/types@0.4.1
+
 ## 0.4.0
 
 ### Minor Changes
