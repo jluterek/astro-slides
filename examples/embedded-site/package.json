@@ -1,6 +1,6 @@
 {
   "name": "@astro-slides/example-embedded-site",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "private": true,
   "type": "module",
   "description": "Embedding showcase — decks namespaced under /slides inside a host site that owns its homepage.",
