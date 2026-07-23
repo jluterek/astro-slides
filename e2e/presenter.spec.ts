@@ -59,4 +59,30 @@ test.describe("presenter mode + sync", () => {
     await expect(notes).toBeVisible();
     await expect(notes.locator(".as-note-click")).toHaveCount(2);
   });
+
+  test("the slide grid jumps straight to a clicked slide, skipping steps", async ({ context }) => {
+    const audience = await context.newPage();
+    const presenter = await context.newPage();
+    await audience.goto("/slides/1");
+    await presenter.goto("/presenter/slides/1");
+
+    // Open the grid: every slide renders as a real, scaled thumbnail.
+    await presenter.getByRole("button", { name: "All slides" }).click();
+    const grid = presenter.locator(".as-presenter-grid");
+    await expect(grid).toBeVisible();
+    await expect(grid.locator(".as-thumb")).toHaveCount(22);
+    await expect(grid.locator(".as-thumb.is-current")).toHaveAttribute("data-no", "1");
+
+    // Click slide 9 (the click-stepped demo): jump lands at step 0 — steps skipped.
+    await grid.locator('.as-thumb[data-no="9"]').click();
+    await expect(grid).toBeHidden();
+    await expect(audience.locator('.as-slide[data-slide-no="9"]')).toHaveClass(/present/);
+    await expect(audience).toHaveURL(/\/slides\/9$/); // no ?step= — animations skipped
+    expect(
+      await audience.locator('.as-slide[data-slide-no="9"] [data-click].as-click-shown').count(),
+    ).toBe(0);
+
+    await audience.close();
+    await presenter.close();
+  });
 });

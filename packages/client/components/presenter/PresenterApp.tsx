@@ -102,6 +102,7 @@ export default function PresenterApp({
   const previewRef = useRef<SyncStore | null>(null);
   const [state, setState] = useState<SharedState>(() => initialState(start, 0));
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [gridOpen, setGridOpen] = useState(false);
 
   // --- Sync stores (client only) --------------------------------------------
   useEffect(() => {
@@ -141,6 +142,11 @@ export default function PresenterApp({
   const timerReset = (): void => mainRef.current?.dispatch({ type: "timer/reset" });
   const moderate = (id: string, status: "shown" | "dismissed" | "new"): void =>
     mainRef.current?.dispatch({ type: "qa/moderate", id, status });
+  /** Jump straight to a slide at step 0 — the grid skips click steps by design. */
+  const jumpTo = (no: number): void => {
+    go({ slide: no, step: 0 });
+    setGridOpen(false);
+  };
   const toggleFullscreen = (): void => {
     if (document.fullscreenElement) void document.exitFullscreen();
     else void document.documentElement.requestFullscreen();
@@ -164,7 +170,54 @@ export default function PresenterApp({
     e.preventDefault();
     setPaletteOpen((v) => !v);
   });
-  useHotkeys("escape", () => setPaletteOpen(false), { enableOnFormTags: true });
+  useHotkeys("g", () => setGridOpen((v) => !v));
+  useHotkeys(
+    "escape",
+    () => {
+      setPaletteOpen(false);
+      setGridOpen(false);
+    },
+    { enableOnFormTags: true },
+  );
+
+  // The slide grid ("see all slides") is server-rendered by presenter.astro — real
+  // prerendered slide thumbnails, outside this island. The island owns its behavior:
+  // visibility, current-slide highlight, and click-to-jump via delegation.
+  useEffect(() => {
+    const grid = document.querySelector<HTMLElement>(".as-presenter-grid");
+    if (!grid) return;
+    grid.hidden = !gridOpen;
+    if (!gridOpen) return undefined;
+    for (const el of grid.querySelectorAll<HTMLElement>(".as-thumb")) {
+      el.classList.toggle("is-current", Number(el.dataset.no) === state.no);
+    }
+    grid.querySelector<HTMLElement>(".as-thumb.is-current")?.scrollIntoView({ block: "center" });
+    const onClick = (e: MouseEvent): void => {
+      const target = e.target as HTMLElement;
+      if (target.closest(".as-grid-close")) {
+        setGridOpen(false);
+        return;
+      }
+      const thumb = target.closest<HTMLElement>(".as-thumb");
+      const no = Number(thumb?.dataset.no);
+      if (thumb && Number.isFinite(no) && no > 0) jumpTo(no);
+    };
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      const thumb = (e.target as HTMLElement).closest<HTMLElement>(".as-thumb");
+      const no = Number(thumb?.dataset.no);
+      if (thumb && Number.isFinite(no) && no > 0) {
+        e.preventDefault();
+        jumpTo(no);
+      }
+    };
+    grid.addEventListener("click", onClick);
+    grid.addEventListener("keydown", onKey);
+    return () => {
+      grid.removeEventListener("click", onClick);
+      grid.removeEventListener("keydown", onKey);
+    };
+  }, [gridOpen, state.no]);
 
   const currentSlide = slides.find((s) => s.no === state.no) ?? slides[0];
   const nextSlide = slides.find((s) => s.no === preview.slide);
@@ -231,6 +284,16 @@ export default function PresenterApp({
                     className={state.blackout ? "is-active" : ""}
                   >
                     Black
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGridOpen((v) => !v)}
+                    aria-pressed={gridOpen}
+                    aria-label="All slides"
+                    title="All slides (G)"
+                    className={gridOpen ? "is-active" : ""}
+                  >
+                    Slides
                   </button>
                 </div>
                 <QaPanel questions={state.questions} moderate={moderate} />
