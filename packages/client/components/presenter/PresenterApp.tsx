@@ -142,9 +142,11 @@ export default function PresenterApp({
   const timerReset = (): void => mainRef.current?.dispatch({ type: "timer/reset" });
   const moderate = (id: string, status: "shown" | "dismissed" | "new"): void =>
     mainRef.current?.dispatch({ type: "qa/moderate", id, status });
-  /** Jump straight to a slide at step 0 — the grid skips click steps by design. */
+  /** Jump straight to a slide FULLY REVEALED (its last click step) — when you jump
+   * around from the grid you want the finished slide, not to replay its reveals. */
   const jumpTo = (no: number): void => {
-    go({ slide: no, step: 0 });
+    const steps = navSlides.find((s) => s.no === no)?.steps ?? 0;
+    go({ slide: no, step: steps });
     setGridOpen(false);
   };
   const toggleFullscreen = (): void => {

@@ -73,14 +73,15 @@ test.describe("presenter mode + sync", () => {
     await expect(grid.locator(".as-thumb")).toHaveCount(22);
     await expect(grid.locator(".as-thumb.is-current")).toHaveAttribute("data-no", "1");
 
-    // Click slide 9 (the click-stepped demo): jump lands at step 0 — steps skipped.
+    // Click slide 9 (the click-stepped demo): the jump lands FULLY REVEALED — you
+    // want the finished slide when jumping around, not to replay its five clicks.
     await grid.locator('.as-thumb[data-no="9"]').click();
     await expect(grid).toBeHidden();
     await expect(audience.locator('.as-slide[data-slide-no="9"]')).toHaveClass(/present/);
-    await expect(audience).toHaveURL(/\/slides\/9$/); // no ?step= — animations skipped
-    expect(
-      await audience.locator('.as-slide[data-slide-no="9"] [data-click].as-click-shown').count(),
-    ).toBe(0);
+    await expect(audience).toHaveURL(/\/slides\/9\?step=\d+/); // final step, not 0
+    const stepped = audience.locator('.as-slide[data-slide-no="9"] [data-click]');
+    const shown = audience.locator('.as-slide[data-slide-no="9"] [data-click].as-click-shown');
+    expect(await shown.count()).toBe(await stepped.count()); // every reveal visible
 
     await audience.close();
     await presenter.close();
