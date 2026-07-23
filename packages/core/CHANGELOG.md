@@ -1,5 +1,18 @@
 # @astro-slides/core
 
+## 0.4.0
+
+### Minor Changes
+
+- [#53](https://github.com/jluterek/astro-slides/pull/53) [`9ec8caa`](https://github.com/jluterek/astro-slides/commit/9ec8caa522aa8a47bfc643855cd14f62b54f85d1) Thanks [@jluterek](https://github.com/jluterek)! - Presenter view gains a slide grid — the PowerPoint "see all slides" gesture. The new **Slides** toolbar button (or `G`) opens a full-screen grid of every slide as a real prerendered thumbnail (scaled slide content, not screenshots — code, math, and diagrams render), numbered and titled, with the current slide highlighted and scrolled into view. Clicking a thumbnail jumps the presentation straight there at step 0 — click steps and animations are skipped by design. Keyboard-accessible (`Enter`/`Space` on a focused thumbnail, `Esc` closes).
+
+### Patch Changes
+
+- Updated dependencies [[`9ec8caa`](https://github.com/jluterek/astro-slides/commit/9ec8caa522aa8a47bfc643855cd14f62b54f85d1)]:
+  - @astro-slides/client@0.4.0
+  - @astro-slides/types@0.4.0
+  - @astro-slides/parser@0.4.0
+
 ## 0.3.1
 
 ### Patch Changes
