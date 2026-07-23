@@ -1,5 +1,14 @@
 # @astro-slides/core
 
+## 0.4.1
+
+### Patch Changes
+
+- Updated dependencies [[`c0dba39`](https://github.com/jluterek/astro-slides/commit/c0dba39ca945c2a769387cfb1ff6e510b077e348)]:
+  - @astro-slides/client@0.4.1
+  - @astro-slides/types@0.4.1
+  - @astro-slides/parser@0.4.1
+
 ## 0.4.0
 
 ### Minor Changes
