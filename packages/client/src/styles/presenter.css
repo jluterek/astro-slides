@@ -267,3 +267,112 @@
   font-size: 0.75rem;
   padding: 0.2rem 0.6rem;
 }
+
+/* --- Slide grid: "see all slides" (PowerPoint-style jump list) ---------------- */
+.as-presenter-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow-y: auto;
+  background: rgba(8, 10, 18, 0.94);
+  backdrop-filter: blur(6px);
+  color: #e5e7eb;
+}
+.as-presenter-grid > header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.7rem 1.2rem;
+  background: rgba(8, 10, 18, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1;
+}
+.as-presenter-grid > header h2 {
+  margin: 0;
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+.as-grid-close {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.3rem 0.6rem;
+}
+.as-grid-cells {
+  display: grid;
+  /* Fixed cell width: the thumbnail scale is a build-time constant (224/designW),
+     so cells must not stretch or the slide would underfill its frame. */
+  grid-template-columns: repeat(auto-fill, 224px);
+  justify-content: center;
+  gap: 14px;
+  padding: 16px;
+}
+.as-thumb {
+  display: grid;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.as-thumb-frame {
+  display: block;
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--thumb-ar, 16 / 9);
+  overflow: hidden;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  background: var(--slide-bg, #111);
+}
+.as-thumb:hover .as-thumb-frame {
+  border-color: rgba(167, 139, 250, 0.8);
+}
+.as-thumb.is-current .as-thumb-frame {
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.35);
+}
+/* Thumbnails render the real slide at design size, scaled down. Fixed-width cells
+   make the scale a build-time constant; the frame crops any flex overflow. The
+   (0,2,0) selector outranks the deck state machine's `.as-slide.present` transform
+   reset (the read-route lesson). */
+.as-presenter-grid .as-thumb-slide {
+  position: absolute;
+  inset: auto;
+  top: 0;
+  left: 0;
+  width: var(--as-design-w);
+  height: var(--as-design-h);
+  transform: scale(var(--thumb-scale, 0.12));
+  transform-origin: top left;
+  overflow: hidden;
+  opacity: 1;
+  visibility: visible;
+  transition: none;
+  pointer-events: none;
+}
+/* All click-stepped content revealed in thumbnails (nothing steps them). */
+.as-presenter-grid .as-thumb-slide [data-click],
+.as-presenter-grid .as-thumb-slide .as-click,
+.as-presenter-grid .as-thumb-slide .as-code-line,
+.as-presenter-grid .as-thumb-slide .as-math-row {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  filter: none;
+}
+.as-thumb-caption {
+  font-size: 0.78rem;
+  opacity: 0.75;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

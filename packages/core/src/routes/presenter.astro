@@ -3,8 +3,47 @@ import { routePrefix } from "@astro-slides/runtime-config";
 import PresenterApp from "@astro-slides/client/components/presenter/PresenterApp.tsx";
 import { parseTimeString } from "@astro-slides/client";
 import { configs } from "@astro-slides/configs";
+import { layouts } from "@astro-slides/layouts";
 import { slides } from "@astro-slides/slides";
 import { renderNotes } from "../notes.js";
+// The slide-grid thumbnails (see below) render real slide content, so the presenter
+// page needs the same component set + styles as the deck/print/read routes.
+import Click from "@astro-slides/client/components/Click.tsx";
+import After from "@astro-slides/client/components/After.tsx";
+import Clicks from "@astro-slides/client/components/Clicks.tsx";
+import CodeBlock from "@astro-slides/client/components/CodeBlock.astro";
+import ShikiMagicMove from "@astro-slides/client/components/ShikiMagicMove.astro";
+import KaTeX from "@astro-slides/client/components/KaTeX.astro";
+import Mermaid from "@astro-slides/client/components/Mermaid.astro";
+import PlantUml from "@astro-slides/client/components/PlantUml.astro";
+import FlexBlock from "@astro-slides/client/components/FlexBlock.astro";
+import FitText from "@astro-slides/client/components/FitText.astro";
+import Grid from "@astro-slides/client/components/Grid.astro";
+import HStack from "@astro-slides/client/components/HStack.astro";
+import Morph from "@astro-slides/client/components/Morph.astro";
+import Poll from "@astro-slides/client/components/Poll.astro";
+import RenderWhen from "@astro-slides/client/components/RenderWhen.astro";
+import Stack from "@astro-slides/client/components/Stack.astro";
+import Wrap from "@astro-slides/client/components/Wrap.astro";
+import AutoFitText from "@astro-slides/client/components/AutoFitText.astro";
+import LightOrDark from "@astro-slides/client/components/LightOrDark.astro";
+import Toc from "@astro-slides/client/components/Toc.astro";
+import Tweet from "@astro-slides/client/components/Tweet.astro";
+import VDrag from "@astro-slides/client/components/VDrag.astro";
+import Youtube from "@astro-slides/client/components/Youtube.astro";
+import "@astro-slides/client/themes/starter/theme.css";
+import "@astro-slides/client/themes/cosmic/theme.css";
+import "@astro-slides/client/themes/marp-default/theme.css";
+import "@astro-slides/client/themes/marp-gaia/theme.css";
+import "@astro-slides/client/themes/marp-uncover/theme.css";
+import "@astro-slides/client/styles/deck.css";
+import "@astro-slides/client/styles/base.css";
+import "@astro-slides/client/styles/layouts.css";
+import "@astro-slides/client/styles/primitives.css";
+import "@astro-slides/client/styles/click.css";
+import "@astro-slides/client/styles/engagement.css";
+import "@astro-slides/client/styles/code.css";
+import "@astro-slides/client/styles/diagrams.css";
 import "@astro-slides/client/styles/presenter.css";
 
 /**
@@ -26,15 +65,48 @@ const durationMs = parseTimeString(config.duration ?? null);
 // Recording (Phase 11) is on unless the deck opts out with `record: false`.
 const record = config.record !== false;
 
-const deckSlides = slides
-  .filter((s) => s.deck === deck)
-  .sort((a, b) => a.no - b.no)
-  .map((s) => ({
-    no: s.no,
-    title: s.title ?? null,
-    notesHtml: renderNotes(s.notes),
-    totalClicks: s.totalClicks,
-  }));
+const fullSlides = slides.filter((s) => s.deck === deck).sort((a, b) => a.no - b.no);
+const deckSlides = fullSlides.map((s) => ({
+  no: s.no,
+  title: s.title ?? null,
+  notesHtml: renderNotes(s.notes),
+  totalClicks: s.totalClicks,
+}));
+
+const COMPONENTS = {
+  Click,
+  After,
+  Clicks,
+  CodeBlock,
+  ShikiMagicMove,
+  KaTeX,
+  Mermaid,
+  PlantUml,
+  Stack,
+  HStack,
+  Grid,
+  Wrap,
+  FlexBlock,
+  FitText,
+  Morph,
+  Poll,
+  RenderWhen,
+  // Slidev-compat shims.
+  Youtube,
+  Tweet,
+  Toc,
+  VDrag,
+  AutoFitText,
+  LightOrDark,
+};
+const fallbackLayout = layouts.default ?? layouts["404"];
+
+const [aw, ah] = String(config.aspectRatio ?? "16:9").split(":").map(Number);
+const designWidth = Number(config.canvasWidth ?? 1920);
+const designHeight = Math.round(designWidth * (aw && ah ? ah / aw : 9 / 16));
+// Thumbnails render at a fixed width, so the scale is a build-time constant.
+const THUMB_W = 224;
+const thumbScale = THUMB_W / designWidth;
 ---
 
 <html lang="en" data-color-scheme="dark">
@@ -53,5 +125,51 @@ const deckSlides = slides
       durationMs={durationMs}
       record={record}
     />
+    <!-- Slide grid ("see all slides"): real prerendered slide content, scaled to
+         thumbnails. Hidden until PresenterApp toggles it; clicking a thumbnail jumps
+         straight to that slide at step 0 (animations/steps skipped). -->
+    <div
+      class="as-presenter-grid"
+      role="dialog"
+      aria-label="All slides"
+      data-theme={config.theme ?? "starter"}
+      style={`--as-design-w:${designWidth}px;--as-design-h:${designHeight}px;--thumb-ar:${designWidth}/${designHeight};--thumb-scale:${thumbScale}`}
+      hidden
+    >
+      <header>
+        <h2>All slides</h2>
+        <button type="button" class="as-grid-close" aria-label="Close">✕</button>
+      </header>
+      <div class="as-grid-cells">
+        {
+          fullSlides.map((s) => {
+            const Layout = layouts[s.layout] ?? fallbackLayout;
+            const Default = s.slots.default;
+            const Left = s.slots.left;
+            const Right = s.slots.right;
+            // A div, not a <button>: slide content can contain buttons (code copy),
+            // and a nested <button> start tag makes the HTML parser CLOSE the outer
+            // one — every following thumbnail would escape the grid container.
+            return (
+              <div class="as-thumb" data-no={s.no} role="button" tabindex="0">
+                <span class="as-thumb-frame">
+                  <section class:list={["as-thumb-slide", "as-slide", "present", s.class]} data-layout={s.layout}>
+                    <Layout no={s.no} title={s.title} layout={s.layout} frontmatter={s.frontmatter}>
+                      {Default && <Default components={COMPONENTS} />}
+                      {Left && <Left slot="left" components={COMPONENTS} />}
+                      {Right && <Right slot="right" components={COMPONENTS} />}
+                    </Layout>
+                  </section>
+                </span>
+                <span class="as-thumb-caption">
+                  {s.no}
+                  {s.title ? ` · ${s.title}` : ""}
+                </span>
+              </div>
+            );
+          })
+        }
+      </div>
+    </div>
   </body>
 </html>

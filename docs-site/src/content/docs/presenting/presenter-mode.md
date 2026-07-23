@@ -157,6 +157,16 @@ If the deck opts in with `record:` headmatter (`dev`, `prod`, or `false`), a rec
 panel appears in the notes pane. See
 [Drawing, recording & remote](/presenting/drawing-and-remote/) for the details.
 
+## The slide grid — see all slides
+
+The **Slides** button in the toolbar (or `G`) opens a full-screen grid of every slide
+as a real, scaled thumbnail — numbered, titled, with the current slide highlighted.
+Click any slide to jump straight to it; the jump lands at **step 0**, skipping click
+steps and animations (the PowerPoint "see all slides" gesture). `Esc` closes.
+
+Thumbnails are prerendered slide content, not screenshots — code, math, and diagrams
+all render, and there is no capture step.
+
 ## Source
 
 - `packages/core/src/routes/presenter.astro` — the `/presenter/<deck>/<slide>` route.
