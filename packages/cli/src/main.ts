@@ -1225,6 +1225,10 @@ const exportCommand = defineCommand({
     format: { type: "string", description: "pdf | png | pptx | html", default: "pdf" },
     output: { type: "string", description: "Output file or directory." },
     range: { type: "string", description: 'Slides to include, e.g. "1,3-5".' },
+    deck: {
+      type: "string",
+      description: "Export only this deck (folder name). Default: every deck in the project.",
+    },
     "per-slide": { type: "boolean", description: "One file per slide (pdf).", default: false },
     "with-clicks": {
       type: "boolean",
@@ -1305,7 +1309,17 @@ const exportCommand = defineCommand({
             // so every exporter's /print/… and /<deck>/<no> URLs resolve unchanged.
             const routePrefix = discoverRoutePrefix(ctx.dist);
             if (routePrefix) ctx.baseUrl = `${ctx.baseUrl}${routePrefix}`;
-            const decks = discoverDecks(join(ctx.dist, ...routePrefix.split("/").filter(Boolean)));
+            let decks = discoverDecks(join(ctx.dist, ...routePrefix.split("/").filter(Boolean)));
+            // --deck scopes the export (issue #56): without it, --range applied to
+            // EVERY deck — "slide 3" exported a-03.png AND b-03.png.
+            if (args.deck) {
+              const match = decks.filter((d) => d.deck === args.deck);
+              if (match.length === 0) {
+                const names = decks.map((d) => d.deck).join(", ") || "(none)";
+                throw new Error(`Deck "${args.deck}" not found in the build. Decks: ${names}.`);
+              }
+              decks = match;
+            }
             if (!decks.length) throw new Error("No built decks found under dist/.");
             // With several decks, a single --output file would be overwritten by each
             // deck in turn — suffix the deck name (talk.pdf → talk.slides-a.pdf).
@@ -1318,6 +1332,20 @@ const exportCommand = defineCommand({
             };
             for (const { deck, total, titles } of decks) {
               const slides = parseRange(args.range || undefined, total);
+              // Silent out-of-range skips masked deck/range mismatches (issue #56):
+              // exporting slide 53 of a 10-slide deck exported nothing, quietly.
+              const requestedMax = ((args.range as string) || "")
+                .split(",")
+                .flatMap((t) => t.split("-"))
+                .map((v) => Number(v.trim()))
+                .filter((v) => Number.isFinite(v) && v > 0);
+              const beyond = requestedMax.filter((v) => v > total);
+              if (beyond.length > 0) {
+                console.warn(
+                  `[astro-slides] ${deck}: range entr${beyond.length === 1 ? "y" : "ies"} ` +
+                    `${[...new Set(beyond)].join(", ")} beyond the deck's ${total} slide(s) — skipped.`,
+                );
+              }
               task.output = `${deck}: ${slides.length} slide(s)`;
               if (format === "pdf") {
                 const titleMap = Object.fromEntries(titles.map((t, i) => [i + 1, t]));
