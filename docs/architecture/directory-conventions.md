@@ -54,7 +54,7 @@ astro-slides/
 ├── public/                           # static assets
 ├── components/                       # user components, auto-imported
 ├── layouts/                          # user-shadowed layouts (override built-ins)
-├── theme/                            # user theme folder (optional — per ADR-0005)
+├── themes/                           # user themes: themes/<name>/theme.css (per ADR-0005, issue #49)
 ├── snippets/                         # source files referenced by `<<< @/snippets/...`
 └── .astro-slides/
     └── drawings/<deck>/<slide-no>-<step-no>.svg   # drauu drawings; gitignore recommended
