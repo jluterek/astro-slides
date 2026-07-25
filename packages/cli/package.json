@@ -3,7 +3,7 @@
   "version": "0.4.1",
   "private": false,
   "type": "module",
-  "description": "The astro-slides command — dev server, build, export, and MCP server entry points.",
+  "description": "The astro-slides command \u2014 dev server, build, export, and MCP server entry points.",
   "license": "MIT",
   "author": "James Luterek",
   "bin": {
@@ -19,13 +19,14 @@
     "@astro-slides/core": "workspace:*",
     "@astro-slides/mcp-server": "workspace:*",
     "@astro-slides/parser": "workspace:*",
+    "@hono/node-server": "catalog:prod",
     "@lillallol/outline-pdf": "catalog:prod",
     "citty": "catalog:prod",
     "jszip": "catalog:prod",
     "listr2": "catalog:prod",
     "pdf-lib": "catalog:prod",
-    "pptxgenjs": "catalog:prod",
     "picocolors": "catalog:prod",
+    "pptxgenjs": "catalog:prod",
     "uqr": "catalog:prod"
   },
   "peerDependencies": {

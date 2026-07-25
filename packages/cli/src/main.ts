@@ -1477,6 +1477,79 @@ function packageVersion(): string {
   }
 }
 
+// --- Standalone sync gateway (issue #62) -----------------------------------------
+// Deploys the Phase 11/19 gateway anywhere Node runs, so DEPLOYED (static) decks get
+// live audience engagement over the public internet: the deck build points at it via
+// ASTRO_SLIDES_GATEWAY, audience phones hit its /audience page, and persistence
+// writes under --root. The heavy lifting lives in @astro-slides/core/gateway
+// (compiled dist in published installs — plain-Node importable).
+const gatewayCommand = defineCommand({
+  meta: { name: "gateway", description: "Run a standalone sync gateway for deployed decks." },
+  args: {
+    root: {
+      type: "positional",
+      required: false,
+      description: "Persistence directory (engagement/drawings JSON). Default: cwd.",
+    },
+    port: { type: "string", description: "Port to listen on (default 8787)." },
+    password: {
+      type: "string",
+      description: "Protect presenter-grade access with a token derived from this password.",
+    },
+    "allow-origin": {
+      type: "string",
+      description:
+        'Comma-separated origins allowed to connect cross-origin (your site), e.g. "https://example.com". Required for deployed decks.',
+    },
+    total: {
+      type: "string",
+      description: "Slide-count bound for the /entry remote (default 999).",
+    },
+  },
+  async run({ args }) {
+    const { createSyncGateway, AUDIENCE_PATH, ENTRY_PATH } = await import(
+      "@astro-slides/core/gateway"
+    );
+    const { serve } = await import("@hono/node-server");
+    const root = args.root ?? process.cwd();
+    const port = args.port ? Number(args.port) : 8787;
+    const token = args.password ? deriveToken(args.password) : "";
+    const allowOrigins = (args["allow-origin"] ?? "")
+      .split(",")
+      .map((o) => o.trim())
+      .filter(Boolean);
+
+    const gateway = createSyncGateway({
+      root,
+      deckTotals: () => ({}),
+      defaultDeck: () => "slides",
+      token: token || undefined,
+      allowOrigins: allowOrigins.length ? allowOrigins : undefined,
+      defaultTotal: args.total ? Number(args.total) : 999,
+    });
+    const server = serve({ fetch: gateway.app.fetch, port });
+    gateway.injectWebSocket(server as never);
+
+    const host = lanAddress() ?? "localhost";
+    console.log(pc.bold(pc.cyan("astro-slides gateway")));
+    console.log(`  listening on port ${pc.bold(String(port))}`);
+    console.log(`  audience  http://${host}:${port}${AUDIENCE_PATH}`);
+    console.log(`  remote    http://${host}:${port}${ENTRY_PATH}`);
+    if (allowOrigins.length) console.log(`  origins   ${allowOrigins.join(", ")}`);
+    else
+      console.log(
+        pc.yellow(
+          "  no --allow-origin set: cross-origin decks (a deployed site) will be refused —",
+        ),
+        pc.yellow("fine for same-LAN use, required otherwise."),
+      );
+    if (token) console.log("  presenter token derived from --password");
+    console.log(
+      pc.dim(`  Point your deck build at it: ASTRO_SLIDES_GATEWAY=wss://<public-host> astro build`),
+    );
+  },
+});
+
 export const main = defineCommand({
   meta: {
     name: "astro-slides",
@@ -1487,6 +1560,7 @@ export const main = defineCommand({
     dev: devCommand,
     build: buildCommand,
     export: exportCommand,
+    gateway: gatewayCommand,
     "mcp-server": mcpServerCommand,
   },
 });

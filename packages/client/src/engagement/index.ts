@@ -1,5 +1,6 @@
 import type { SyncStore } from "../sync/store.js";
 import { type ActivePoll, type QaQuestion, tallyVotes } from "../sync/types.js";
+import { gatewayHttpOrigin } from "../sync/websocket.js";
 
 /**
  * Audience engagement runtime (Phase 19): `<Poll>` live tallies, the floating
@@ -178,7 +179,7 @@ function initPersistence(opts: EngagementOptions): () => void {
     last = snap;
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
-      void fetch("/__astro-slides/engagement", {
+      void fetch(`${gatewayHttpOrigin(opts.gatewayPath ?? "")}/__astro-slides/engagement`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: snap,

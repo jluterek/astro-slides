@@ -22,8 +22,8 @@ describe("shortcutHelp", () => {
 });
 
 describe("main command", () => {
-  it("registers dev, build, export, and mcp-server subcommands", () => {
+  it("registers dev, build, export, gateway, and mcp-server subcommands", () => {
     const subs = main.subCommands as Record<string, unknown>;
-    expect(Object.keys(subs)).toEqual(["dev", "build", "export", "mcp-server"]);
+    expect(Object.keys(subs)).toEqual(["dev", "build", "export", "gateway", "mcp-server"]);
   });
 });

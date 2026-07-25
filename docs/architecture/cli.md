@@ -12,6 +12,7 @@ The complete `astro-slides` command surface. Each subcommand maps to one or more
 | `astro-slides dev [entry]` | 03 | Start the Vite dev server with our Astro integration loaded. |
 | `astro-slides build [entry]` | 12 | Static SPA build via Astro's build. Copies `index.html` to `404.html` for GH Pages SPA mode. |
 | `astro-slides export [entry] --format <fmt>` | 12, 13 | Export to PDF / PNG / PPTX / MD. |
+| `astro-slides gateway [root]` | post-19 (#62) | Standalone sync gateway so deployed static decks get audience engagement + the phone remote. |
 | `astro-slides mcp-server` | 14 | Start the MCP server on stdio (default) or Streamable HTTP (`--transport http`). |
 | `astro-slides init [target]` | 17 | Scaffold a new deck project (delegates to `create-astro-slides`). |
 | `astro-slides format [entry]` | 17 | Format the deck source via the parser's normalize→serialize round trip. |
@@ -54,6 +55,17 @@ Builds the deck, previews it, and drives headless Chromium against the prerender
 - `--dark` — force dark color scheme
 - `--omit-background` — transparent PNG background
 - `--executable-path <path>` — bring-your-own Chromium binary
+
+### `gateway`
+
+Standalone sync gateway (issue #62). `[root]` is the persistence directory
+(engagement/drawings JSON; default cwd). Deck builds point at it via
+`ASTRO_SLIDES_GATEWAY=wss://<host> astro-slides build`.
+
+- `--port <n>` (default 8787)
+- `--password <secret>` — derive the presenter token (same scheme as `dev --remote=<password>`)
+- `--allow-origin <origins>` — comma-separated origins allowed cross-origin (the deployed site); `*` allows all. Required for deployed decks — WS upgrades and engagement POSTs from other origins are refused.
+- `--total <n>` — `/entry` slide-count bound (standalone gateways don't parse decks; default 999)
 
 ### `mcp-server`
 

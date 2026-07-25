@@ -36,6 +36,33 @@ export interface GatewayOptions {
   defaultDeck: () => string;
   /** Shared-secret token; when set, `/entry` + WS require `?token=` to match. */
   token?: string | undefined;
+  /**
+   * Cross-origin allowlist (issue #62). When set (the standalone deployed gateway),
+   * engagement POSTs get CORS for these origins and cross-origin WebSocket upgrades
+   * are refused unless the Origin matches. Unset (the dev gateway) keeps today's
+   * same-origin behavior with no CORS headers.
+   */
+  allowOrigins?: string[] | undefined;
+  /** `/entry` slide-bound fallback when a deck's total is unknown (standalone
+   * gateways don't parse decks). Default 1. */
+  defaultTotal?: number | undefined;
+}
+
+/** Is `origin` acceptable under the allowlist? Same-origin requests (no Origin header
+ * or an Origin matching the gateway itself) are always fine. */
+export function originAllowed(
+  origin: string | undefined,
+  host: string | undefined,
+  allow: string[] | undefined,
+): boolean {
+  if (!origin) return true; // non-browser clients / same-origin navigations
+  try {
+    if (host && new URL(origin).host === host) return true; // the gateway's own pages
+  } catch {
+    return false;
+  }
+  if (!allow || allow.length === 0) return false;
+  return allow.includes("*") || allow.includes(origin);
 }
 
 export interface Gateway {
@@ -72,7 +99,7 @@ export function createSyncGateway(options: GatewayOptions): Gateway {
   app.get(ENTRY_PATH, (c) => {
     if (!authOk(c.req.query("token"))) return c.text("Forbidden", 403);
     const deck = c.req.query("deck") || options.defaultDeck();
-    const total = options.deckTotals()[deck] ?? 1;
+    const total = options.deckTotals()[deck] ?? options.defaultTotal ?? 1;
     return c.html(renderEntryPage({ deck, wsPath: SYNC_PATH, total, token: options.token }));
   });
 
@@ -83,10 +110,32 @@ export function createSyncGateway(options: GatewayOptions): Gateway {
     return c.html(renderAudiencePage({ deck, wsPath: SYNC_PATH, token: options.token }));
   });
 
+  // CORS for the engagement POST (issue #62): a deployed deck lives on a different
+  // origin than the gateway. Only mounted when an allowlist is configured.
+  if (options.allowOrigins?.length) {
+    app.options(ENGAGEMENT_PATH, (c) => {
+      const origin = c.req.header("origin");
+      if (!originAllowed(origin, c.req.header("host"), options.allowOrigins)) {
+        return c.text("Forbidden", 403);
+      }
+      c.header("Access-Control-Allow-Origin", origin ?? "*");
+      c.header("Access-Control-Allow-Methods", "POST, OPTIONS");
+      c.header("Access-Control-Allow-Headers", "content-type");
+      return c.body(null, 204);
+    });
+  }
+
   // Engagement persistence (Phase 19): the publisher deck window debounce-POSTs its
   // poll + question state; results survive a refresh, like drawings.
   app.post(ENGAGEMENT_PATH, async (c) => {
     if (!authOk(c.req.query("token"))) return c.text("Forbidden", 403);
+    const origin = c.req.header("origin");
+    if (origin && !originAllowed(origin, c.req.header("host"), options.allowOrigins)) {
+      return c.text("Forbidden", 403);
+    }
+    if (options.allowOrigins?.length && origin) {
+      c.header("Access-Control-Allow-Origin", origin);
+    }
     const body = (await c.req.json().catch(() => null)) as
       | ({ deck?: string } & Partial<EngagementSnapshot>)
       | null;
@@ -115,7 +164,9 @@ export function createSyncGateway(options: GatewayOptions): Gateway {
   app.get(
     SYNC_PATH,
     upgradeWebSocket((c) => {
-      const authorized = authOk(c.req.query("token"));
+      const authorized =
+        authOk(c.req.query("token")) &&
+        originAllowed(c.req.header("origin"), c.req.header("host"), options.allowOrigins);
       // Audience-role connections (Phase 19) get a server-side action allowlist —
       // client-side scoping alone would let a modified page drive the deck.
       const audience = c.req.query("role") === "audience";

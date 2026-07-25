@@ -9,9 +9,10 @@ layer most deck tools outsource to Slido or Mentimeter: **polls** voted from pho
 phone remote.
 
 :::note
-Like the phone remote, this is a **live-presentation** feature: it works when you
-present via `astro-slides dev --remote` (which runs the sync gateway on your LAN).
-Static exports render polls with zero counts and no reaction/Q&A chrome.
+Like the phone remote, this is a **live** feature — it needs a sync gateway running.
+`astro-slides dev --remote` runs one on your LAN; a **deployed static deck** gets the
+same features by pointing its build at a [hosted gateway](#deployed-decks-the-hosted-gateway).
+Without a gateway, static exports render polls with zero counts and no reaction/Q&A chrome.
 :::
 
 ## The audience joins by QR
@@ -63,6 +64,36 @@ The audience types questions on their phones; they appear in your **presenter vi
 Six emoji on the audience page float up the deck when tapped. Rate-limited on the
 phone and sprite-capped on the deck, so an enthusiastic room stays legible. Inert in
 embeds, previews, and print.
+
+## Deployed decks: the hosted gateway
+
+`dev --remote` only reaches phones on the **same network**. To run engagement against
+a deck deployed as a static site (GitHub Pages, Netlify, …), host the gateway
+anywhere Node runs and point the deck's build at it:
+
+```bash
+# 1. On your server (any Node ≥22 host — a $5 VM, Fly.io, Railway…):
+npx astro-slides gateway ./state \
+  --port 8787 \
+  --allow-origin "https://you.github.io" \
+  --password hunter2          # optional: protects presenter-grade access
+
+# 2. Build the deck against it:
+ASTRO_SLIDES_GATEWAY=wss://gateway.example.com astro-slides build .
+```
+
+- The built deck opens a WebSocket to the gateway on load; the audience page lives on
+  the gateway itself at `/audience?deck=<name>` (the command prints the URL + QR).
+- `--allow-origin` is required for a deployed site: cross-origin browsers send an
+  `Origin` header and the gateway refuses any that aren't allowlisted (WebSocket and
+  the engagement-persistence POST both check it; the POST also gets proper CORS
+  headers). Comma-separate multiple origins; `*` allows all.
+- Poll/Q&A state persists under the directory you pass (`./state` above), exactly like
+  the dev gateway's `.astro-slides/engagement/`.
+- Use `wss://` (behind TLS — put the gateway behind a reverse proxy or a platform
+  that terminates TLS); an `https://` page cannot open a `ws://` socket.
+- `--password` derives the same token scheme as `dev --remote=<password>`: presenter
+  URLs need it, the audience page can be left open.
 
 ## Example
 

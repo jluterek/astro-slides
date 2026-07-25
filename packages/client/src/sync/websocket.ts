@@ -35,12 +35,34 @@ export interface WebSocketLike {
 
 const OPEN = 1;
 
-/** Build the gateway URL for a deck room from a same-origin path. */
+/**
+ * Build the gateway URL for a deck room. `path` is either a same-origin path
+ * (`/__astro-slides/sync`, the dev gateway) or an ABSOLUTE gateway URL for deployed
+ * decks (issue #62): `wss://live.example.com`, `https://live.example.com` (scheme is
+ * translated to ws/wss), with or without an explicit sync path.
+ */
 export function gatewayUrl(path: string, deckId: string, suffix = "", loc = location): string {
-  const scheme = loc.protocol === "https:" ? "wss:" : "ws:";
   const params = new URLSearchParams({ deck: deckId });
   if (suffix) params.set("suffix", suffix);
+  if (/^(wss?|https?):\/\//.test(path)) {
+    const url = new URL(path);
+    url.protocol = url.protocol === "http:" || url.protocol === "ws:" ? "ws:" : "wss:";
+    if (url.pathname === "/" || url.pathname === "") url.pathname = "/__astro-slides/sync";
+    url.search = params.toString();
+    return url.toString();
+  }
+  const scheme = loc.protocol === "https:" ? "wss:" : "ws:";
   return `${scheme}//${loc.host}${path}?${params.toString()}`;
+}
+
+/** The gateway's HTTP origin (for /audience links + engagement POSTs) — empty string
+ * for the same-origin dev gateway. */
+export function gatewayHttpOrigin(path: string): string {
+  if (!/^(wss?|https?):\/\//.test(path)) return "";
+  const url = new URL(path);
+  url.protocol =
+    url.protocol === "ws:" ? "http:" : url.protocol === "wss:" ? "https:" : url.protocol;
+  return url.origin;
 }
 
 export function createWebSocketTransport(
