@@ -1,9 +1,9 @@
 {
   "name": "@astro-slides/cli",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "private": false,
   "type": "module",
-  "description": "The astro-slides command \u2014 dev server, build, export, and MCP server entry points.",
+  "description": "The astro-slides command — dev server, build, export, and MCP server entry points.",
   "license": "MIT",
   "author": "James Luterek",
   "bin": {

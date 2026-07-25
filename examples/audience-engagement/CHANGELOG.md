@@ -1,5 +1,14 @@
 # @astro-slides/example-audience-engagement
 
+## 0.0.8
+
+### Patch Changes
+
+- Updated dependencies [[`36a2fc5`](https://github.com/jluterek/astro-slides/commit/36a2fc53888137f6c00ff3a09d09283912816fd5), [`c829aee`](https://github.com/jluterek/astro-slides/commit/c829aee7171b797d33d46228cd401492a5572070), [`44e731b`](https://github.com/jluterek/astro-slides/commit/44e731b63d0bf0f9ada2a86c86a22f4a47b631aa), [`8b0b517`](https://github.com/jluterek/astro-slides/commit/8b0b5175c9754db63c1b3d98634ce8acfa64dfbc), [`df69221`](https://github.com/jluterek/astro-slides/commit/df6922139a572d6bfacf15a28b5eaf76df8abc02), [`4bf0905`](https://github.com/jluterek/astro-slides/commit/4bf09051f9ba514af29aa4b20a4a42ddf7ec06d1)]:
+  - @astro-slides/core@0.5.0
+  - @astro-slides/client@0.5.0
+  - @astro-slides/cli@0.5.0
+
 ## 0.0.7
 
 ### Patch Changes
