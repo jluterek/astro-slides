@@ -1,5 +1,18 @@
 # @astro-slides/client
 
+## 0.5.0
+
+### Minor Changes
+
+- [#69](https://github.com/jluterek/astro-slides/pull/69) [`36a2fc5`](https://github.com/jluterek/astro-slides/commit/36a2fc53888137f6c00ff3a09d09283912816fd5) Thanks [@jluterek](https://github.com/jluterek)! - In-deck audience-join QR overlay ([#60](https://github.com/jluterek/astro-slides/issues/60)). Press `A` in a live deck (or the new **QR** button in presenter view) for a full-screen overlay — big QR + plain URL on the theme background — so a room of phones can join polls/Q&A/reactions without ever seeing your terminal. The overlay encodes the address phones can actually reach: under `dev --remote` a `localhost` origin is swapped for your LAN IP (advertised via runtime config), and decks built against a hosted gateway ([#62](https://github.com/jluterek/astro-slides/issues/62)) use the gateway's own host. Rides shared sync state, so the presenter view raises it on the deck window the room is watching; `A`/`Esc`/click dismiss it everywhere at once. Also fixes the presenter route 500ing in dev (`@astro-slides/client` is now `ssr.noExternal` — Vite dev-SSR was handing its raw-TS workspace entrypoints to Node, which cannot resolve `.js` specifiers to `.ts` sources).
+
+- [#68](https://github.com/jluterek/astro-slides/pull/68) [`8b0b517`](https://github.com/jluterek/astro-slides/commit/8b0b5175c9754db63c1b3d98634ce8acfa64dfbc) Thanks [@jluterek](https://github.com/jluterek)! - Audience engagement for deployed static decks ([#62](https://github.com/jluterek/astro-slides/issues/62)). New `astro-slides gateway` command runs the sync gateway standalone anywhere Node runs — deck builds point at it via `ASTRO_SLIDES_GATEWAY=wss://<host>`, so polls, Q&A, reactions, and the phone remote work over the internet, not just `dev --remote` on a LAN. The gateway gains an `--allow-origin` allowlist (cross-origin WebSocket upgrades and engagement-persistence POSTs are origin-checked, with proper CORS on the POST), `--password` presenter tokens, and persistence under a configurable root; core exports it via the new `@astro-slides/core/gateway` subpath. The client accepts absolute `ws(s)://`/`http(s)://` gateway URLs and posts engagement state to the gateway's origin.
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @astro-slides/types@0.5.0
+
 ## 0.4.1
 
 ### Patch Changes

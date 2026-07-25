@@ -1,5 +1,13 @@
 # @astro-slides/mcp-server
 
+## 0.5.0
+
+### Patch Changes
+
+- Updated dependencies [[`df69221`](https://github.com/jluterek/astro-slides/commit/df6922139a572d6bfacf15a28b5eaf76df8abc02)]:
+  - @astro-slides/parser@0.5.0
+  - @astro-slides/types@0.5.0
+
 ## 0.4.1
 
 ### Patch Changes

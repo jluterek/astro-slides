@@ -1,5 +1,20 @@
 # @astro-slides/cli
 
+## 0.5.0
+
+### Minor Changes
+
+- [#67](https://github.com/jluterek/astro-slides/pull/67) [`44e731b`](https://github.com/jluterek/astro-slides/commit/44e731b63d0bf0f9ada2a86c86a22f4a47b631aa) Thanks [@jluterek](https://github.com/jluterek)! - `export` gains `--deck <name>` ([#56](https://github.com/jluterek/astro-slides/issues/56)): scope PDF/PNG/PPTX exports to one deck instead of applying `--range` to every deck in the project. An unknown deck name errors with the list of available decks, and range entries beyond a deck's slide count now log a per-deck "skipped: out of range" note instead of silently exporting nothing.
+
+- [#68](https://github.com/jluterek/astro-slides/pull/68) [`8b0b517`](https://github.com/jluterek/astro-slides/commit/8b0b5175c9754db63c1b3d98634ce8acfa64dfbc) Thanks [@jluterek](https://github.com/jluterek)! - Audience engagement for deployed static decks ([#62](https://github.com/jluterek/astro-slides/issues/62)). New `astro-slides gateway` command runs the sync gateway standalone anywhere Node runs — deck builds point at it via `ASTRO_SLIDES_GATEWAY=wss://<host>`, so polls, Q&A, reactions, and the phone remote work over the internet, not just `dev --remote` on a LAN. The gateway gains an `--allow-origin` allowlist (cross-origin WebSocket upgrades and engagement-persistence POSTs are origin-checked, with proper CORS on the POST), `--password` presenter tokens, and persistence under a configurable root; core exports it via the new `@astro-slides/core/gateway` subpath. The client accepts absolute `ws(s)://`/`http(s)://` gateway URLs and posts engagement state to the gateway's origin.
+
+### Patch Changes
+
+- Updated dependencies [[`36a2fc5`](https://github.com/jluterek/astro-slides/commit/36a2fc53888137f6c00ff3a09d09283912816fd5), [`c829aee`](https://github.com/jluterek/astro-slides/commit/c829aee7171b797d33d46228cd401492a5572070), [`8b0b517`](https://github.com/jluterek/astro-slides/commit/8b0b5175c9754db63c1b3d98634ce8acfa64dfbc), [`df69221`](https://github.com/jluterek/astro-slides/commit/df6922139a572d6bfacf15a28b5eaf76df8abc02), [`4bf0905`](https://github.com/jluterek/astro-slides/commit/4bf09051f9ba514af29aa4b20a4a42ddf7ec06d1)]:
+  - @astro-slides/core@0.5.0
+  - @astro-slides/parser@0.5.0
+  - @astro-slides/mcp-server@0.5.0
+
 ## 0.4.1
 
 ### Patch Changes
