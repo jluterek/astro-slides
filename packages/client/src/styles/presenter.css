@@ -78,6 +78,12 @@
   border-color: #4a9eff;
   color: #fff;
 }
+/* Armed destructive action (engagement reset, issue #71). */
+.as-presenter-bar button.is-danger {
+  background: #c0392b;
+  border-color: #c0392b;
+  color: #fff;
+}
 .as-timer {
   font-variant-numeric: tabular-nums;
   font-size: 1.1rem;

@@ -161,6 +161,8 @@ export function renderAudiencePage(options: AudiencePageOptions): string {
       var a; try { a = JSON.parse(ev.data); } catch (e) { return; }
       if (a.type === "poll/open" && a.poll) { active = a.poll; renderPoll(); }
       else if (a.type === "poll/close") { closed[a.id] = true; if (active && active.id === a.id) active = null; renderPoll(); }
+      else if (a.type === "poll/reset") { delete votes[a.id]; delete closed[a.id]; renderPoll(); }
+      else if (a.type === "engagement/reset") { votes = {}; closed = {}; active = null; renderPoll(); }
       else if (a.type === "state" && a.state) {
         active = a.state.activePoll || null;
         var polls = a.state.polls || {};

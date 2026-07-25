@@ -29,6 +29,8 @@ describe("audienceAllowed (server-side role scoping)", () => {
       "qa/moderate",
       "poll/close",
       "poll/open",
+      "poll/reset",
+      "engagement/reset",
       "timer/start",
     ]) {
       expect(audienceAllowed(JSON.stringify({ type }))).toBe(false);

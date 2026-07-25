@@ -37,6 +37,7 @@ interface PollElement {
   counts: HTMLElement[];
   total: HTMLElement | null;
   closeBtn: HTMLButtonElement | null;
+  resetBtn: HTMLButtonElement | null;
 }
 
 function parsePoll(el: HTMLElement): ActivePoll | null {
@@ -67,6 +68,7 @@ function initPolls(root: HTMLElement, opts: EngagementOptions): () => void {
       counts: Array.from(el.querySelectorAll<HTMLElement>(".as-poll-count")),
       total: el.querySelector<HTMLElement>(".as-poll-total"),
       closeBtn: el.querySelector<HTMLButtonElement>(".as-poll-close"),
+      resetBtn: el.querySelector<HTMLButtonElement>(".as-poll-reset"),
     });
   }
   if (polls.length === 0) return () => {};
@@ -89,6 +91,10 @@ function initPolls(root: HTMLElement, opts: EngagementOptions): () => void {
       if (p.total) p.total.textContent = `${total} vote${total === 1 ? "" : "s"}`;
       p.el.classList.toggle("as-poll-closed", !!pollState?.closed);
       if (p.closeBtn) p.closeBtn.hidden = !!pollState?.closed || opts.preview || opts.embedded;
+      // Per-poll reset (issue #71): publisher-only, and only once there is
+      // something to wipe (votes or a closed flag).
+      if (p.resetBtn)
+        p.resetBtn.hidden = (total === 0 && !pollState?.closed) || opts.preview || opts.embedded;
     }
   };
 
@@ -110,6 +116,9 @@ function initPolls(root: HTMLElement, opts: EngagementOptions): () => void {
   for (const p of polls) {
     p.closeBtn?.addEventListener("click", () => {
       opts.sync.dispatch({ type: "poll/close", id: p.poll.id });
+    });
+    p.resetBtn?.addEventListener("click", () => {
+      opts.sync.dispatch({ type: "poll/reset", id: p.poll.id });
     });
   }
 

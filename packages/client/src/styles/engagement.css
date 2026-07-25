@@ -51,7 +51,8 @@
   font-size: var(--slide-text-sm, 0.85em);
   color: var(--slide-muted, inherit);
 }
-.as-poll-close {
+.as-poll-close,
+.as-poll-reset {
   font: inherit;
   padding: 0.3em 0.9em;
   border-radius: 999px;
@@ -165,8 +166,10 @@
 .as-print .as-reactions,
 .as-print .as-qa-banner,
 .as-print .as-poll-close,
+.as-print .as-poll-reset,
 .as-print .as-qr,
 .as-deck.as-embed .as-poll-close,
+.as-deck.as-embed .as-poll-reset,
 .as-deck.as-embed .as-qr {
   display: none;
 }

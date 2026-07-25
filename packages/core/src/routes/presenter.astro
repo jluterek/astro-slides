@@ -1,5 +1,5 @@
 ---
-import { routePrefix } from "@astro-slides/runtime-config";
+import { routePrefix, syncGateway } from "@astro-slides/runtime-config";
 import PresenterApp from "@astro-slides/client/components/presenter/PresenterApp.tsx";
 import { parseTimeString } from "@astro-slides/client";
 import { configs } from "@astro-slides/configs";
@@ -122,6 +122,7 @@ const thumbScale = THUMB_W / designWidth;
       client:load
       deckId={deck}
       routePrefix={routePrefix}
+      syncGateway={syncGateway}
       slides={deckSlides}
       start={start}
       durationMs={durationMs}
