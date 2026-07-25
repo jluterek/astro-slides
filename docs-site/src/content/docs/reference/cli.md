@@ -79,6 +79,7 @@ pnpm exec playwright install chromium
 | `--format <fmt>` | `pdf` | Output format: `pdf`, `png`, `pptx`, or `html`. |
 | `--output <path>` | per-format | Output file or directory (see below). |
 | `--range <spec>` | all slides | Subset of slides to include, e.g. `"1,3-5,8"`. |
+| `--deck <name>` | all decks | Export only this deck (folder name). |
 | `--per-slide` | `false` | PDF: write one file per slide instead of one combined document. |
 | `--with-clicks` | `false` | PNG: emit one image per click step, not just per slide. |
 | `--with-toc` | `false` | PDF: add a document outline (bookmarks) from slide titles. |

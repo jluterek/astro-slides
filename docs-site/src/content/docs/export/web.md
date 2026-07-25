@@ -110,6 +110,7 @@ These apply across the web formats:
 | `--format <fmt>` | all | `pdf` \| `png` \| `html` (default `pdf`). |
 | `--output <path>` | all | Output file (pdf / html / single pdf) or directory (png / `--per-slide` pdf). |
 | `--range "1,3-5,8"` | pdf, png | Subset of slides to include (see below). |
+| `--deck <name>` | all | Export only this deck (multi-deck projects export every deck by default). |
 | `--dark` | pdf, png | Force the dark color scheme. |
 | `--executable-path <path>` | pdf, png | Use your own Chromium binary instead of Playwright's. |
 
