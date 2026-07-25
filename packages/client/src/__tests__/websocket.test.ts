@@ -1,7 +1,12 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from "vitest";
 import type { SyncAction } from "../sync/types.js";
-import { createWebSocketTransport, gatewayUrl, type WebSocketLike } from "../sync/websocket.js";
+import {
+  createWebSocketTransport,
+  gatewayHttpOrigin,
+  gatewayUrl,
+  type WebSocketLike,
+} from "../sync/websocket.js";
 
 /** A controllable fake WebSocket implementing the slice the transport uses. */
 class FakeSocket implements WebSocketLike {
@@ -38,6 +43,34 @@ describe("gatewayUrl", () => {
   it("upgrades to wss on https", () => {
     const loc = { protocol: "https:", host: "h" } as Location;
     expect(gatewayUrl("/s", "d", "", loc)).toMatch(/^wss:\/\//);
+  });
+
+  // Deployed decks (issue #62): the path can be an absolute gateway URL.
+  it("accepts an absolute gateway URL, translating scheme and defaulting the path", () => {
+    const loc = { protocol: "https:", host: "site.example" } as Location;
+    expect(gatewayUrl("wss://live.example.com", "talk", "", loc)).toBe(
+      "wss://live.example.com/__astro-slides/sync?deck=talk",
+    );
+    expect(gatewayUrl("https://live.example.com", "talk", "", loc)).toMatch(/^wss:\/\//);
+    expect(gatewayUrl("http://10.0.0.5:8787", "talk", "", loc)).toBe(
+      "ws://10.0.0.5:8787/__astro-slides/sync?deck=talk",
+    );
+    // An explicit path on the URL is kept.
+    expect(gatewayUrl("wss://live.example.com/custom/sync", "d", "s", loc)).toBe(
+      "wss://live.example.com/custom/sync?deck=d&suffix=s",
+    );
+  });
+});
+
+describe("gatewayHttpOrigin", () => {
+  it("is empty for same-origin dev paths", () => {
+    expect(gatewayHttpOrigin("/__astro-slides/sync")).toBe("");
+    expect(gatewayHttpOrigin("")).toBe("");
+  });
+  it("maps ws(s) gateway URLs to their http(s) origin", () => {
+    expect(gatewayHttpOrigin("wss://live.example.com/x")).toBe("https://live.example.com");
+    expect(gatewayHttpOrigin("ws://10.0.0.5:8787")).toBe("http://10.0.0.5:8787");
+    expect(gatewayHttpOrigin("https://live.example.com")).toBe("https://live.example.com");
   });
 });
 

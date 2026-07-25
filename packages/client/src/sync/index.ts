@@ -21,6 +21,7 @@ export {
 } from "./types.js";
 export {
   createWebSocketTransport,
+  gatewayHttpOrigin,
   gatewayUrl,
   type WebSocketLike,
   type WebSocketTransportOptions,

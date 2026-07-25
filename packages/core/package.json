@@ -10,6 +10,10 @@
     ".": {
       "types": "./src/index.ts",
       "import": "./src/index.ts"
+    },
+    "./gateway": {
+      "types": "./dist/server/index.d.ts",
+      "import": "./dist/server/index.js"
     }
   },
   "dependencies": {
@@ -72,13 +76,24 @@
     "withastro"
   ],
   "files": [
+    "dist",
     "src",
     "!**/__tests__",
     "!**/*.test.ts"
   ],
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./src/index.ts",
+        "import": "./src/index.ts"
+      },
+      "./gateway": {
+        "types": "./dist/server/index.d.ts",
+        "import": "./dist/server/index.js"
+      }
+    }
   },
   "engines": {
     "node": ">=22.18.0"

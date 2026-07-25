@@ -113,6 +113,37 @@ ranges: `"1,3-5,8"` selects slides 1, 3, 4, 5, and 8. Values are sorted, deduped
 and clamped to the deck's bounds; reversed ranges (`5-3`) are normalized.
 :::
 
+## `gateway`
+
+Run a standalone sync gateway so a **deployed static deck** gets audience
+engagement (polls, Q&A, reactions) and the phone remote over the internet — the
+same gateway `dev --remote` runs on your LAN, hosted anywhere Node ≥22 runs.
+
+```bash
+astro-slides gateway [root] [flags]
+```
+
+`[root]` is the persistence directory (poll/Q&A state, drawings; default cwd).
+Point the deck build at the gateway with the `ASTRO_SLIDES_GATEWAY` env var:
+
+```bash
+# on the server
+astro-slides gateway ./state --allow-origin "https://you.github.io" --password hunter2
+
+# building the deck
+ASTRO_SLIDES_GATEWAY=wss://gateway.example.com astro-slides build .
+```
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--port <n>` | `8787` | Port to listen on. |
+| `--allow-origin <o>` | — | Comma-separated origins allowed to connect cross-origin (your deployed site); `*` allows all. Required for deployed decks. |
+| `--password <secret>` | — | Derive a presenter token (same scheme as `dev --remote=<password>`). |
+| `--total <n>` | `999` | Slide-count bound for the `/entry` remote page (the standalone gateway doesn't parse decks). |
+
+See [Audience engagement → Deployed decks](/presenting/audience-engagement/#deployed-decks-the-hosted-gateway)
+for the full deployment walk-through.
+
 ## `mcp-server`
 
 Run the astro-slides MCP server so an MCP-aware client (Claude Code, Cursor,

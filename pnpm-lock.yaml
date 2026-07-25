@@ -499,6 +499,9 @@ importers:
       '@astro-slides/parser':
         specifier: workspace:*
         version: link:../parser
+      '@hono/node-server':
+        specifier: catalog:prod
+        version: 1.19.14(hono@4.12.27)
       '@lillallol/outline-pdf':
         specifier: catalog:prod
         version: 4.0.0

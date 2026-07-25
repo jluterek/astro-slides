@@ -148,9 +148,13 @@ export function astroSlidesVitePlugin(options: VitePluginOptions): Plugin {
         return engagementModuleSource(map);
       }
       if (id === resolvedId(VIRTUAL_IDS.runtimeConfig)) {
-        // Advertise the sync gateway only when the dev server runs with --remote
-        // (the CLI sets ASTRO_SLIDES_REMOTE); static builds get null.
-        const remote = process.env.ASTRO_SLIDES_REMOTE ? "/__astro-slides/sync" : null;
+        // Gateway advertisement: dev --remote uses the same-origin path; a static
+        // build can point at an EXTERNAL gateway via ASTRO_SLIDES_GATEWAY (issue #62,
+        // e.g. wss://live.example.com running `astro-slides gateway`); else null and
+        // the runtime stays BroadcastChannel-only.
+        const remote = process.env.ASTRO_SLIDES_REMOTE
+          ? "/__astro-slides/sync"
+          : process.env.ASTRO_SLIDES_GATEWAY || null;
         return runtimeConfigModuleSource(remote, options.routePrefix ?? "");
       }
       return null;
