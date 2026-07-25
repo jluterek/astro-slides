@@ -1,5 +1,14 @@
 # @astro-slides/example-morph-reel
 
+## 0.0.9
+
+### Patch Changes
+
+- Updated dependencies [[`68cf49e`](https://github.com/jluterek/astro-slides/commit/68cf49e9c79c20d93571826bb73ec2bbc5b373de), [`a7aeb30`](https://github.com/jluterek/astro-slides/commit/a7aeb3005c4976c40303c30540999ef21556920f)]:
+  - @astro-slides/core@0.6.0
+  - @astro-slides/client@0.6.0
+  - @astro-slides/cli@0.6.0
+
 ## 0.0.8
 
 ### Patch Changes

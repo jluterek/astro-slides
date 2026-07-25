@@ -1,5 +1,14 @@
 # @astro-slides/cli
 
+## 0.6.0
+
+### Patch Changes
+
+- Updated dependencies [[`68cf49e`](https://github.com/jluterek/astro-slides/commit/68cf49e9c79c20d93571826bb73ec2bbc5b373de)]:
+  - @astro-slides/core@0.6.0
+  - @astro-slides/parser@0.6.0
+  - @astro-slides/mcp-server@0.6.0
+
 ## 0.5.0
 
 ### Minor Changes

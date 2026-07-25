@@ -1,5 +1,18 @@
 # @astro-slides/core
 
+## 0.6.0
+
+### Minor Changes
+
+- [#73](https://github.com/jluterek/astro-slides/pull/73) [`68cf49e`](https://github.com/jluterek/astro-slides/commit/68cf49e9c79c20d93571826bb73ec2bbc5b373de) Thanks [@jluterek](https://github.com/jluterek)! - Presenter-grade engagement reset ([#71](https://github.com/jluterek/astro-slides/issues/71)). Rehearsal results no longer leak into the real session: the presenter view's toolbar gains a two-step **Reset** button that wipes all poll votes and the Q&A queue, each `<Poll>` slide gains a per-poll **Reset** beside _Close voting_, and the gateway accepts a curl-able `POST /__astro-slides/engagement/reset {deck}` (token- and origin-gated like the persistence POST) for headless pre-flight. Connected phones and deck windows zero out live — the presenter island now opens its own WebSocket leg to the gateway, so presenter-initiated actions (reset, blackout, the join QR) reach audience phones directly instead of relying on a same-origin deck window. Reset actions are denied to audience-role connections server-side.
+
+### Patch Changes
+
+- Updated dependencies [[`68cf49e`](https://github.com/jluterek/astro-slides/commit/68cf49e9c79c20d93571826bb73ec2bbc5b373de), [`a7aeb30`](https://github.com/jluterek/astro-slides/commit/a7aeb3005c4976c40303c30540999ef21556920f)]:
+  - @astro-slides/client@0.6.0
+  - @astro-slides/types@0.6.0
+  - @astro-slides/parser@0.6.0
+
 ## 0.5.0
 
 ### Minor Changes
