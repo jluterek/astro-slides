@@ -239,6 +239,27 @@ full worked example.
 Layouts and primitives that consume these tokens are documented on the
 [Layouts](/design/layouts/) page.
 
+## Shipping a project theme
+
+Custom themes are first-class: put your stylesheet at `<root>/themes/<name>/theme.css`
+and select it per deck with `theme: <name>` headmatter. The CSS loads on the deck,
+presenter, print, and read routes, bundles into static builds, and hot-reloads in dev.
+
+```css
+/* themes/sphere/theme.css */
+[data-theme="sphere"] {
+  --slide-bg: oklch(20% 0.05 160);
+  --slide-fg: oklch(96% 0.02 150);
+  --slide-accent: oklch(75% 0.18 155);
+}
+```
+
+Scope every token under `[data-theme="<name>"]` exactly like the bundled themes — the
+deck routes stamp that attribute from your `theme:` value. This works standalone and in
+embedded hosts (the `themes/` folder lives at the same root as your `astro.config.mjs`).
+A `theme:` name that is neither bundled nor found in `themes/` logs a warning and
+renders with starter tokens.
+
 ## Source
 
 - `packages/client/src/themes/starter/theme.css` — the token contract in practice (the default).

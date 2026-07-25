@@ -15,6 +15,7 @@ export const VIRTUAL_IDS = {
   titles: "@astro-slides/titles",
   drawings: "@astro-slides/drawings",
   engagement: "@astro-slides/engagement",
+  userThemes: "@astro-slides/user-themes",
   runtimeConfig: "@astro-slides/runtime-config",
 } as const;
 
@@ -43,6 +44,17 @@ export function drawingsModuleSource(map: Record<string, Record<string, string>>
  * The deck route seeds these into the runtime's initial shared state so poll results
  * and questions survive a refresh (like drawings).
  */
+/**
+ * Emit the user-themes side-effect module (issue #49): one CSS import per discovered
+ * `<root>/themes/<name>/theme.css`. Routes import this once; Vite bundles the CSS and
+ * hot-reloads edits in dev. Empty projects emit an empty module.
+ */
+export function userThemesModuleSource(cssFiles: string[]): string {
+  return cssFiles.length === 0
+    ? "export default null;\n"
+    : `${cssFiles.map((f) => `import ${json(f)};`).join("\n")}\nexport default null;\n`;
+}
+
 export function engagementModuleSource(map: Record<string, unknown>): string {
   return `export const engagement = ${json(map)};\nexport default engagement;\n`;
 }

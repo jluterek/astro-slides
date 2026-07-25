@@ -6,6 +6,7 @@ import { resolveLayouts, userLayoutsDir } from "./layout-resolver.js";
 import { emitSlideModules, slideModulesDir } from "./mdx-emit.js";
 import { loadEngagement } from "./server/engagement.js";
 import { createSyncGateway } from "./server/gateway.js";
+import { discoverUserThemes, unknownThemeNames } from "./theme-resolver.js";
 import {
   configsModuleSource,
   drawingsModuleSource,
@@ -14,6 +15,7 @@ import {
   runtimeConfigModuleSource,
   slidesModuleSource,
   titlesModuleSource,
+  userThemesModuleSource,
   VIRTUAL_IDS,
 } from "./virtual.js";
 
@@ -39,6 +41,7 @@ const resolvedId = (id: string): string => `\0${id}`;
  * virtual-module seam is what makes that a drop-in later.
  */
 export function astroSlidesVitePlugin(options: VitePluginOptions): Plugin {
+  const warnedThemes = new Set<string>();
   const ids: string[] = Object.values(VIRTUAL_IDS);
   let cache: ReturnType<typeof compute> | null = null;
   let layouts: Record<string, string> | null = null;
@@ -121,6 +124,21 @@ export function astroSlidesVitePlugin(options: VitePluginOptions): Plugin {
           data().decks.map((d) => [d.name, loadDrawings(options.root, d.name)]),
         );
         return drawingsModuleSource(map);
+      }
+      if (id === resolvedId(VIRTUAL_IDS.userThemes)) {
+        // Discover fresh each load so adding a theme folder shows without a restart.
+        const user = discoverUserThemes(options.root);
+        const referenced = data().decks.map((d) => String(d.deck.headmatter.theme ?? ""));
+        for (const name of unknownThemeNames(referenced, user)) {
+          if (!warnedThemes.has(name)) {
+            warnedThemes.add(name);
+            console.warn(
+              `[astro-slides] Deck theme "${name}" has no stylesheet: not a bundled theme ` +
+                `and no <root>/themes/${name}/theme.css found — rendering with starter tokens.`,
+            );
+          }
+        }
+        return userThemesModuleSource(user.map((t) => t.css));
       }
       if (id === resolvedId(VIRTUAL_IDS.engagement)) {
         // Read fresh so poll results survive a reload (Phase 19, mirrors drawings).

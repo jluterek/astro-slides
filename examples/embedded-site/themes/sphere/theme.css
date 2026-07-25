@@ -1,0 +1,8 @@
+/* User theme (issue #49): lives at <root>/themes/sphere/theme.css, selected by
+   `theme: sphere` headmatter. Tokens scope under [data-theme] like bundled themes. */
+[data-theme="sphere"] {
+  --slide-bg: oklch(20% 0.05 160);
+  --slide-fg: oklch(96% 0.02 150);
+  --slide-accent: oklch(75% 0.18 155);
+  --slide-heading-weight: 800;
+}
