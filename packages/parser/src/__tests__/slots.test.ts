@@ -46,3 +46,37 @@ describe("::read:: slot (issue #45)", () => {
     expect(slide?.slots.read).not.toContain("private delivery cue");
   });
 });
+
+describe("nested-fence slot extraction (issue #59)", () => {
+  it("keeps ::read:: out of the slide when it follows a 4-backtick magic-move block", () => {
+    const body = [
+      "## Find the bug",
+      "",
+      "````md magic-move",
+      "```swift",
+      "let a = 1",
+      "```",
+      "```swift",
+      "let a = 2",
+      "```",
+      "````",
+      "",
+      "::read::",
+      "",
+      "Read-only prose.",
+    ].join("\n");
+    const slots = parseSlots(body);
+    expect(slots.default).toContain("````md magic-move");
+    expect(slots.default).not.toContain("::read::");
+    expect(slots.default).not.toContain("Read-only prose");
+    expect(slots.read).toContain("Read-only prose");
+    expect(hasSlots(body)).toBe(true);
+  });
+
+  it("a ::name:: genuinely inside a fence stays fenced content", () => {
+    const body = "```\n::right::\n```\n\nafter";
+    const slots = parseSlots(body);
+    expect(Object.keys(slots)).toEqual(["default"]);
+    expect(slots.default).toContain("::right::");
+  });
+});

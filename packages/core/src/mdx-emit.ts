@@ -9,7 +9,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { dirname, join } from "node:path";
-import { slideTitle } from "@astro-slides/parser";
+import { slideTitle, stripHtmlComments } from "@astro-slides/parser";
 import type { LoadedDeck } from "./deck-loader.js";
 
 /**
@@ -93,7 +93,9 @@ export function emitSlideModules(root: string, decks: LoadedDeck[]): SlideModule
         // Always emit `default` (it anchors content layouts); skip empty named slots.
         if (slot !== "default" && source.trim() === "") continue;
         const file = join(dir, name, `${slide.no}.${slot}.mdx`);
-        writeStable(file, source.endsWith("\n") ? source : `${source}\n`);
+        // MDX rejects HTML comments; mid-slide ones must be inert, not fatal (#55).
+        const clean = stripHtmlComments(source);
+        writeStable(file, clean.endsWith("\n") ? clean : `${clean}\n`);
         emitted.add(file);
         slotFiles[slot] = file;
       }

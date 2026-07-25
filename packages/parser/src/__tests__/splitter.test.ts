@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { parse } from "../index.js";
 import { advanceComment, splitSlides } from "../splitter.js";
 
 const lines = (...l: string[]) => l.join("\n");
@@ -66,5 +67,34 @@ describe("advanceComment", () => {
     expect(advanceComment("close --> text", true)).toBe(false);
     expect(advanceComment("<!-- inline -->", false)).toBe(false);
     expect(advanceComment("no comment", false)).toBe(false);
+  });
+});
+
+describe("frontmatter heuristic tightening (issue #52)", () => {
+  it("a slide body that accidentally parses as YAML is NOT swallowed as frontmatter", () => {
+    const deck = parse(
+      [
+        "# One",
+        "",
+        "---",
+        "",
+        "## Some heading",
+        "",
+        '<img src="/x.svg" alt="Diagram: a description with a colon" width="1500" />',
+        "",
+        "---",
+        "",
+        "# Three",
+      ].join("\n"),
+    );
+    // Three slides — the middle one previously vanished into slide 3's frontmatter.
+    expect(deck.slides).toHaveLength(3);
+    expect(deck.slides[1]?.content).toContain("Some heading");
+  });
+
+  it("real frontmatter still parses (key line first)", () => {
+    const deck = parse("# One\n\n---\nlayout: center\ntitle: T\n---\n\n# Two\n");
+    expect(deck.slides).toHaveLength(2);
+    expect(deck.slides[1]?.frontmatter.layout).toBe("center");
   });
 });

@@ -28,7 +28,7 @@ export {
 export { revisionHash } from "./hash.js";
 export { expandImports, expandImportsAsync, type ResolvedRawSlide } from "./imports.js";
 export { extractMarpDirectives, extractMarpImages, type MarpImageResult } from "./marp.js";
-export { extractNotes } from "./notes.js";
+export { extractNotes, stripHtmlComments } from "./notes.js";
 export type {
   AsyncFileSystem,
   AsyncParseOptions,
