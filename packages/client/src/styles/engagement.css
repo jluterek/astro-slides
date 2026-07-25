@@ -2,8 +2,13 @@
    Token-driven like everything else — themes restyle via --slide-* custom props. */
 
 .as-poll {
-  width: 100%;
-  max-width: 720px;
+  /* An explicit width, not `100%`: centered layouts shrink-wrap their children, so
+     a percentage collapsed the poll to its content (~485px on a 1920px slide) and
+     natural-language options wrapped into a narrow column (issue #72). Not vw —
+     viewport units don't track the transform-scaled design space. max-width clamps
+     it inside narrow layout columns. */
+  width: var(--as-poll-max-width, 1100px);
+  max-width: 100%;
   display: grid;
   gap: var(--slide-space-3, 12px);
 }
@@ -17,13 +22,19 @@
   margin: 0;
   padding: 0;
   display: grid;
+  /* The label column takes its natural width up to the cap before the bars flex —
+     natural-language options ("Only after I review every line") stay on one line at
+     deck scale instead of wrapping into a narrow column (issue #72). The columns
+     live on the LIST so every row's bar starts at the same x (widest label wins);
+     each option row spans them via subgrid. Themes tune the cap via the token. */
+  grid-template-columns: fit-content(var(--as-poll-label-width, 55%)) 1fr 2.5em;
   gap: var(--slide-space-2, 8px);
 }
 .as-poll-option {
   display: grid;
-  grid-template-columns: minmax(6em, 0.35fr) 1fr 2.5em;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
   align-items: center;
-  gap: var(--slide-space-2, 8px);
 }
 .as-poll-bar {
   height: 1.1em;
