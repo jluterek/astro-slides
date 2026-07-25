@@ -91,6 +91,16 @@ describe("reduce", () => {
     expect(s.laser).toBeNull();
   });
 
+  it("toggles the audience-QR overlay flag idempotently", () => {
+    const on = reduce(initialState(), { type: "qr", on: true });
+    expect(on.qr).toBe(true);
+    expect(reduce(on, { type: "qr", on: true })).toBe(on); // no-op → same reference
+    expect(reduce(on, { type: "qr", on: false }).qr).toBe(false);
+    // Snapshots predating the field backfill it.
+    const legacy = { no: 1, step: 0, blackout: false, timer: initialTimer() } as SharedState;
+    expect(reduce(on, { type: "state", state: legacy }).qr).toBe(false);
+  });
+
   it("sets, replaces, and clears drawings by slide-step key", () => {
     const key = drawingKey(3, 1);
     expect(key).toBe("3:1");

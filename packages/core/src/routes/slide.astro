@@ -248,12 +248,16 @@ const fallbackLayout = layouts.default ?? layouts["404"];
 
     <script>
       import { initDeck } from "@astro-slides/client";
-      import { syncGateway } from "@astro-slides/runtime-config";
+      import { publicHost, syncGateway } from "@astro-slides/runtime-config";
       // In dev with --remote, advertise the WS gateway so the runtime also joins over
       // WebSocket (cross-origin: phones + a second screen). Null in static builds.
-      if (syncGateway)
-        (window as unknown as { __ASTRO_SLIDES_SYNC__?: string }).__ASTRO_SLIDES_SYNC__ =
-          syncGateway;
+      const w = window as unknown as {
+        __ASTRO_SLIDES_SYNC__?: string;
+        __ASTRO_SLIDES_PUBLIC_HOST__?: string;
+      };
+      if (syncGateway) w.__ASTRO_SLIDES_SYNC__ = syncGateway;
+      // LAN address for the audience-join QR (issue #60) — phones can't reach localhost.
+      if (publicHost) w.__ASTRO_SLIDES_PUBLIC_HOST__ = publicHost;
       const root = document.querySelector<HTMLElement>(".as-deck");
       if (root) initDeck(root);
     </script>

@@ -122,6 +122,11 @@ export function astroSlides(options: AstroSlidesOptions = {}): AstroIntegration 
             // `.mdx` output re-triggering the deck watcher was an infinite reload
             // loop (issue #61). Emitted modules are invalidated explicitly instead.
             server: { watch: { ignored: ["**/.astro-slides/**"] } },
+            // Dev-SSR must bundle the client package, not hand it to Node: its
+            // workspace entrypoints are raw TS with `.js` relative specifiers, which
+            // Node's type-stripping can load but not resolve — externalizing it 500s
+            // every route whose frontmatter imports `@astro-slides/client` (presenter).
+            ssr: { noExternal: ["@astro-slides/client"] },
             plugins: [
               astroSlidesVitePlugin(pluginOptions),
               // `~icons/<collection>/<name>` imports compile to inline SVG Astro

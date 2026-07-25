@@ -26,7 +26,21 @@ astro-slides dev --remote=hunter2    # token-protected URLs
 ```
 
 Spectators scan the **Audience** code onto `/audience`: a mobile page with the active
-poll, a question box, and a reaction bar. Audience connections are scoped
+poll, a question box, and a reaction bar.
+
+On stage you don't want to show your terminal — press <kbd>A</kbd> **in the deck**
+(or hit the **QR** button in presenter view) for a full-screen join overlay: a large
+QR plus the plain URL, on the deck's theme background. Press <kbd>A</kbd>, <kbd>Esc</kbd>,
+or click to dismiss. The overlay knows the address phones can actually reach — under
+`dev --remote` it swaps a `localhost` origin for your LAN IP; decks built against a
+[hosted gateway](#deployed-decks-the-hosted-gateway) use the gateway's own host.
+
+:::caution[Conference Wi-Fi]
+`dev --remote` engagement is same-network by design — venue Wi-Fi with AP isolation
+will block phones from reaching the gateway on your laptop. Bring a travel router or
+phone hotspot, or use a [hosted gateway](#deployed-decks-the-hosted-gateway) so
+phones join over the internet.
+::: Audience connections are scoped
 **server-side** — the gateway only relays `vote`, `qa/ask`, and `react` from them, so
 a modified page still can't navigate your deck or draw on it.
 

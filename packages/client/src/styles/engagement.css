@@ -109,11 +109,65 @@
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
 }
 
+/* Audience-join QR overlay (issue #60): full-screen, theme-token driven, raised by
+   the deck's `A` shortcut or the presenter's QR button via shared state. */
+.as-qr {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--slide-bg, #111);
+  color: var(--slide-fg, #eee);
+  cursor: pointer;
+}
+.as-qr-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  font-family: var(--slide-font-body, system-ui, sans-serif);
+}
+.as-qr-panel h2 {
+  font-family: var(--slide-font-heading, inherit);
+  font-weight: var(--slide-heading-weight, 700);
+  font-size: 2.2rem;
+  margin: 0;
+}
+.as-qr-code {
+  width: min(46vh, 60vw);
+  background: #fff;
+  border-radius: 14px;
+  padding: 10px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.35);
+}
+.as-qr-code svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.as-qr-url {
+  margin: 0;
+  font-size: 1.3rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--slide-accent, inherit);
+  word-break: break-all;
+}
+.as-qr-hint {
+  margin: 0;
+  font-size: 0.95rem;
+  opacity: 0.65;
+}
+
 /* Chrome that only makes sense live never prints or embeds. */
 .as-print .as-reactions,
 .as-print .as-qa-banner,
 .as-print .as-poll-close,
-.as-deck.as-embed .as-poll-close {
+.as-print .as-qr,
+.as-deck.as-embed .as-poll-close,
+.as-deck.as-embed .as-qr {
   display: none;
 }
 
