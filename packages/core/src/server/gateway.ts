@@ -2,7 +2,7 @@ import { EventEmitter } from "node:events";
 import type { Server as HttpServer } from "node:http";
 import type { Http2SecureServer, Http2Server } from "node:http2";
 import { createNodeWebSocket } from "@hono/node-ws";
-import { Hono } from "hono";
+import { type Context, Hono } from "hono";
 import { saveDrawing } from "../drawing/persistence.js";
 import { renderAudiencePage } from "./audience-page.js";
 import { audienceAllowed, type EngagementSnapshot, saveEngagement } from "./engagement.js";
@@ -113,7 +113,7 @@ export function createSyncGateway(options: GatewayOptions): Gateway {
   // CORS for the engagement POST (issue #62): a deployed deck lives on a different
   // origin than the gateway. Only mounted when an allowlist is configured.
   if (options.allowOrigins?.length) {
-    app.options(ENGAGEMENT_PATH, (c) => {
+    const preflight = (c: Context): Response => {
       const origin = c.req.header("origin");
       if (!originAllowed(origin, c.req.header("host"), options.allowOrigins)) {
         return c.text("Forbidden", 403);
@@ -122,7 +122,9 @@ export function createSyncGateway(options: GatewayOptions): Gateway {
       c.header("Access-Control-Allow-Methods", "POST, OPTIONS");
       c.header("Access-Control-Allow-Headers", "content-type");
       return c.body(null, 204);
-    });
+    };
+    app.options(ENGAGEMENT_PATH, preflight);
+    app.options(`${ENGAGEMENT_PATH}/reset`, preflight);
   }
 
   // Engagement persistence (Phase 19): the publisher deck window debounce-POSTs its
@@ -144,6 +146,26 @@ export function createSyncGateway(options: GatewayOptions): Gateway {
       polls: body.polls ?? {},
       questions: body.questions ?? [],
     });
+    return c.json({ ok }, ok ? 200 : 400);
+  });
+
+  // Presenter-grade engagement reset (issue #71): wipe a deck's persisted poll/Q&A
+  // snapshot without shell access to the gateway host. Same auth + origin rules as
+  // the persistence POST; audience-role WS clients can't trigger it either (the
+  // reset actions are outside AUDIENCE_ALLOWED_ACTIONS). Curl-able for pre-flight:
+  //   curl -X POST <gateway>/__astro-slides/engagement/reset?token=… -d '{"deck":"talk"}'
+  app.post(`${ENGAGEMENT_PATH}/reset`, async (c) => {
+    if (!authOk(c.req.query("token"))) return c.text("Forbidden", 403);
+    const origin = c.req.header("origin");
+    if (origin && !originAllowed(origin, c.req.header("host"), options.allowOrigins)) {
+      return c.text("Forbidden", 403);
+    }
+    if (options.allowOrigins?.length && origin) {
+      c.header("Access-Control-Allow-Origin", origin);
+    }
+    const body = (await c.req.json().catch(() => null)) as { deck?: string } | null;
+    if (!body?.deck) return c.json({ ok: false }, 400);
+    const ok = saveEngagement(options.root, body.deck, { polls: {}, questions: [] });
     return c.json({ ok }, ok ? 200 : 400);
   });
 

@@ -79,6 +79,25 @@ Six emoji on the audience page float up the deck when tapped. Rate-limited on th
 phone and sprite-capped on the deck, so an enthusiastic room stays legible. Inert in
 embeds, previews, and print.
 
+## Rehearse, then present: resetting engagement
+
+Engagement state persists by design — which means a timed rehearsal with live polls
+leaves votes and questions behind for the real session. Reset without touching the
+gateway host:
+
+- **All of it**: the **Reset** button in the presenter view's toolbar (click twice —
+  it arms, then wipes). Clears every poll and the whole Q&A queue; connected phones
+  and the deck zero out live, and the cleared state is persisted.
+- **One poll**: a **Reset** button appears on the slide next to *Close voting* once a
+  poll has votes (or was closed). The poll reopens fresh if its slide is showing.
+- **Headless / pre-flight**: the gateway accepts
+  `POST /__astro-slides/engagement/reset` with `{"deck":"<name>"}` (plus
+  `?token=…` when the gateway runs with a password) — curl it from a deploy script
+  or a pre-talk checklist.
+
+Audience-role connections cannot trigger resets — like navigation, the reset actions
+are outside the audience allowlist, server-side.
+
 ## Deployed decks: the hosted gateway
 
 `dev --remote` only reaches phones on the **same network**. To run engagement against

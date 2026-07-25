@@ -5,6 +5,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { type NavState, nextState, prevState, type SlideMeta } from "../../src/navigation.js";
 import { createSyncStore, type SyncStore } from "../../src/sync/store.js";
 import { displayMs, initialState, type SharedState } from "../../src/sync/types.js";
+import { createWebSocketTransport } from "../../src/sync/websocket.js";
 import RecordingControls from "../recording/RecordingControls.js";
 
 /**
@@ -31,6 +32,10 @@ export interface PresenterProps {
   record?: boolean;
   /** Integration route prefix ("" or "/seg") — deck routes live under it (issue #39). */
   routePrefix?: string;
+  /** Sync gateway path/URL when one is live (dev --remote or ASTRO_SLIDES_GATEWAY).
+   * Gives the presenter its own WebSocket leg, so presenter-initiated actions
+   * (engagement reset, QR, blackout) reach audience phones directly (issue #71). */
+  syncGateway?: string | null;
 }
 
 function useNow(active: boolean): number {
@@ -92,6 +97,7 @@ export default function PresenterApp({
   durationMs,
   record = false,
   routePrefix = "",
+  syncGateway,
 }: PresenterProps) {
   const navSlides = useMemo<SlideMeta[]>(
     () => slides.map((s) => ({ no: s.no, steps: s.totalClicks, title: s.title })),
@@ -102,11 +108,14 @@ export default function PresenterApp({
   const previewRef = useRef<SyncStore | null>(null);
   const [state, setState] = useState<SharedState>(() => initialState(start, 0));
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [resetArmed, setResetArmed] = useState(false);
   const [gridOpen, setGridOpen] = useState(false);
 
   // --- Sync stores (client only) --------------------------------------------
   useEffect(() => {
-    const main = createSyncStore(deckId, initialState(start, 0));
+    const main = createSyncStore(deckId, initialState(start, 0), {
+      transports: syncGateway ? [createWebSocketTransport(deckId, { path: syncGateway })] : [],
+    });
     const preview = createSyncStore(deckId, initialState(start, 0), {
       suffix: "preview",
       publish: true,
@@ -119,7 +128,7 @@ export default function PresenterApp({
       main.close();
       preview.close();
     };
-  }, [deckId, start]);
+  }, [deckId, start, syncGateway]);
 
   const cur: NavState = { slide: state.no, step: state.step };
   const preview = nextState(cur, navSlides);
@@ -146,6 +155,18 @@ export default function PresenterApp({
   const timerReset = (): void => mainRef.current?.dispatch({ type: "timer/reset" });
   const moderate = (id: string, status: "shown" | "dismissed" | "new"): void =>
     mainRef.current?.dispatch({ type: "qa/moderate", id, status });
+  /** Rehearse-then-present wipe (issue #71): two-step inline confirm (no blocking
+   * dialog), then clear all polls + Q&A. The publisher deck window persists the
+   * cleared snapshot to the gateway through its normal debounce path. */
+  const resetEngagement = (): void => {
+    if (!resetArmed) {
+      setResetArmed(true);
+      window.setTimeout(() => setResetArmed(false), 4000);
+      return;
+    }
+    setResetArmed(false);
+    mainRef.current?.dispatch({ type: "engagement/reset" });
+  };
   /** Jump straight to a slide FULLY REVEALED (its last click step) — when you jump
    * around from the grid you want the finished slide, not to replay its reveals. */
   const jumpTo = (no: number): void => {
@@ -310,6 +331,15 @@ export default function PresenterApp({
                     className={state.qr ? "is-active" : ""}
                   >
                     QR
+                  </button>
+                  <button
+                    type="button"
+                    onClick={resetEngagement}
+                    aria-label="Reset engagement (clear poll results and Q&A)"
+                    title="Clear all poll results and audience questions"
+                    className={resetArmed ? "is-danger" : ""}
+                  >
+                    {resetArmed ? "Really clear?" : "Clear results"}
                   </button>
                 </div>
                 <QaPanel questions={state.questions} moderate={moderate} />

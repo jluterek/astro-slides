@@ -110,6 +110,11 @@ export type SyncAction =
   | { type: "vote"; poll: string; client: string; option: number }
   | { type: "qa/ask"; id: string; text: string; at: number }
   | { type: "qa/moderate"; id: string; status: QaStatus }
+  // Presenter-grade resets (issue #71): wipe one poll's votes (and reopen it) or all
+  // engagement state — rehearsal results must not leak into the real session. Both
+  // are denied to audience-role connections server-side.
+  | { type: "poll/reset"; id: string }
+  | { type: "engagement/reset" }
   // Audience-join QR overlay (issue #60) — presenter-triggerable, shows on deck windows.
   | { type: "qr"; on: boolean }
   // Transient: floats an emoji on watching windows; reduces to a no-op (not state).
@@ -237,6 +242,26 @@ export function reduce(state: SharedState, action: SyncAction): SharedState {
       });
       return { ...state, questions };
     }
+    case "poll/reset": {
+      // Wipe one poll entirely (votes AND closed flag) — if its slide is present,
+      // the publisher re-opens it fresh via the normal poll/open path.
+      if (!(action.id in state.polls)) return state;
+      const { [action.id]: _gone, ...restPolls } = state.polls;
+      return {
+        ...state,
+        polls: restPolls,
+        activePoll: state.activePoll?.id === action.id ? null : state.activePoll,
+      };
+    }
+    case "engagement/reset":
+      // The rehearsal-to-live wipe: all polls and the whole Q&A queue.
+      if (
+        Object.keys(state.polls).length === 0 &&
+        state.questions.length === 0 &&
+        state.activePoll === null
+      )
+        return state;
+      return { ...state, polls: {}, activePoll: null, questions: [] };
     case "react":
       // Transient event — observers (the reactions overlay) act on the action itself.
       return state;

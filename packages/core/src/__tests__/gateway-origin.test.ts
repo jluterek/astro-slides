@@ -2,6 +2,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
+import { loadEngagement } from "../server/engagement.js";
 import { createSyncGateway, originAllowed } from "../server/gateway.js";
 
 /** Cross-origin gateway hardening (issue #62). */
@@ -66,6 +67,53 @@ describe("engagement CORS", () => {
     expect(ok.status).toBe(200);
     expect(ok.headers.get("access-control-allow-origin")).toBe("https://site.example");
     expect((await post("https://evil.example")).status).toBe(403);
+  });
+
+  it("resets a deck's persisted snapshot via POST /engagement/reset", async () => {
+    const { app } = gateway(undefined);
+    const post = (path: string, body: unknown) =>
+      app.request(path, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+    // Seed some state, then reset it.
+    await post("/__astro-slides/engagement", {
+      deck: "talk",
+      polls: { warm: { votes: { c1: 0 } } },
+      questions: [{ id: "q1", text: "why?", at: 1, status: "new" }],
+    });
+    expect(loadEngagement(root, "talk").questions).toHaveLength(1);
+    const res = await post("/__astro-slides/engagement/reset", { deck: "talk" });
+    expect(res.status).toBe(200);
+    expect(loadEngagement(root, "talk")).toEqual({ polls: {}, questions: [] });
+    // Missing deck → 400.
+    expect((await post("/__astro-slides/engagement/reset", {})).status).toBe(400);
+  });
+
+  it("reset honors token + origin rules like the persistence POST", async () => {
+    const tokened = createSyncGateway({
+      root,
+      deckTotals: () => ({}),
+      defaultDeck: () => "d",
+      token: "sekret",
+      allowOrigins: ["https://site.example"],
+    });
+    const reset = (query: string, origin?: string) =>
+      tokened.app.request(`/__astro-slides/engagement/reset${query}`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          ...(origin ? { origin, host: "gw.example" } : {}),
+        },
+        body: JSON.stringify({ deck: "d" }),
+      });
+    expect((await reset("")).status).toBe(403); // no token
+    expect((await reset("?token=sekret")).status).toBe(200);
+    expect((await reset("?token=sekret", "https://evil.example")).status).toBe(403);
+    const ok = await reset("?token=sekret", "https://site.example");
+    expect(ok.status).toBe(200);
+    expect(ok.headers.get("access-control-allow-origin")).toBe("https://site.example");
   });
 
   it("keeps the dev gateway's same-origin behavior when no allowlist is set", async () => {

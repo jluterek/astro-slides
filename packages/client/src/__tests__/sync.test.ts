@@ -91,6 +91,35 @@ describe("reduce", () => {
     expect(s.laser).toBeNull();
   });
 
+  it("resets one poll (votes + closed) and clears its active slot", () => {
+    let s = reduce(initialState(), {
+      type: "poll/open",
+      poll: { id: "warm", question: "q", options: ["a", "b"] },
+    });
+    s = reduce(s, { type: "vote", poll: "warm", client: "c1", option: 1 });
+    s = reduce(s, { type: "poll/close", id: "warm" });
+    const r = reduce(s, { type: "poll/reset", id: "warm" });
+    expect(r.polls.warm).toBeUndefined();
+    expect(r.activePoll).toBeNull();
+    // Unknown poll id is a no-op (same reference).
+    expect(reduce(r, { type: "poll/reset", id: "nope" })).toBe(r);
+  });
+
+  it("engagement/reset wipes all polls and questions (idempotent)", () => {
+    let s = reduce(initialState(), {
+      type: "poll/open",
+      poll: { id: "warm", question: "q", options: ["a"] },
+    });
+    s = reduce(s, { type: "vote", poll: "warm", client: "c1", option: 0 });
+    s = reduce(s, { type: "qa/ask", id: "q1", text: "why?", at: 1 });
+    const r = reduce(s, { type: "engagement/reset" });
+    expect(r.polls).toEqual({});
+    expect(r.questions).toEqual([]);
+    expect(r.activePoll).toBeNull();
+    // Nothing to wipe → same reference.
+    expect(reduce(r, { type: "engagement/reset" })).toBe(r);
+  });
+
   it("toggles the audience-QR overlay flag idempotently", () => {
     const on = reduce(initialState(), { type: "qr", on: true });
     expect(on.qr).toBe(true);
