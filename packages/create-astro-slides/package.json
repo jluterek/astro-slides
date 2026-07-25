@@ -1,6 +1,6 @@
 {
   "name": "create-astro-slides",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": false,
   "type": "module",
   "description": "Scaffold a new astro-slides deck project — pnpm create astro-slides <target>.",
