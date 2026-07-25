@@ -91,7 +91,7 @@ Every entry includes the package, current version (June 2026 snapshot), why it w
 
 | Category | Library | Why | Caveat |
 | --- | --- | --- | --- |
-| QR code | `uqr` v0.1 (installed v0.1.3) | UnJS, terminal-friendly. `renderANSI()` prints the LAN URL QR to the dev TTY under `--remote`. | — |
+| QR code | `uqr` v0.1 (installed v0.1.3) | UnJS, terminal-friendly. `renderANSI()` prints the LAN URL QR to the dev TTY under `--remote`; `renderSVG()` draws the in-deck audience-join overlay (issue #60, client dep too). | — |
 | HTTP server (for MCP HTTP transport and mobile remote) | `Hono` v4.12 (installed v4.12.27) | Modern, embeddable, runs anywhere. Pairs with `@hono/mcp` v0.3+ for MCP. Serves `/entry` + the sync WebSocket as dev-server middleware. | WebSocket on Hono/Node needs `@hono/node-ws` (installed v1.3.1). |
 | Node WebSocket adapter | `@hono/node-ws` v1.3 (installed v1.3.1) | Attaches Hono `upgradeWebSocket` routes to the Vite dev server's Node `httpServer`. | **Peers on `@hono/node-server@^1.19`, not v2** — installed v1.19.14 (used only via `getRequestListener` to mount Hono as Connect middleware). |
 

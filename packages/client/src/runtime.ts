@@ -171,6 +171,10 @@ export function initDeck(root: HTMLElement): DeckHandle {
   const setHelp = (on: boolean): void => {
     help.hidden = !on;
   };
+  // Late-bound: the audience-QR overlay (issue #60) rides the sync store, which is
+  // created further down. No-ops until (and unless) a live gateway rebinds them.
+  let toggleAudienceQr: () => void = () => {};
+  let audienceQrShowing: () => boolean = () => false;
   const actions: NavActions = {
     next: () => controller.next(),
     prev: () => controller.prev(),
@@ -179,8 +183,10 @@ export function initDeck(root: HTMLElement): DeckHandle {
     toggleOverview: () => setOverview(!store.overview.get()),
     toggleHelp: () => setHelp(help.hidden),
     openPresenter,
+    toggleAudienceQr: () => toggleAudienceQr(),
     escape: () => {
-      if (!help.hidden) setHelp(false);
+      if (audienceQrShowing()) toggleAudienceQr();
+      else if (!help.hidden) setHelp(false);
       else if (store.overview.get()) setOverview(false);
     },
   };
@@ -281,13 +287,22 @@ export function initDeck(root: HTMLElement): DeckHandle {
   // --- Audience engagement (Phase 19): polls, reactions, Q&A banner ---------
   // AFTER start(): initPolls checks which slide is `present` to publish the active
   // poll, and the state classes only exist once the controller has applied them.
+  const publicHost = (window as { __ASTRO_SLIDES_PUBLIC_HOST__?: string })
+    .__ASTRO_SLIDES_PUBLIC_HOST__;
   const stopEngagement = initEngagement(root, {
     sync,
     deckId,
     preview,
     embedded,
     gatewayPath,
+    publicHost,
   });
+  // Rebind the audience-QR actions now that the sync store exists (issue #60) —
+  // only where an overlay could actually show (live gateway, not embed/preview).
+  if (gatewayPath && !preview && !embedded) {
+    toggleAudienceQr = () => sync.dispatch({ type: "qr", on: !sync.state.get().qr });
+    audienceQrShowing = () => sync.state.get().qr;
+  }
 
   return {
     controller,

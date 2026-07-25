@@ -9,6 +9,8 @@ export interface NavActions {
   toggleOverview(): void;
   toggleHelp(): void;
   openPresenter(): void;
+  /** Toggle the audience-join QR overlay (no-op without a live gateway). */
+  toggleAudienceQr(): void;
   escape(): void;
 }
 
@@ -19,6 +21,7 @@ export const SHORTCUTS: ReadonlyArray<{ keys: string; label: string }> = [
   { keys: "Home / End", label: "First / last slide" },
   { keys: "O", label: "Toggle overview" },
   { keys: "P", label: "Open presenter view" },
+  { keys: "A", label: "Audience join QR (live gateway only)" },
   { keys: "L", label: "Toggle laser pointer" },
   { keys: "D", label: "Toggle drawing (decks with drawings enabled)" },
   { keys: "?", label: "Toggle this help" },
@@ -43,6 +46,7 @@ export function bindKeyboard(target: Window | HTMLElement, actions: NavActions):
     End: (e) => run(e, actions.last),
     o: (e) => run(e, actions.toggleOverview),
     p: (e) => run(e, actions.openPresenter),
+    a: (e) => run(e, actions.toggleAudienceQr),
     "Shift+?": (e) => run(e, actions.toggleHelp),
     Escape: (e) => run(e, actions.escape),
   });

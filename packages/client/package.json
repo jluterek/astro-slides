@@ -3,7 +3,7 @@
   "version": "0.4.1",
   "private": false,
   "type": "module",
-  "description": "Runtime UI — layouts, click runtime, transitions, and presenter mode.",
+  "description": "Runtime UI \u2014 layouts, click runtime, transitions, and presenter mode.",
   "license": "MIT",
   "author": "James Luterek",
   "exports": {
@@ -36,7 +36,8 @@
     "react-resizable-panels": "catalog:frontend",
     "recordrtc": "catalog:frontend",
     "shiki": "catalog:frontend",
-    "tinykeys": "catalog:frontend"
+    "tinykeys": "catalog:frontend",
+    "uqr": "catalog:prod"
   },
   "peerDependencies": {
     "react": "catalog:frontend",

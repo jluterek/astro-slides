@@ -26,6 +26,10 @@ export interface SharedState {
   timer: TimerState;
   drawings: Record<string, string>;   // Phase 11: "<no>:<step>" -> drauu SVG dump
   laser: { x: number; y: number } | null;  // Phase 11: normalized 0..1, or off
+  polls: Record<string, PollState>;   // Phase 19: votes per poll id
+  activePoll: ActivePoll | null;      // Phase 19: what audience phones offer now
+  questions: QaQuestion[];            // Phase 19: moderated Q&A
+  qr: boolean;                        // issue #60: audience-join QR overlay raised
 }
 
 export type SyncAction =
@@ -38,6 +42,8 @@ export type SyncAction =
   | { type: "draw"; key: string; svg: string } // Phase 11: set one slide-step's annotation
   | { type: "draw/clear"; key: string }
   | { type: "laser"; point: { x: number; y: number } | null }
+  // Phase 19: poll/open, poll/close, vote, qa/ask, qa/moderate, react (transient)
+  | { type: "qr"; on: boolean }                // issue #60: join-QR overlay on deck windows
   | { type: "hello" }                          // join handshake: request a snapshot
   | { type: "state"; state: SharedState };     // snapshot reply
 ```

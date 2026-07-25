@@ -137,6 +137,10 @@ export default function PresenterApp({
   const goPrev = (): void => go(prevState(cur, navSlides));
   const toggleBlackout = (): void =>
     mainRef.current?.dispatch({ type: "blackout", on: !state.blackout });
+  /** Raise the audience-join QR on the deck window the room is watching (issue #60).
+   * The deck only mounts the overlay when a gateway is live, so this is safely inert
+   * for plain BroadcastChannel-only sessions. */
+  const toggleQr = (): void => mainRef.current?.dispatch({ type: "qr", on: !state.qr });
   const timerStart = (): void => mainRef.current?.dispatch({ type: "timer/start", at: Date.now() });
   const timerPause = (): void => mainRef.current?.dispatch({ type: "timer/pause", at: Date.now() });
   const timerReset = (): void => mainRef.current?.dispatch({ type: "timer/reset" });
@@ -296,6 +300,16 @@ export default function PresenterApp({
                     className={gridOpen ? "is-active" : ""}
                   >
                     Slides
+                  </button>
+                  <button
+                    type="button"
+                    onClick={toggleQr}
+                    aria-pressed={state.qr}
+                    aria-label="Show audience join QR on the deck"
+                    title="Audience join QR"
+                    className={state.qr ? "is-active" : ""}
+                  >
+                    QR
                   </button>
                 </div>
                 <QaPanel questions={state.questions} moderate={moderate} />

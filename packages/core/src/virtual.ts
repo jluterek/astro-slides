@@ -25,9 +25,16 @@ const json = (value: unknown): string => JSON.stringify(value);
  * Emit runtime config the deck script reads at boot (Phase 11). `syncGateway` is the
  * WebSocket path when the dev server is running with `--remote`, else null — so a static
  * build never advertises a gateway and the runtime stays BroadcastChannel-only.
+ * `publicHost` (issue #60) is the LAN address phones can actually reach under
+ * `dev --remote` — the in-deck audience QR swaps it in when the presenter opened the
+ * deck via localhost (a QR encoding `localhost` is useless to the room).
  */
-export function runtimeConfigModuleSource(syncGateway: string | null, routePrefix = ""): string {
-  return `export const syncGateway = ${json(syncGateway)};\nexport const routePrefix = ${json(routePrefix)};\nexport default { syncGateway, routePrefix };\n`;
+export function runtimeConfigModuleSource(
+  syncGateway: string | null,
+  routePrefix = "",
+  publicHost: string | null = null,
+): string {
+  return `export const syncGateway = ${json(syncGateway)};\nexport const routePrefix = ${json(routePrefix)};\nexport const publicHost = ${json(publicHost)};\nexport default { syncGateway, routePrefix, publicHost };\n`;
 }
 
 /**

@@ -69,6 +69,7 @@ The presenter window binds its own shortcuts:
 | <kbd>B</kbd> | Blackout the audience |
 | <kbd>F</kbd> | Toggle fullscreen |
 | <kbd>K</kbd> or <kbd>/</kbd> | Open the command palette |
+| **QR** button | Show the audience-join QR on the deck window ([audience engagement](/presenting/audience-engagement/#the-audience-joins-by-qr)) |
 | <kbd>Esc</kbd> | Close the command palette |
 
 ## Speaker notes

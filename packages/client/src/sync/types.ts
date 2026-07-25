@@ -89,6 +89,8 @@ export interface SharedState {
   activePoll: ActivePoll | null;
   /** Moderated audience questions (Phase 19). */
   questions: QaQuestion[];
+  /** Audience-join QR overlay visible on deck windows (issue #60). */
+  qr: boolean;
 }
 
 export type SyncAction =
@@ -108,6 +110,8 @@ export type SyncAction =
   | { type: "vote"; poll: string; client: string; option: number }
   | { type: "qa/ask"; id: string; text: string; at: number }
   | { type: "qa/moderate"; id: string; status: QaStatus }
+  // Audience-join QR overlay (issue #60) — presenter-triggerable, shows on deck windows.
+  | { type: "qr"; on: boolean }
   // Transient: floats an emoji on watching windows; reduces to a no-op (not state).
   | { type: "react"; id: string; emoji: string }
   // Full-snapshot exchange so a late-joining window catches up.
@@ -132,6 +136,7 @@ export function initialState(no = 1, step = 0): SharedState {
     polls: {},
     activePoll: null,
     questions: [],
+    qr: false,
   };
 }
 
@@ -235,6 +240,8 @@ export function reduce(state: SharedState, action: SyncAction): SharedState {
     case "react":
       // Transient event — observers (the reactions overlay) act on the action itself.
       return state;
+    case "qr":
+      return state.qr === action.on ? state : { ...state, qr: action.on };
     case "state":
       // Merge defensively: a snapshot arriving over the wire (WebSocket JSON) may
       // predate newer fields, so backfill them rather than leaving holes.
@@ -245,6 +252,7 @@ export function reduce(state: SharedState, action: SyncAction): SharedState {
         polls: action.state.polls ?? {},
         activePoll: action.state.activePoll ?? null,
         questions: action.state.questions ?? [],
+        qr: action.state.qr ?? false,
       };
     default:
       return state;

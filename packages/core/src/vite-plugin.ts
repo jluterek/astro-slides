@@ -1,3 +1,4 @@
+import { networkInterfaces } from "node:os";
 import { getRequestListener } from "@hono/node-server";
 import type { Plugin, ViteDevServer } from "vite";
 import { discoverDeckFiles, loadAllDecks } from "./deck-loader.js";
@@ -33,6 +34,20 @@ export interface VitePluginOptions {
 }
 
 const resolvedId = (id: string): string => `\0${id}`;
+
+/** First non-internal IPv4 address, or null (loopback-only machines). Mirrors the
+ * CLI's `lanAddress` — the in-deck audience QR (issue #60) needs the address phones
+ * can reach, and the presenter usually opened the deck via localhost. */
+export function lanAddress(ifaces = networkInterfaces()): string | null {
+  for (const list of Object.values(ifaces)) {
+    for (const net of list ?? []) {
+      if ((net.family === "IPv4" || (net.family as unknown) === 4) && !net.internal) {
+        return net.address;
+      }
+    }
+  }
+  return null;
+}
 
 /**
  * Serves the deck manifest as virtual modules and reloads the browser when any deck
@@ -155,7 +170,10 @@ export function astroSlidesVitePlugin(options: VitePluginOptions): Plugin {
         const remote = process.env.ASTRO_SLIDES_REMOTE
           ? "/__astro-slides/sync"
           : process.env.ASTRO_SLIDES_GATEWAY || null;
-        return runtimeConfigModuleSource(remote, options.routePrefix ?? "");
+        // Under dev --remote the QR overlay needs the LAN address (issue #60);
+        // external gateways carry their own host in the URL.
+        const publicHost = process.env.ASTRO_SLIDES_REMOTE ? lanAddress() : null;
+        return runtimeConfigModuleSource(remote, options.routePrefix ?? "", publicHost);
       }
       return null;
     },

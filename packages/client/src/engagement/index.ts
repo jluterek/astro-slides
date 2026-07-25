@@ -1,3 +1,4 @@
+import { renderSVG } from "uqr";
 import type { SyncStore } from "../sync/store.js";
 import { type ActivePoll, type QaQuestion, tallyVotes } from "../sync/types.js";
 import { gatewayHttpOrigin } from "../sync/websocket.js";
@@ -19,6 +20,9 @@ export interface EngagementOptions {
   embedded: boolean;
   /** Gateway WS path when running under `dev --remote`, else undefined. */
   gatewayPath?: string | undefined;
+  /** LAN address phones can reach (dev --remote; issue #60) — swapped into the
+   * audience-join URL when the page itself was opened via localhost. */
+  publicHost?: string | undefined;
 }
 
 /** Max simultaneously-floating reaction sprites — excess reactions are dropped. */
@@ -192,6 +196,75 @@ function initPersistence(opts: EngagementOptions): () => void {
   };
 }
 
+/** The URL audience phones should open, or null when no gateway is live. A same-origin
+ * dev gateway inherits the page's origin — but when the presenter opened the deck via
+ * localhost, phones can't follow, so a known LAN `publicHost` replaces a loopback host
+ * (issue #60). External gateways (issue #62) carry their own host. */
+export function audienceJoinUrl(
+  gatewayPath: string | undefined,
+  deckId: string,
+  publicHost?: string | undefined,
+  loc: Pick<Location, "protocol" | "hostname" | "port" | "host"> = location,
+): string | null {
+  if (!gatewayPath) return null;
+  const query = `deck=${encodeURIComponent(deckId)}`;
+  const remote = gatewayHttpOrigin(gatewayPath);
+  if (remote) return `${remote}/audience?${query}`;
+  let host = loc.host;
+  if (publicHost && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(loc.hostname)) {
+    host = loc.port ? `${publicHost}:${loc.port}` : publicHost;
+  }
+  return `${loc.protocol}//${host}/audience?${query}`;
+}
+
+/** Full-screen audience-join QR overlay (issue #60). Driven by the shared `qr` flag so
+ * the presenter view can raise it on the deck window the room is watching; the deck's
+ * `A` shortcut toggles the same flag. Inert in embeds and follow-only previews. */
+function initQrOverlay(root: HTMLElement, opts: EngagementOptions): () => void {
+  if (opts.embedded || opts.preview) return () => {};
+  const url = audienceJoinUrl(opts.gatewayPath, opts.deckId, opts.publicHost);
+  if (!url) return () => {};
+
+  let overlay: HTMLElement | null = null;
+  const ensure = (): HTMLElement => {
+    if (overlay) return overlay;
+    overlay = document.createElement("div");
+    overlay.className = "as-qr";
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-label", "Join the audience");
+    overlay.hidden = true;
+
+    const panel = document.createElement("div");
+    panel.className = "as-qr-panel";
+    const heading = document.createElement("h2");
+    heading.textContent = "Join in";
+    const code = document.createElement("div");
+    code.className = "as-qr-code";
+    code.innerHTML = renderSVG(url, { ecc: "M", border: 2 });
+    const link = document.createElement("p");
+    link.className = "as-qr-url";
+    link.textContent = url.replace(/^https?:\/\//, "");
+    const hint = document.createElement("p");
+    hint.className = "as-qr-hint";
+    hint.textContent = "Scan to vote, ask, and react — A or Esc to close";
+    panel.append(heading, code, link, hint);
+    overlay.append(panel);
+    // Click anywhere dismisses (shared state, so every window closes together).
+    overlay.addEventListener("click", () => opts.sync.dispatch({ type: "qr", on: false }));
+    root.append(overlay);
+    return overlay;
+  };
+
+  const unsub = opts.sync.state.subscribe((state) => {
+    if (state.qr) ensure().hidden = false;
+    else if (overlay) overlay.hidden = true;
+  });
+  return () => {
+    unsub();
+    overlay?.remove();
+  };
+}
+
 /** Boot the full engagement runtime; returns a cleanup. */
 export function initEngagement(root: HTMLElement, opts: EngagementOptions): () => void {
   const stops = [
@@ -199,6 +272,7 @@ export function initEngagement(root: HTMLElement, opts: EngagementOptions): () =
     initReactions(root, opts),
     initQaBanner(root, opts),
     initPersistence(opts),
+    initQrOverlay(root, opts),
   ];
   return () => {
     for (const stop of stops) stop();
