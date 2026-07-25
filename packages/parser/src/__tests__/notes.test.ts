@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractNotes } from "../notes.js";
+import { extractNotes, stripHtmlComments } from "../notes.js";
 
 const lines = (...l: string[]) => l.join("\n");
 
@@ -27,5 +27,32 @@ describe("extractNotes", () => {
 
   it("treats an empty trailing comment as no notes", () => {
     expect(extractNotes(lines("# Slide", "<!-- -->")).notes).toBeNull();
+  });
+});
+
+describe("stripHtmlComments (issue #55)", () => {
+  it("removes mid-slide comments but preserves comments inside code fences", () => {
+    const body = [
+      "## Slide",
+      "",
+      "<!-- a mid-slide authoring note -->",
+      "",
+      "Text with <!-- inline --> comment.",
+      "",
+      "```html",
+      "<!-- this is SAMPLE CODE and must survive -->",
+      "```",
+    ].join("\n");
+    const out = stripHtmlComments(body);
+    expect(out).not.toContain("authoring note");
+    expect(out).toContain("Text with  comment.");
+    expect(out).toContain("<!-- this is SAMPLE CODE and must survive -->");
+  });
+
+  it("handles multi-line comments", () => {
+    const out = stripHtmlComments("before\n<!-- line one\nline two -->\nafter");
+    expect(out).toContain("before");
+    expect(out).toContain("after");
+    expect(out).not.toContain("line one");
   });
 });

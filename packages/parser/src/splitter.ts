@@ -58,6 +58,29 @@ function isYamlMapping(block: string): boolean {
   return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed);
 }
 
+/** A frontmatter-shaped key line: `layout:`, `title: X`, `clicksStart: 2`, … */
+const FRONTMATTER_KEY = /^[A-Za-z_][\w-]*:(\s|$)/;
+
+/**
+ * Stricter `---` disambiguation than YAML-parseability alone (issue #52): Markdown
+ * slide bodies can ACCIDENTALLY parse as YAML mappings (`## heading` is a YAML
+ * comment; `<img src="…" alt="text: with colon"` is a legal plain-style key), which
+ * silently swallowed whole slides as the next slide's frontmatter. Real frontmatter's
+ * first meaningful line is a bare `key:` — require that shape, and refuse blocks whose
+ * first non-blank line is recognizable Markdown/HTML content.
+ */
+function looksLikeFrontmatter(block: string): boolean {
+  if (block.trim() === "") return true; // empty frontmatter `---\n---`
+  const lines = block.split("\n");
+  const firstContent = lines.find((l) => l.trim() !== "");
+  if (firstContent === undefined) return true;
+  const t = firstContent.trim();
+  // Markdown headings, HTML/JSX tags, and images are slide content, full stop —
+  // even though `#` reads as a YAML comment and `<tag` can be a plain-style key.
+  if (t.startsWith("#") || t.startsWith("<") || t.startsWith("![")) return false;
+  return FRONTMATTER_KEY.test(t) && isYamlMapping(block);
+}
+
 /** Advance HTML-comment open/close state across one line; returns state at line end. */
 export function advanceComment(line: string, inComment: boolean): boolean {
   let idx = 0;
@@ -120,7 +143,7 @@ export function splitSlides(source: string): RawSlide[] {
       let j = i + 1;
       while (j < n && !isSeparator(lines[j] as string)) j++;
       const block = j < n ? lines.slice(i + 1, j).join("\n") : null;
-      if (block !== null && isYamlMapping(block)) {
+      if (block !== null && looksLikeFrontmatter(block)) {
         frontmatterRaw = block;
         frontmatterStyle = "yaml";
         i = j + 1;
