@@ -118,6 +118,10 @@ export function astroSlides(options: AstroSlidesOptions = {}): AstroIntegration 
             }),
           ],
           vite: {
+            // The emit scratch dir must be invisible to the dev watcher — emitted
+            // `.mdx` output re-triggering the deck watcher was an infinite reload
+            // loop (issue #61). Emitted modules are invalidated explicitly instead.
+            server: { watch: { ignored: ["**/.astro-slides/**"] } },
             plugins: [
               astroSlidesVitePlugin(pluginOptions),
               // `~icons/<collection>/<name>` imports compile to inline SVG Astro

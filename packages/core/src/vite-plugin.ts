@@ -3,7 +3,7 @@ import type { Plugin, ViteDevServer } from "vite";
 import { discoverDeckFiles, loadAllDecks } from "./deck-loader.js";
 import { loadDrawings } from "./drawing/persistence.js";
 import { resolveLayouts, userLayoutsDir } from "./layout-resolver.js";
-import { emitSlideModules } from "./mdx-emit.js";
+import { emitSlideModules, slideModulesDir } from "./mdx-emit.js";
 import { loadEngagement } from "./server/engagement.js";
 import { createSyncGateway } from "./server/gateway.js";
 import {
@@ -142,7 +142,12 @@ export function astroSlidesVitePlugin(options: VitePluginOptions): Plugin {
       for (const file of discoverDeckFiles(options.root, options.decks)) {
         server.watcher.add(file);
       }
+      const emitDir = slideModulesDir(options.root);
       const onChange = (file: string) => {
+        // Our OWN emitted `.mdx` output must never count as a source edit — treating
+        // it as one made every re-parse re-trigger the watcher: an infinite
+        // full-reload feedback loop (issue #61).
+        if (file.startsWith(emitDir)) return;
         // Reload on any deck/markdown source (deck files, `src:` imports) or a
         // watched snippet file (`<<<` imports) — all affect the rendered output.
         if (!/\.mdx?$/.test(file) && !options.snippetFiles?.has(file)) return;
@@ -150,6 +155,13 @@ export function astroSlidesVitePlugin(options: VitePluginOptions): Plugin {
         for (const id of ids) {
           const mod = server.moduleGraph.getModuleById(resolvedId(id));
           if (mod) server.moduleGraph.invalidateModule(mod);
+        }
+        // Emitted slide modules are invalidated EXPLICITLY: the watcher is told to
+        // ignore the emit dir (see the integration's `server.watch.ignored`), so
+        // Vite would otherwise keep serving stale transforms of re-emitted files.
+        for (const [modFile, mods] of server.moduleGraph.fileToModulesMap) {
+          if (!modFile.startsWith(emitDir)) continue;
+          for (const mod of mods) server.moduleGraph.invalidateModule(mod);
         }
         server.ws.send({ type: "full-reload" });
       };
